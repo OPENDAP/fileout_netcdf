@@ -51,6 +51,8 @@ TODO:
   exception. Please refer to the different exception types.
 - Look into how attributes are written to the file. I believe that it
   requires the container.attributes section of the define statement.
+- Create a testsuite that is stand alone, not requiring any other modules
+  except the dap modules.
 
 Any questions, please contact Patrick West at pwest@opendap.org.
 
