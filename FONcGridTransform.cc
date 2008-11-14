@@ -34,6 +34,8 @@
 #include <DDS.h>
 #include <Structure.h>
 #include <Array.h>
+#include <BESDebug.h>
+#include <BESInternalError.h>
 
 nc_type
 FONcGridTransform::get_nc_type( BaseType *element )
@@ -41,6 +43,8 @@ FONcGridTransform::get_nc_type( BaseType *element )
     nc_type x_type = NC_NAT ; // the constant ncdf uses to define simple type
 
     string var_type = element->type_name() ;
+    BESDEBUG( "fonc", "FONcGridTransform::get_nc_type for "
+                      << var_type << endl )
     if( var_type == "Byte" )        	// check this for dods type
 	x_type = NC_BYTE ;
     else if( var_type == "String" )
@@ -58,6 +62,8 @@ FONcGridTransform::get_nc_type( BaseType *element )
     else if( var_type == "Float64" )
 	x_type = NC_DOUBLE ;
 
+    BESDEBUG( "fonc", "FONcGridTransform::get_nc_type returning "
+                      << x_type << endl )
     return x_type ;
 }
 
@@ -66,6 +72,8 @@ FONcGridTransform::write_structure( BaseType* b, int ncid )
 {
     Structure *s = (Structure*)b ;
     string myname = s->name() ;
+    BESDEBUG( "fonc", "FONcGridTransform::write_structure for "
+                      << myname << endl )
     Constructor::Vars_iter vi = s->var_begin() ;
     Constructor::Vars_iter ve = s->var_end() ;
     for( ; vi != ve; vi++ )
@@ -74,7 +82,9 @@ FONcGridTransform::write_structure( BaseType* b, int ncid )
 	if( bt->send_p() )
 	{
 	    string new_name = myname + string( "__" ) + bt->name() ;
-	    //s->var(q)->set_name( new_name ) ;
+	    BESDEBUG( "fonc", "FONcGridTransform::write_structure new name: "
+			      << new_name << endl )
+	    bt->set_name( new_name ) ;
 	    switch( bt->type() )
 	    {
 		case dods_byte_c:
@@ -101,6 +111,8 @@ FONcGridTransform::write_structure( BaseType* b, int ncid )
 		    cerr << "OpenDAP: NetCDF Wrong variable type." << endl ;
 		    break ;
 	    }
+	    BESDEBUG( "fonc", "FONcGridTransform::write_structure, done "
+	                      << "writing " << new_name << endl )
 	}
     }
 }
@@ -108,19 +120,22 @@ FONcGridTransform::write_structure( BaseType* b, int ncid )
 void
 FONcGridTransform::write_grid( BaseType* b, int ncid )
 {
-    cout << __FILE__ << ":" << __LINE__
-         << " Grid code mapping not implemented"
-	 << endl ;
-    cout << "Please notice, transformation algorithm will proceed but the final"
-         << endl ;
-    cout <<"NetCDF dataset will not include this grid"
-         << endl ;
+    string err = "Grid code mapping is not implemented in file out netcdf" ;
+    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 }
 
 void
 FONcGridTransform::write_array( BaseType* b, int ncid )
 {
     Array *a = dynamic_cast<Array *>( b ) ;
+    if( !a )
+    {
+	string s = (string)"File out netcdf, write_array passed a variable "
+	           + "that is not an array" ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    }
+    BESDEBUG( "fonc", "FONcGridTransform::write_array for array "
+                      << a->name() << endl )
     int varid ;
     nc_redef( ncid ) ;
     int *dimensions = new int[a->dimensions()] ;
@@ -262,15 +277,20 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 	    }
 	    break ;
 	default:
-	    cerr << __FILE__ << " " << __LINE__ << "Unknown type" << endl ;
-	    exit( 1 ) ;
+	    string err = "Failed to transform unknown type in file out netcdf" ;
+	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	    break ;
     } ;
+
+    BESDEBUG( "fonc", "FONcGridTransform::write_array done for "
+                      << a->name() << endl )
 }
 
 void
 FONcGridTransform::write_var( BaseType* b, int ncid )
 {
+    BESDEBUG( "fonc", "FONcGridTransform::write_var for var "
+                      << b->name() << endl )
     int varid ;
     static size_t var_index[] = {0} ;
     nc_type var_type = get_nc_type( b ) ;
@@ -381,6 +401,8 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 	    }
 	    break ;
     }
+    BESDEBUG( "fonc", "FONcGridTransform::write_var done for "
+                      << b->name() << endl )
 }
 
 int
@@ -419,7 +441,9 @@ FONcGridTransform::create_local_nc( DDS *dds, char* localfile )
 		    write_structure( v, ncid ) ;
 		    break ;
 		default:
-		    cerr << "OpenDAP: NetCDF Wrong variable type." << endl ;
+		    string err = (string)"file out netcdf, unable to write "
+		                 + "unknown variable type" ;
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		    break ;
 	    }
 	}
