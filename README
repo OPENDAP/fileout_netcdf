@@ -53,6 +53,7 @@ TODO:
   requires the container.attributes section of the define statement.
 - Create a testsuite that is stand alone, not requiring any other modules
   except the dap modules.
+- Need to be able to write out Grid data.
 
 Any questions, please contact Patrick West at pwest@opendap.org.
 
