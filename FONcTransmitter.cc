@@ -44,7 +44,7 @@ using namespace::libdap ;
 #include <BESInternalError.h>
 #include <TheBESKeys.h>
 #include <BESDataDDSResponse.h>
-#include <BESDatanames.h>
+#include <BESDataNames.h>
 #define NETCDF_TEMP_STREAM "temp_netcdf_file"
 #define DATA_TRANSMITTER "data"
 
