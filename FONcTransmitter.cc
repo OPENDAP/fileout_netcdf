@@ -40,7 +40,7 @@
 using namespace::libdap ;
 
 #include "FONcTransmitter.h"
-#include "FONcGridTransform.h"
+#include "FONcTransform.h"
 #include <BESInternalError.h>
 #include <TheBESKeys.h>
 #include <BESDataDDSResponse.h>
@@ -151,7 +151,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
 
-    FONcGridTransform::create_local_nc( dds, NETCDF_TEMP_STREAM ) ;
+    FONcTransform::create_local_nc( dds, NETCDF_TEMP_STREAM ) ;
     dhi.first_container() ;
     while( dhi.container )
     {
@@ -186,19 +186,17 @@ FONcTransmitter::add_attributes( const BESContainer *c,
 	{
 	    variable = attributes.substr( 0, pos ) ;
 	    attributes = attributes.substr( pos+1, attributes.size() ) ;
-	    FONcGridTransform::copy_all_attributes( variable,
-	    					     c->get_real_name(),
-						     filename ) ;
-	    //cout << c->get_real_name() << " " << variable << endl ;
+	    FONcTransform::copy_all_attributes( variable,
+						c->get_real_name(),
+						filename ) ;
 	    pos = attributes.find( "," ) ;
 	}
 	if( attributes != "" )
 	{
 	    variable = attributes ;
-	    FONcGridTransform::copy_all_attributes( variable,
-	    					     c->get_real_name(),
-						     filename ) ;
-	    //cout << c->get_real_name() << " " << variable << endl ;
+	    FONcTransform::copy_all_attributes( variable,
+						c->get_real_name(),
+						filename ) ;
 	}
     }
 }
@@ -232,7 +230,6 @@ FONcTransmitter::return_temp_stream( const string &filename,
 	    cout << flush ;
 	}
 	strm.write( block, nbytes ) ;
-	//write( fileno( stdout ),(void*)block, nbytes ) ;
 	bytes += nbytes ;
     }
     else

@@ -1,4 +1,4 @@
-// FONcGridTransform.cc
+// FONcTransform.cc
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,7 +29,7 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#include "FONcGridTransform.h"
+#include "FONcTransform.h"
 
 #include <DDS.h>
 #include <Structure.h>
@@ -38,12 +38,12 @@
 #include <BESInternalError.h>
 
 nc_type
-FONcGridTransform::get_nc_type( BaseType *element )
+FONcTransform::get_nc_type( BaseType *element )
 {
     nc_type x_type = NC_NAT ; // the constant ncdf uses to define simple type
 
     string var_type = element->type_name() ;
-    BESDEBUG( "fonc", "FONcGridTransform::get_nc_type for "
+    BESDEBUG( "fonc", "FONcTransform::get_nc_type for "
                       << var_type << endl )
     if( var_type == "Byte" )        	// check this for dods type
 	x_type = NC_BYTE ;
@@ -62,17 +62,17 @@ FONcGridTransform::get_nc_type( BaseType *element )
     else if( var_type == "Float64" )
 	x_type = NC_DOUBLE ;
 
-    BESDEBUG( "fonc", "FONcGridTransform::get_nc_type returning "
+    BESDEBUG( "fonc", "FONcTransform::get_nc_type returning "
                       << x_type << endl )
     return x_type ;
 }
 
 void
-FONcGridTransform::write_structure( BaseType* b, int ncid )
+FONcTransform::write_structure( BaseType* b, int ncid )
 {
     Structure *s = (Structure*)b ;
     string myname = s->name() ;
-    BESDEBUG( "fonc", "FONcGridTransform::write_structure for "
+    BESDEBUG( "fonc", "FONcTransform::write_structure for "
                       << myname << endl )
     Constructor::Vars_iter vi = s->var_begin() ;
     Constructor::Vars_iter ve = s->var_end() ;
@@ -82,7 +82,7 @@ FONcGridTransform::write_structure( BaseType* b, int ncid )
 	if( bt->send_p() )
 	{
 	    string new_name = myname + string( "__" ) + bt->name() ;
-	    BESDEBUG( "fonc", "FONcGridTransform::write_structure new name: "
+	    BESDEBUG( "fonc", "FONcTransform::write_structure new name: "
 			      << new_name << endl )
 	    bt->set_name( new_name ) ;
 	    switch( bt->type() )
@@ -108,24 +108,29 @@ FONcGridTransform::write_structure( BaseType* b, int ncid )
 		    write_structure( bt, ncid ) ;
 		    break ;
 		default:
-		    cerr << "OpenDAP: NetCDF Wrong variable type." << endl ;
-		    break ;
+		{
+		    string s = (string)"File out netcdf, "
+			       + "write_structure for unknown type "
+			       + bt->type_name() ;
+		    throw BESInternalError( s, __FILE__, __LINE__ ) ;
+		}
+		break ;
 	    }
-	    BESDEBUG( "fonc", "FONcGridTransform::write_structure, done "
+	    BESDEBUG( "fonc", "FONcTransform::write_structure, done "
 	                      << "writing " << new_name << endl )
 	}
     }
 }
 
 void
-FONcGridTransform::write_grid( BaseType* b, int ncid )
+FONcTransform::write_grid( BaseType* b, int ncid )
 {
     string err = "Grid code mapping is not implemented in file out netcdf" ;
     throw BESInternalError( err, __FILE__, __LINE__ ) ;
 }
 
 void
-FONcGridTransform::write_array( BaseType* b, int ncid )
+FONcTransform::write_array( BaseType* b, int ncid )
 {
     Array *a = dynamic_cast<Array *>( b ) ;
     if( !a )
@@ -134,12 +139,13 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 	           + "that is not an array" ;
 	throw BESInternalError( s, __FILE__, __LINE__ ) ;
     }
-    BESDEBUG( "fonc", "FONcGridTransform::write_array for array "
+    BESDEBUG( "fonc", "FONcTransform::write_array for array "
                       << a->name() << endl )
     int varid ;
     nc_redef( ncid ) ;
     int *dimensions = new int[a->dimensions()] ;
     int j = 0 ;
+    int stax = NC_NOERR ;
 
     Array::Dim_iter di = a->dim_begin() ;
     Array::Dim_iter de = a->dim_end() ;
@@ -154,11 +160,19 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 	if( nc_inq_dimid( ncid, this_dimension_name, &this_dimension ) != NC_NOERR )
 	{
 	    // The dimension does not exist add it...
-	    if( nc_def_dim( ncid, this_dimension_name, this_dimension_size, &this_dimension ) != NC_NOERR )
+	    stax = nc_def_dim( ncid, this_dimension_name,
+			       this_dimension_size, &this_dimension ) ;
+	    if( stax != NC_NOERR )
 	    {
-		cerr << __FILE__ << ":" << __LINE__
-		     << " Failed defining dimension" << endl ;
-		exit( 1 ) ;
+		const char * nerr = nc_strerror( stax ) ;
+		string err = (string)"fileout.netcdf - "
+			     + "Failed to define dimension "
+			     + this_dimension_name ;
+		if( nerr )
+		{
+		    err += ": " + (string)nerr ;
+		}
+		throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	    }
 	}
 	dimensions[j] = this_dimension ;
@@ -168,13 +182,19 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 
     nc_type array_type = get_nc_type( a->var() ) ;
     ncopts = NC_VERBOSE ;
-    int stax = nc_def_var( ncid, a->name().c_str(), array_type,
+    stax = nc_def_var( ncid, a->name().c_str(), array_type,
 			   a->dimensions(), dimensions, &varid ) ;
     if( stax != NC_NOERR )
     {
-	cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	nc_advise( "nc_def_var", stax, "" ) ;
-	exit( 1 ) ;
+	const char * nerr = nc_strerror( stax ) ;
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to define variable "
+		     + a->name() ;
+	if( nerr )
+	{
+	    err += ": " + (string)nerr ;
+	}
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
     nc_enddef( ncid ) ;
     delete [] dimensions ;
@@ -186,12 +206,18 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 	    {
 		unsigned char *data = new unsigned char[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_uchar( ncid, varid, data ) ;
-		if( stat != NC_NOERR )
+		stax = nc_put_var_uchar( ncid, varid, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_uchar", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stax ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of bytes for "
+				 + a->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -211,9 +237,15 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 		int stat = nc_put_var_text( ncid, varid, char_data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_text", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stax ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of char for "
+				 + a->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 		delete [] char_data ;
@@ -226,9 +258,15 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 		int stat = nc_put_var_short( ncid, varid, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_short", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stax ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of shorts for "
+				 + a->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -240,9 +278,15 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 		int stat = nc_put_var_int( ncid, varid, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_int", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stax ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of ints for "
+				 + a->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -255,9 +299,15 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 		ncopts = NC_VERBOSE ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_float", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stax ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of floats for "
+				 + a->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -269,9 +319,15 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 		int stat = nc_put_var_double( ncid, varid, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_double", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stax ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of doubles for "
+				 + a->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -282,14 +338,14 @@ FONcGridTransform::write_array( BaseType* b, int ncid )
 	    break ;
     } ;
 
-    BESDEBUG( "fonc", "FONcGridTransform::write_array done for "
+    BESDEBUG( "fonc", "FONcTransform::write_array done for "
                       << a->name() << endl )
 }
 
 void
-FONcGridTransform::write_var( BaseType* b, int ncid )
+FONcTransform::write_var( BaseType* b, int ncid )
 {
-    BESDEBUG( "fonc", "FONcGridTransform::write_var for var "
+    BESDEBUG( "fonc", "FONcTransform::write_var for var "
                       << b->name() << endl )
     int varid ;
     static size_t var_index[] = {0} ;
@@ -306,9 +362,15 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 		int stat = nc_put_var1_uchar( ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var1_uchar", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stat ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to write byte data for "
+				 + b->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -330,9 +392,15 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 					     var_index, &char_data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var1_text", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stat ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to write text data for "
+				 + b->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -344,9 +412,15 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 		int stat = nc_put_var1_short( ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var1_short", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stat ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to write short data for "
+				 + b->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -358,9 +432,15 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 		int stat = nc_put_var1_int( ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var1_int", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stat ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to write int data for "
+				 + b->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -373,9 +453,15 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 		ncopts = NC_VERBOSE ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var1_float", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stat ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to write float data for "
+				 + b->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -387,26 +473,34 @@ FONcGridTransform::write_var( BaseType* b, int ncid )
 		int stat = nc_put_var1_double( ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
-		    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-		    nc_advise( "nc_put_var_float", stat, "" ) ;
-		    exit( 1 ) ;
+		    const char *nerr = nc_strerror( stat ) ;
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to write double data for "
+				 + b->name() ;
+		    if( nerr )
+		    {
+			err += ": " + (string)nerr ;
+		    }
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
 	    break ;
 	default:
 	    {
-		cerr << __FILE__ << " " << __LINE__ << "Unknown type" << endl ;
-		exit( 1 ) ;
+		string err = (string)"fileout.netcdf - "
+			     + "Unable to write netcdf data type "
+			     + b->type_name() + " for " + b->name() ;
+		throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	    }
 	    break ;
     }
-    BESDEBUG( "fonc", "FONcGridTransform::write_var done for "
+    BESDEBUG( "fonc", "FONcTransform::write_var done for "
                       << b->name() << endl )
 }
 
 int
-FONcGridTransform::create_local_nc( DDS *dds, char* localfile )
+FONcTransform::create_local_nc( DDS *dds, char* localfile )
 {
     int ncid = nccreate( localfile, NC_CLOBBER ) ;
 
@@ -455,9 +549,9 @@ FONcGridTransform::create_local_nc( DDS *dds, char* localfile )
 }
 
 int
-FONcGridTransform::copy_all_attributes( const string &var_name,
-					 const string &source_file,
-					 const string &target_file )
+FONcTransform::copy_all_attributes( const string &var_name,
+					const string &source_file,
+					const string &target_file )
 {
     int  status ;                        /* error status */
     int  ncid, ncidt ;                   /* netCDF ID */
@@ -467,23 +561,41 @@ FONcGridTransform::copy_all_attributes( const string &var_name,
     status = nc_open( source_file.c_str(), NC_NOWRITE, &ncid ) ;
     if( status != NC_NOERR )
     {
-	cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	nc_advise( "nc_open", status,"" ) ;
-	exit( 1 ) ;
+	const char *nerr = nc_strerror( status ) ;
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to copy attributes, unable to open file for "
+		     + var_name ;
+	if( nerr )
+	{
+	    err += ": " + (string)nerr ;
+	}
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
     status = nc_inq_varid( ncid, var_name.c_str(), &var_id ) ;
     if( status != NC_NOERR )
     {
-	cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	nc_advise( "nc_inq_varid", status, "" ) ;
-	exit( 1 ) ;
+	const char *nerr = nc_strerror( status ) ;
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to copy attributes, unable to find variable "
+		     + var_name ;
+	if( nerr )
+	{
+	    err += ": " + (string)nerr ;
+	}
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
     status = nc_inq_varnatts( ncid, var_id, &var_natts ) ;
     if( status != NC_NOERR )
     {
-	cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	nc_advise( "nc_inq_varatts", status, "" ) ;
-	exit( 1 ) ;
+	const char *nerr = nc_strerror( status ) ;
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to copy attributes, unable to find attrs for "
+		     + var_name ;
+	if( nerr )
+	{
+	    err += ": " + (string)nerr ;
+	}
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
 
     for( int attnum = 0; attnum < var_natts; attnum++ )
@@ -492,37 +604,68 @@ FONcGridTransform::copy_all_attributes( const string &var_name,
 	status = nc_inq_attname( ncid, var_id, attnum, att_name ) ;
 	if( status != NC_NOERR )
 	{
-	    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	    nc_advise( "nc_inq_attname", status, "" ) ;
-	    exit( 1 ) ;
+	    const char *nerr = nc_strerror( status ) ;
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to copy attributes, unable to find attr "
+			 + att_name + " for " + var_name ;
+	    if( nerr )
+	    {
+		err += ": " + (string)nerr ;
+	    }
+	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
 	status = nc_open( target_file.c_str(), NC_WRITE, &ncidt ) ;
 	if( status != NC_NOERR )
 	{
-	    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	    nc_advise( "nc_open", status, "" ) ;
-	    exit( 1 ) ;
+	    const char *nerr = nc_strerror( status ) ;
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to copy attributes, "
+			 + "unable to open target file "
+			 + target_file ;
+	    if( nerr )
+	    {
+		err += ": " + (string)nerr ;
+	    }
+	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
 	status = nc_inq_varid( ncidt, var_name.c_str(), &var_idt ) ;
 	if( status != NC_NOERR )
 	{
-	    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	    nc_advise( "nc_inq_varid", status, "" ) ;
-	    exit( 1 ) ;
+	    const char *nerr = nc_strerror( status ) ;
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to copy attributes, unable to find var "
+			 + var_name + " in target file" ;
+	    if( nerr )
+	    {
+		err += ": " + (string)nerr ;
+	    }
+	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
 	status = nc_redef( ncidt ) ;
 	if( status != NC_NOERR )
 	{
-	    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	    nc_advise( "nc_redef", status, "" ) ;
-	    exit( 1 ) ;
+	    const char *nerr = nc_strerror( status ) ;
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to copy attributes, "
+			 + "unable to set define mode for var " + var_name ;
+	    if( nerr )
+	    {
+		err += ": " + (string)nerr ;
+	    }
+	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
 	status = nc_copy_att( ncid, var_id, att_name, ncidt, var_idt ) ;
 	if( status != NC_NOERR )
 	{
-	    cout << __FILE__ << ":" << __LINE__ << ": ERROR!" << endl ;
-	    nc_advise( "nc_copy_att", status, "" ) ;
-	    exit( 1 ) ;
+	    const char *nerr = nc_strerror( status ) ;
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to copy attributes, unable to copy attr "
+			 + att_name + " for " + var_name ;
+	    if( nerr )
+	    {
+		err += ": " + (string)nerr ;
+	    }
+	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
 	nc_close( ncidt ) ;
     }

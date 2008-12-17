@@ -18,9 +18,9 @@ libfonc_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libfonc_module_la_LDFLAGS = -avoid-version -module 
 libfonc_module_la_LIBADD = $(BES_DAP_LIBS)
 
-FONC_SRC = FONcGridTransform.cc FONcTransmitter.cc FONcModule.cc
+FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcModule.cc
 
-FONC_HDR = FONcGridTransform.h FONcTransmitter.h FONcModule.h
+FONC_HDR = FONcTransform.h FONcTransmitter.h FONcModule.h
 
 EXTRA_DIST = data COPYRIGHT COPYING fonc_module.spec \
     bes-fonc-data.sh.in OSX_Resources

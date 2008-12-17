@@ -1,4 +1,4 @@
-// FONcGridTransform.h
+// FONcTransform.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -47,7 +47,7 @@ using std::string ;
 
 using namespace::libdap ;
 
-class FONcGridTransform
+class FONcTransform
 {
 private:
     static nc_type		get_nc_type( BaseType *element ) ;
