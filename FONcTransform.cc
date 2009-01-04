@@ -29,6 +29,8 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include "config.h"
+
 #include "FONcTransform.h"
 
 #include <DDS.h>
@@ -36,6 +38,93 @@
 #include <Array.h>
 #include <BESDebug.h>
 #include <BESInternalError.h>
+
+FONcTransform::FONcTransform( DDS *dds, const string &localfile )
+    : _ncid( 0 ), _dds( 0 )
+{
+    if( !dds )
+    {
+	string s = (string)"File out netcdf, "
+		   + "null DDS passed to constructor" ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    }
+    if( localfile.empty() )
+    {
+	string s = (string)"File out netcdf, "
+		   + "empty local file name passed to constructor" ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    }
+    _dds = dds ;
+    _localfile = localfile ;
+
+    int status = nc_create( _localfile.c_str(), NC_CLOBBER, &_ncid ) ;
+    if( status != NC_NOERR )
+    {
+	const char *nerr = nc_strerror( status ) ;
+	string err = (string)"File out netcdf, "
+	             + "unable to open file " + _localfile ;
+	if( nerr )
+	{
+	    err += (string)": " + nerr ;
+	}
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    }
+}
+
+int
+FONcTransform::transform( )
+{
+    try
+    {
+	DDS::Vars_iter vi = _dds->var_begin() ;
+	DDS::Vars_iter ve = _dds->var_end() ;
+	for( ; vi != ve; vi++ )
+	{
+	    if( (*vi)->send_p() )
+	    {
+		BaseType *v = *vi ;
+		//v->read("d1") ;
+		switch( v->type() )
+		{
+		    case dods_byte_c:
+		    case dods_str_c:
+		    case dods_url_c:
+		    case dods_int16_c:
+		    case dods_uint16_c:
+		    case dods_int32_c:
+		    case dods_uint32_c:
+		    case dods_float32_c:
+		    case dods_float64_c:
+			write_var( v ) ;
+			break ;
+		    case dods_grid_c:
+			write_grid( v ) ;
+			break ;
+		    case dods_array_c:
+			write_array( v ) ;
+			break ;
+		    case dods_structure_c:
+			write_structure( v ) ;
+			break ;
+		    default:
+			string err = (string)"file out netcdf, unable to write "
+				     + "unknown variable type" ;
+			throw BESInternalError( err, __FILE__, __LINE__ ) ;
+			break ;
+		}
+	    }
+	}
+    }
+    catch( BESError &e )
+    {
+	nc_close( _ncid ) ;
+	throw e ;
+    }
+
+    nc_close( _ncid ) ;
+
+    return 1 ;
+}
 
 nc_type
 FONcTransform::get_nc_type( BaseType *element )
@@ -68,7 +157,7 @@ FONcTransform::get_nc_type( BaseType *element )
 }
 
 void
-FONcTransform::write_structure( BaseType* b, int ncid )
+FONcTransform::write_structure( BaseType* b )
 {
     Structure *s = (Structure*)b ;
     string myname = s->name() ;
@@ -96,16 +185,16 @@ FONcTransform::write_structure( BaseType* b, int ncid )
 		case dods_uint32_c:
 		case dods_float32_c:
 		case dods_float64_c:
-		    write_var( bt, ncid ) ;
+		    write_var( bt ) ;
 		    break ;
 		case dods_grid_c:
-		    write_grid( bt, ncid ) ;
+		    write_grid( bt ) ;
 		    break ;
 		case dods_array_c:
-		    write_array( bt, ncid ) ;
+		    write_array( bt ) ;
 		    break ;
 		case dods_structure_c:
-		    write_structure( bt, ncid ) ;
+		    write_structure( bt ) ;
 		    break ;
 		default:
 		{
@@ -123,14 +212,14 @@ FONcTransform::write_structure( BaseType* b, int ncid )
 }
 
 void
-FONcTransform::write_grid( BaseType* b, int ncid )
+FONcTransform::write_grid( BaseType* b )
 {
     string err = "Grid code mapping is not implemented in file out netcdf" ;
     throw BESInternalError( err, __FILE__, __LINE__ ) ;
 }
 
 void
-FONcTransform::write_array( BaseType* b, int ncid )
+FONcTransform::write_array( BaseType* b )
 {
     Array *a = dynamic_cast<Array *>( b ) ;
     if( !a )
@@ -142,7 +231,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
     BESDEBUG( "fonc", "FONcTransform::write_array for array "
                       << a->name() << endl )
     int varid ;
-    nc_redef( ncid ) ;
+    nc_redef( _ncid ) ;
     int *dimensions = new int[a->dimensions()] ;
     int j = 0 ;
     int stax = NC_NOERR ;
@@ -157,10 +246,10 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	const char *this_dimension_name = a->dimension_name( di ).c_str() ;
 
 	// check to see if the dimension is already defined
-	if( nc_inq_dimid( ncid, this_dimension_name, &this_dimension ) != NC_NOERR )
+	if( nc_inq_dimid( _ncid, this_dimension_name, &this_dimension ) != NC_NOERR )
 	{
 	    // The dimension does not exist add it...
-	    stax = nc_def_dim( ncid, this_dimension_name,
+	    stax = nc_def_dim( _ncid, this_dimension_name,
 			       this_dimension_size, &this_dimension ) ;
 	    if( stax != NC_NOERR )
 	    {
@@ -182,8 +271,8 @@ FONcTransform::write_array( BaseType* b, int ncid )
 
     nc_type array_type = get_nc_type( a->var() ) ;
     ncopts = NC_VERBOSE ;
-    stax = nc_def_var( ncid, a->name().c_str(), array_type,
-			   a->dimensions(), dimensions, &varid ) ;
+    stax = nc_def_var( _ncid, a->name().c_str(), array_type,
+		       a->dimensions(), dimensions, &varid ) ;
     if( stax != NC_NOERR )
     {
 	const char * nerr = nc_strerror( stax ) ;
@@ -196,7 +285,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	}
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
-    nc_enddef( ncid ) ;
+    nc_enddef( _ncid ) ;
     delete [] dimensions ;
 
     // create array to hold data hyperslab
@@ -206,7 +295,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	    {
 		unsigned char *data = new unsigned char[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		stax = nc_put_var_uchar( ncid, varid, data ) ;
+		stax = nc_put_var_uchar( _ncid, varid, data ) ;
 		if( stax != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stax ) ;
@@ -234,7 +323,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 		    else
 			char_data[g] = '\0' ;
 		}
-		int stat = nc_put_var_text( ncid, varid, char_data ) ;
+		int stat = nc_put_var_text( _ncid, varid, char_data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stax ) ;
@@ -255,7 +344,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	    {
 		short *data = new short [number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_short( ncid, varid, data ) ;
+		int stat = nc_put_var_short( _ncid, varid, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stax ) ;
@@ -275,7 +364,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	    {
 		int *data = new int[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_int( ncid, varid, data ) ;
+		int stat = nc_put_var_int( _ncid, varid, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stax ) ;
@@ -295,7 +384,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	    {
 		float *data = new float[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_float( ncid, varid, data ) ;
+		int stat = nc_put_var_float( _ncid, varid, data ) ;
 		ncopts = NC_VERBOSE ;
 		if( stat != NC_NOERR )
 		{
@@ -316,7 +405,7 @@ FONcTransform::write_array( BaseType* b, int ncid )
 	    {
 		double *data = new double[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_double( ncid, varid, data ) ;
+		int stat = nc_put_var_double( _ncid, varid, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stax ) ;
@@ -343,23 +432,23 @@ FONcTransform::write_array( BaseType* b, int ncid )
 }
 
 void
-FONcTransform::write_var( BaseType* b, int ncid )
+FONcTransform::write_var( BaseType* b )
 {
     BESDEBUG( "fonc", "FONcTransform::write_var for var "
                       << b->name() << endl )
     int varid ;
     static size_t var_index[] = {0} ;
     nc_type var_type = get_nc_type( b ) ;
-    nc_redef( ncid ) ;
-    nc_def_var( ncid, b->name().c_str(), var_type, 0, NULL, &varid ) ;
-    nc_enddef( ncid ) ;
+    nc_redef( _ncid ) ;
+    nc_def_var( _ncid, b->name().c_str(), var_type, 0, NULL, &varid ) ;
+    nc_enddef( _ncid ) ;
     switch( var_type )
     {
 	case NC_BYTE:
 	    {
 		unsigned char *data = new unsigned char ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_uchar( ncid, varid, var_index, data ) ;
+		int stat = nc_put_var1_uchar( _ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stat ) ;
@@ -388,7 +477,7 @@ FONcTransform::write_var( BaseType* b, int ncid )
 		{
 		    char_data = '\0' ;
 		}
-		int stat = nc_put_var1_text( ncid, varid,
+		int stat = nc_put_var1_text( _ncid, varid,
 					     var_index, &char_data ) ;
 		if( stat != NC_NOERR )
 		{
@@ -409,7 +498,7 @@ FONcTransform::write_var( BaseType* b, int ncid )
 	    {
 		short *data = new short ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_short( ncid, varid, var_index, data ) ;
+		int stat = nc_put_var1_short( _ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stat ) ;
@@ -429,7 +518,7 @@ FONcTransform::write_var( BaseType* b, int ncid )
 	    {
 		int *data = new int ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_int( ncid, varid, var_index, data ) ;
+		int stat = nc_put_var1_int( _ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stat ) ;
@@ -449,7 +538,7 @@ FONcTransform::write_var( BaseType* b, int ncid )
 	    {
 		float *data = new float ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_float( ncid, varid, var_index, data ) ;
+		int stat = nc_put_var1_float( _ncid, varid, var_index, data ) ;
 		ncopts = NC_VERBOSE ;
 		if( stat != NC_NOERR )
 		{
@@ -470,7 +559,7 @@ FONcTransform::write_var( BaseType* b, int ncid )
 	    {
 		double *data = new double ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_double( ncid, varid, var_index, data ) ;
+		int stat = nc_put_var1_double( _ncid, varid, var_index, data ) ;
 		if( stat != NC_NOERR )
 		{
 		    const char *nerr = nc_strerror( stat ) ;
@@ -499,64 +588,16 @@ FONcTransform::write_var( BaseType* b, int ncid )
                       << b->name() << endl )
 }
 
-int
-FONcTransform::create_local_nc( DDS *dds, char* localfile )
-{
-    int ncid = nccreate( localfile, NC_CLOBBER ) ;
-
-    DDS::Vars_iter vi = dds->var_begin() ;
-    DDS::Vars_iter ve = dds->var_end() ;
-    for( ; vi != ve; vi++ )
-    {
-	if( (*vi)->send_p() )
-	{
-	    BaseType *v = *vi ;
-	    //v->read("d1") ;
-	    switch( v->type() )
-	    {
-		case dods_byte_c:
-		case dods_str_c:
-		case dods_url_c:
-		case dods_int16_c:
-		case dods_uint16_c:
-		case dods_int32_c:
-		case dods_uint32_c:
-		case dods_float32_c:
-		case dods_float64_c:
-		    write_var( v, ncid ) ;
-		    break ;
-		case dods_grid_c:
-		    write_grid( v, ncid ) ;
-		    break ;
-		case dods_array_c:
-		    write_array( v, ncid ) ;
-		    break ;
-		case dods_structure_c:
-		    write_structure( v, ncid ) ;
-		    break ;
-		default:
-		    string err = (string)"file out netcdf, unable to write "
-		                 + "unknown variable type" ;
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-		    break ;
-	    }
-	}
-    }
-
-    ncclose( ncid ) ;
-
-    return 1 ;
-}
-
+/*
 int
 FONcTransform::copy_all_attributes( const string &var_name,
 					const string &source_file,
 					const string &target_file )
 {
-    int  status ;                        /* error status */
-    int  ncid, ncidt ;                   /* netCDF ID */
-    int  var_id, var_idt ;               /* variable ID */
-    int var_natts ;                      /* number of attributes */
+    int  status ;                        //
+    int  ncid, ncidt ;                   //
+    int  var_id, var_idt ;               //
+    int var_natts ;                      //
 
     status = nc_open( source_file.c_str(), NC_NOWRITE, &ncid ) ;
     if( status != NC_NOERR )
@@ -673,4 +714,5 @@ FONcTransform::copy_all_attributes( const string &var_name,
 
     return 0 ;
 }
+*/
 

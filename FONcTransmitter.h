@@ -41,8 +41,7 @@ class FONcTransmitter : public BESBasicTransmitter
 private:
     static void		return_temp_stream( const string &filename,
 					    ostream &strm ) ;
-    static void		add_attributes( const BESContainer *container,
-                                        const string &filename ) ;
+    static string	temp_dir ;
 public:
     			FONcTransmitter() ;
     virtual		~FONcTransmitter() {}

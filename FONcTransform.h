@@ -50,17 +50,22 @@ using namespace::libdap ;
 class FONcTransform
 {
 private:
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static void			write_structure( BaseType* b, int ncid ) ;
-    static void			write_grid( BaseType* b, int ncid ) ;
-    static void			write_array( BaseType* b, int ncid ) ;
-    static void			write_var( BaseType* b, int ncid ) ;
+    int				_ncid ;
+    DDS				*_dds ;
+    string			_localfile ;
+    vector<string>		_flatten ;
+
+    nc_type			get_nc_type( BaseType *element ) ;
+    void			write_structure( BaseType* b ) ;
+    void			write_grid( BaseType* b ) ;
+    void			write_array( BaseType* b ) ;
+    void			write_var( BaseType* b ) ;
 
 public:
-    static int			create_local_nc( DDS *dds, char* localfile ) ;
-    static int			copy_all_attributes( const string &var_name,
-    						     const string &source_file,
-						     const string &target_file);
+    				FONcTransform( DDS *dds,
+					       const string &localfile ) ;
+    virtual			~FONcTransform() ;
+    virtual int			transform( ) ;
 } ;
 
 #endif // FONcGridTransfrom_h_

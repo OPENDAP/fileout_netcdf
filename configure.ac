@@ -28,6 +28,9 @@ AC_CHECK_TYPES([ptrdiff_t])
 # Checks for library functions.
 AC_CHECK_FUNCS([strchr])
 
+# Support for large files?
+AC_SYS_LARGEFILE
+
 dnl Checks for specific libraries
 AC_CHECK_LIBDAP([3.8.0],
  [

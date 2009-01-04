@@ -29,7 +29,10 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -45,13 +48,35 @@ using namespace::libdap ;
 #include <TheBESKeys.h>
 #include <BESDataDDSResponse.h>
 #include <BESDataNames.h>
-#define NETCDF_TEMP_STREAM "temp_netcdf_file"
+
+#define FONC_TEMP_DIR "/tmp"
 #define DATA_TRANSMITTER "data"
+
+string FONcTransmitter::temp_dir ;
 
 FONcTransmitter::FONcTransmitter()
     : BESBasicTransmitter()
 {
     add_method( DATA_TRANSMITTER, FONcTransmitter::send_data ) ;
+
+    if( FONcTransmitter::temp_dir.empty() )
+    {
+	// Where is the temp directory for creating these files
+	bool found = false ;
+	string key = "FONc.Tempdir" ;
+	FONcTransmitter::temp_dir =
+	    TheBESKeys::TheKeys()->get_key( key, found ) ;
+	if( !found || FONcTransmitter::temp_dir.empty() )
+	{
+	    FONcTransmitter::temp_dir = FONC_TEMP_DIR ;
+	}
+	string::size_type len = FONcTransmitter::temp_dir.length() ;
+	if( FONcTransmitter::temp_dir[len - 1] == '/' )
+	{
+	    FONcTransmitter::temp_dir =
+		FONcTransmitter::temp_dir.substr( 0, len- 1 ) ;
+	}
+    }
 }
 
 void
@@ -151,53 +176,27 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
 
-    FONcTransform::create_local_nc( dds, NETCDF_TEMP_STREAM ) ;
-    dhi.first_container() ;
-    while( dhi.container )
+    char *temp_name = 0 ;
+    char *nc_temp = "ncXXXXXX" ;
+#if defined(WIN32) || defined(TEST_WIN32_TEMPS)
+    temp_name = _mktemp( nc_temp ) ;
+#else
+    temp_name = mktemp( nc_temp ) ;
+#endif
+    if( !temp_name )
     {
-	add_attributes( dhi.container, NETCDF_TEMP_STREAM ) ;
-	dhi.next_container() ;
+	string s = (string)"File out netcdf, "
+		   + "was not able to generate temporary file name." ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
     }
-    FONcTransmitter::return_temp_stream( NETCDF_TEMP_STREAM, strm ) ;
-    if( !access( NETCDF_TEMP_STREAM, F_OK ) )
-    {
-	remove( NETCDF_TEMP_STREAM ) ;
-    }
-}
+    string temp_full = FONcTransmitter::temp_dir + "/" + temp_name ;
 
-void
-FONcTransmitter::add_attributes( const BESContainer *c,
-                                  const string &filename )
-{
-    string attributes =c->get_attributes() ;
-    if( attributes != "" )
+    FONcTransform ft( dds, temp_full ) ;
+    ft.transform() ;
+    FONcTransmitter::return_temp_stream( temp_full, strm ) ;
+    if( !access( temp_full.c_str(), F_OK ) )
     {
-	string variable ;
-	if( attributes[attributes.size()-1] == ',' )
-	{
-	    string err = "attributes " + attributes
-			 + " can not end with a comma (,)" ;
-	    BESInternalError e( err, __FILE__, __LINE__ ) ;
-	    throw e ;
-	}
-
-	unsigned int pos = attributes.find( "," ) ;
-	while( pos != string::npos )
-	{
-	    variable = attributes.substr( 0, pos ) ;
-	    attributes = attributes.substr( pos+1, attributes.size() ) ;
-	    FONcTransform::copy_all_attributes( variable,
-						c->get_real_name(),
-						filename ) ;
-	    pos = attributes.find( "," ) ;
-	}
-	if( attributes != "" )
-	{
-	    variable = attributes ;
-	    FONcTransform::copy_all_attributes( variable,
-						c->get_real_name(),
-						filename ) ;
-	}
+	remove( temp_full.c_str() ) ;
     }
 }
 
