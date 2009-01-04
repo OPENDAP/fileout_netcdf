@@ -48,6 +48,7 @@ using namespace::libdap ;
 #include <TheBESKeys.h>
 #include <BESDataDDSResponse.h>
 #include <BESDataNames.h>
+#include <BESDebug.h>
 
 #define FONC_TEMP_DIR "/tmp"
 #define DATA_TRANSMITTER "data"
@@ -84,6 +85,11 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 			    BESDataHandlerInterface &dhi )
 {
     BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj) ;
+    if( !bdds )
+    {
+	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
+    }
+
     DataDDS *dds = bdds->get_dds() ;
     ostream &strm = dhi.get_output_stream() ;
     if( !strm )
@@ -93,8 +99,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	throw pe ;
     }
 
-    dhi.first_container() ;
-
+    BESDEBUG( "fonc", "send_data - parsing the constraint" )
     string ce = dhi.data[POST_CONSTRAINT] ;
     try
     {
@@ -114,9 +119,14 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
 
-    string dataset_name = dhi.container->access() ;
+    // The dataset_name is no longer used in the constraint evaluator, so no
+    // need to get here. Plus, just getting the first containers dataset
+    // name would not have worked with multiple containers.
+    // pwest Jan 4, 2009
+    string dataset_name = "" ;
 
     // now we need to read the data
+    BESDEBUG( "fonc", "reading data into DataDDS" << endl )
     try
     {
 	// Handle *functional* constraint expressions specially 
@@ -191,13 +201,39 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     }
     string temp_full = FONcTransmitter::temp_dir + "/" + temp_name ;
 
-    FONcTransform ft( dds, temp_full ) ;
-    ft.transform() ;
-    FONcTransmitter::return_temp_stream( temp_full, strm ) ;
+    BESDEBUG( "fonc", "transforming into temporary file " << temp_full << endl )
+    try
+    {
+	FONcTransform ft( dds, temp_full ) ;
+	ft.transform() ;
+
+	BESDEBUG( "fonc", "transmitting temp file " << temp_full << endl )
+	FONcTransmitter::return_temp_stream( temp_full, strm ) ;
+    }
+    catch( BESError &e )
+    {
+	if( !access( temp_full.c_str(), F_OK ) )
+	{
+	    remove( temp_full.c_str() ) ;
+	}
+	throw e ;
+    }
+    catch( ... )
+    {
+	if( !access( temp_full.c_str(), F_OK ) )
+	{
+	    remove( temp_full.c_str() ) ;
+	}
+	string err = (string)"File out netcdf, "
+		     + "was not able to transform to netcdf, unknown error" ;
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    }
+
     if( !access( temp_full.c_str(), F_OK ) )
     {
 	remove( temp_full.c_str() ) ;
     }
+    BESDEBUG( "fonc", "done transmitting to netcdf" << endl )
 }
 
 void
