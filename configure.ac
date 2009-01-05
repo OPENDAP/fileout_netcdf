@@ -54,13 +54,17 @@ AC_CHECK_NETCDF(
    ],[3]
 )
 
-AC_CHECK_BES([3.6.0],
+AC_CHECK_BES([3.6.2],
 [
 ],
 [ AC_MSG_ERROR([Cannot find bes])
 ])
 
-OPENDAP_DEBUG_OPTION
+AM_PATH_CPPUNIT(1.12.0,
+	[AM_CONDITIONAL([CPPUNIT], [true])],
+	[AM_CONDITIONAL([CPPUNIT], [false])])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile unit-tests/Makefile])
+
 AC_OUTPUT
+

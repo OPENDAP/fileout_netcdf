@@ -29,13 +29,16 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include "config.h"
+
 #include <iostream>
 
 using std::endl ;
 
 #include "FONcModule.h"
-#include <BESReturnManager.h>
 #include "FONcTransmitter.h"
+
+#include <BESReturnManager.h>
 #include <TheBESKeys.h>
 #include <BESDebug.h>
 

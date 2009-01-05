@@ -32,7 +32,7 @@
 #ifndef A_FONcTransmitter_h
 #define A_FONcTransmitter_h 1
 
-#include "BESBasicTransmitter.h"
+#include <BESBasicTransmitter.h>
 
 class BESContainer ;
 

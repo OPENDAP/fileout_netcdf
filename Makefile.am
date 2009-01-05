@@ -9,6 +9,9 @@ AUTOMAKE_OPTIONS = foreign check-news
 
 ACLOCAL_AMFLAGS = -I conf
 
+SUBDIRS = unit-tests
+DIST_SUBDIRS = unit-tests
+
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libfonc_module.la
 dist_bin_SCRIPTS = bes-fonc-data.sh

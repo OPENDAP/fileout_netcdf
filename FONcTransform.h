@@ -34,16 +34,13 @@
 
 #include <netcdf.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
 #include <string>
+#include <vector>
 
 using std::string ;
+using std::vector ;
 
 #include <DDS.h>
-#include <BaseType.h>
 
 using namespace::libdap ;
 
