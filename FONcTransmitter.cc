@@ -101,7 +101,8 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	throw pe ;
     }
 
-    BESDEBUG( "fonc", "send_data - parsing the constraint" )
+    BESDEBUG( "fonc",
+	      "FONcTransmitter::send_data - parsing the constraint" << endl )
     string ce = dhi.data[POST_CONSTRAINT] ;
     try
     {
@@ -128,7 +129,8 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     string dataset_name = "" ;
 
     // now we need to read the data
-    BESDEBUG( "fonc", "reading data into DataDDS" << endl )
+    BESDEBUG( "fonc",
+	      "FONcTransmitter::send_data - reading data into DataDDS" << endl )
     try
     {
 	// Handle *functional* constraint expressions specially 
@@ -189,7 +191,10 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     }
 
     char *temp_name = 0 ;
-    char *nc_temp = "ncXXXXXX" ;
+    char *nc_temp_pattern = "ncXXXXXX" ;
+    int size = strlen( nc_temp_pattern ) ;
+    char *nc_temp = new char[size] ;
+    strncpy( nc_temp, nc_temp_pattern, size ) ;
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
     temp_name = _mktemp( nc_temp ) ;
 #else
@@ -202,14 +207,19 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	throw BESInternalError( s, __FILE__, __LINE__ ) ;
     }
     string temp_full = FONcTransmitter::temp_dir + "/" + temp_name ;
+    delete nc_temp ;
 
-    BESDEBUG( "fonc", "transforming into temporary file " << temp_full << endl )
+    BESDEBUG( "fonc",
+	      "FONcTransmitter::send_data - transforming into temporary file "
+	      << temp_full << endl )
     try
     {
 	FONcTransform ft( dds, temp_full ) ;
 	ft.transform() ;
 
-	BESDEBUG( "fonc", "transmitting temp file " << temp_full << endl )
+	BESDEBUG( "fonc",
+		  "FONcTransmitter::send_data - transmitting temp file "
+		  << temp_full << endl )
 	FONcTransmitter::return_temp_stream( temp_full, strm ) ;
     }
     catch( BESError &e )
@@ -235,7 +245,9 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     {
 	remove( temp_full.c_str() ) ;
     }
-    BESDEBUG( "fonc", "done transmitting to netcdf" << endl )
+    BESDEBUG( "fonc",
+	      "FONcTransmitter::send_data - done transmitting to netcdf"
+	      << endl )
 }
 
 void

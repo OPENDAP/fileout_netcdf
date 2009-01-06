@@ -57,18 +57,17 @@ FONcTransform::FONcTransform( DDS *dds, const string &localfile )
     _dds = dds ;
     _localfile = localfile ;
 
-    int status = nc_create( _localfile.c_str(), NC_CLOBBER, &_ncid ) ;
-    if( status != NC_NOERR )
+    int stax = nc_create( _localfile.c_str(), NC_CLOBBER, &_ncid ) ;
+    if( stax != NC_NOERR )
     {
-	const char *nerr = nc_strerror( status ) ;
 	string err = (string)"File out netcdf, "
 	             + "unable to open file " + _localfile ;
-	if( nerr )
-	{
-	    err += (string)": " + nerr ;
-	}
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+	handle_error( stax, err, __FILE__, __LINE__ ) ;
     }
+}
+
+FONcTransform::~FONcTransform()
+{
 }
 
 int
@@ -86,9 +85,11 @@ FONcTransform::transform( )
 		//v->read("d1") ;
 		switch( v->type() )
 		{
-		    case dods_byte_c:
 		    case dods_str_c:
 		    case dods_url_c:
+			write_str( v ) ;
+			break ;
+		    case dods_byte_c:
 		    case dods_int16_c:
 		    case dods_uint16_c:
 		    case dods_int32_c:
@@ -132,8 +133,6 @@ FONcTransform::get_nc_type( BaseType *element )
     nc_type x_type = NC_NAT ; // the constant ncdf uses to define simple type
 
     string var_type = element->type_name() ;
-    BESDEBUG( "fonc", "FONcTransform::get_nc_type for "
-                      << var_type << endl )
     if( var_type == "Byte" )        	// check this for dods type
 	x_type = NC_BYTE ;
     else if( var_type == "String" )
@@ -151,8 +150,6 @@ FONcTransform::get_nc_type( BaseType *element )
     else if( var_type == "Float64" )
 	x_type = NC_DOUBLE ;
 
-    BESDEBUG( "fonc", "FONcTransform::get_nc_type returning "
-                      << x_type << endl )
     return x_type ;
 }
 
@@ -176,9 +173,11 @@ FONcTransform::write_structure( BaseType* b )
 	    bt->set_name( new_name ) ;
 	    switch( bt->type() )
 	    {
-		case dods_byte_c:
 		case dods_str_c:
 		case dods_url_c:
+		    write_str( bt ) ;
+		    break ;
+		case dods_byte_c:
 		case dods_int16_c:
 		case dods_uint16_c:
 		case dods_int32_c:
@@ -246,22 +245,18 @@ FONcTransform::write_array( BaseType* b )
 	const char *this_dimension_name = a->dimension_name( di ).c_str() ;
 
 	// check to see if the dimension is already defined
-	if( nc_inq_dimid( _ncid, this_dimension_name, &this_dimension ) != NC_NOERR )
+	stax = nc_inq_dimid( _ncid, this_dimension_name, &this_dimension ) ;
+	if( stax != NC_NOERR )
 	{
 	    // The dimension does not exist add it...
 	    stax = nc_def_dim( _ncid, this_dimension_name,
 			       this_dimension_size, &this_dimension ) ;
 	    if( stax != NC_NOERR )
 	    {
-		const char * nerr = nc_strerror( stax ) ;
 		string err = (string)"fileout.netcdf - "
 			     + "Failed to define dimension "
 			     + this_dimension_name ;
-		if( nerr )
-		{
-		    err += ": " + (string)nerr ;
-		}
-		throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		handle_error( stax, err, __FILE__, __LINE__ ) ;
 	    }
 	}
 	dimensions[j] = this_dimension ;
@@ -275,15 +270,10 @@ FONcTransform::write_array( BaseType* b )
 		       a->dimensions(), dimensions, &varid ) ;
     if( stax != NC_NOERR )
     {
-	const char * nerr = nc_strerror( stax ) ;
 	string err = (string)"fileout.netcdf - "
 		     + "Failed to define variable "
 		     + a->name() ;
-	if( nerr )
-	{
-	    err += ": " + (string)nerr ;
-	}
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+	handle_error( stax, err, __FILE__, __LINE__ ) ;
     }
     nc_enddef( _ncid ) ;
     delete [] dimensions ;
@@ -298,15 +288,10 @@ FONcTransform::write_array( BaseType* b )
 		stax = nc_put_var_uchar( _ncid, varid, data ) ;
 		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stax ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to create array of bytes for "
 				 + a->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -323,18 +308,13 @@ FONcTransform::write_array( BaseType* b )
 		    else
 			char_data[g] = '\0' ;
 		}
-		int stat = nc_put_var_text( _ncid, varid, char_data ) ;
-		if( stat != NC_NOERR )
+		int stax = nc_put_var_text( _ncid, varid, char_data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stax ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to create array of char for "
 				 + a->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 		delete [] char_data ;
@@ -344,18 +324,13 @@ FONcTransform::write_array( BaseType* b )
 	    {
 		short *data = new short [number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_short( _ncid, varid, data ) ;
-		if( stat != NC_NOERR )
+		int stax = nc_put_var_short( _ncid, varid, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stax ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to create array of shorts for "
 				 + a->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -364,18 +339,13 @@ FONcTransform::write_array( BaseType* b )
 	    {
 		int *data = new int[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_int( _ncid, varid, data ) ;
-		if( stat != NC_NOERR )
+		int stax = nc_put_var_int( _ncid, varid, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stax ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to create array of ints for "
 				 + a->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -384,19 +354,14 @@ FONcTransform::write_array( BaseType* b )
 	    {
 		float *data = new float[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_float( _ncid, varid, data ) ;
+		int stax = nc_put_var_float( _ncid, varid, data ) ;
 		ncopts = NC_VERBOSE ;
-		if( stat != NC_NOERR )
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stax ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to create array of floats for "
 				 + a->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -405,18 +370,13 @@ FONcTransform::write_array( BaseType* b )
 	    {
 		double *data = new double[number_of_elements] ;
 		a->buf2val( (void**)&data ) ;
-		int stat = nc_put_var_double( _ncid, varid, data ) ;
-		if( stat != NC_NOERR )
+		int stax = nc_put_var_double( _ncid, varid, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stax ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to create array of doubles for "
 				 + a->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete [] data ;
 	    }
@@ -432,12 +392,76 @@ FONcTransform::write_array( BaseType* b )
 }
 
 void
+FONcTransform::write_str( BaseType *b )
+{
+    BESDEBUG( "fonc", "FONcTransform::write_str for var "
+                      << b->name() << endl )
+    int chid ;			// dimension id for char positions
+    int varid ;			// netCDF variable id
+    int var_dims[1] ;		// variable shape
+    size_t var_start[1] ;	// variable start
+    size_t var_count[1] ;	// variable count
+
+    nc_type var_type = get_nc_type( b ) ;	// translate dap type to nc
+    if( var_type != NC_CHAR )
+    {
+	string err = (string)"file out netcdf - write_str called for "
+	             + "non string type " + b->type_name() ;
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    }
+
+    nc_redef( _ncid ) ;				// go into def mode
+
+    string *data = new string ;
+    b->buf2val( (void**)&data ) ;
+    const char *val = data->c_str() ;
+
+    string dimname = b->name() + "_dim" ;
+    int stax = nc_def_dim( _ncid, dimname.c_str(), strlen( val )+1, &chid ) ;
+    if( stax != NC_NOERR )
+    {
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to define dim for "
+		     + b->name() ;
+	handle_error( stax, err, __FILE__, __LINE__ ) ;
+    }
+
+    var_dims[0] = chid ;
+    stax = nc_def_var( _ncid, b->name().c_str(), NC_CHAR, 1, var_dims, &varid );
+    if( stax != NC_NOERR )
+    {
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to define var " + b->name() ;
+	handle_error( stax, err, __FILE__, __LINE__ ) ;
+    }
+
+    nc_enddef( _ncid ) ;
+
+    var_count[0] = strlen( val) + 1 ;
+    var_start[0] = 0 ;
+    stax = nc_put_vara_text( _ncid, varid, var_start, var_count, val ) ;
+    if( stax != NC_NOERR )
+    {
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to write string data " + *data + " for "
+		     + b->name() ;
+	delete data ;
+	handle_error( stax, err, __FILE__, __LINE__ ) ;
+    }
+
+    delete data ;
+
+    BESDEBUG( "fonc", "FONcTransform::write_str done for "
+                      << b->name() << endl )
+}
+
+void
 FONcTransform::write_var( BaseType* b )
 {
     BESDEBUG( "fonc", "FONcTransform::write_var for var "
                       << b->name() << endl )
     int varid ;
-    static size_t var_index[] = {0} ;
+    size_t var_index[] = {0} ;
     nc_type var_type = get_nc_type( b ) ;
     nc_redef( _ncid ) ;
     nc_def_var( _ncid, b->name().c_str(), var_type, 0, NULL, &varid ) ;
@@ -448,48 +472,14 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		unsigned char *data = new unsigned char ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_uchar( _ncid, varid, var_index, data ) ;
-		if( stat != NC_NOERR )
+		int stax =
+		    nc_put_var1_uchar( _ncid, varid, var_index, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stat ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write byte data for "
 				 + b->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-		}
-		delete data ;
-	    }
-	    break ;
-	case NC_CHAR:
-	    {
-		string *data = new string ;
-		b->buf2val( (void**)&data ) ;
-		char char_data ;
-		if( data->length() > 0 )
-		{
-		    char_data = (*data)[0] ;
-		}
-		else
-		{
-		    char_data = '\0' ;
-		}
-		int stat = nc_put_var1_text( _ncid, varid,
-					     var_index, &char_data ) ;
-		if( stat != NC_NOERR )
-		{
-		    const char *nerr = nc_strerror( stat ) ;
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to write text data for "
-				 + b->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -498,18 +488,14 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		short *data = new short ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_short( _ncid, varid, var_index, data ) ;
-		if( stat != NC_NOERR )
+		int stax =
+		    nc_put_var1_short( _ncid, varid, var_index, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stat ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write short data for "
 				 + b->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -518,18 +504,13 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		int *data = new int ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_int( _ncid, varid, var_index, data ) ;
-		if( stat != NC_NOERR )
+		int stax = nc_put_var1_int( _ncid, varid, var_index, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stat ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write int data for "
 				 + b->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -538,19 +519,15 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		float *data = new float ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_float( _ncid, varid, var_index, data ) ;
+		int stax =
+		    nc_put_var1_float( _ncid, varid, var_index, data ) ;
 		ncopts = NC_VERBOSE ;
-		if( stat != NC_NOERR )
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stat ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write float data for "
 				 + b->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -559,18 +536,14 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		double *data = new double ;
 		b->buf2val( (void**)&data ) ;
-		int stat = nc_put_var1_double( _ncid, varid, var_index, data ) ;
-		if( stat != NC_NOERR )
+		int stax =
+		    nc_put_var1_double( _ncid, varid, var_index, data ) ;
+		if( stax != NC_NOERR )
 		{
-		    const char *nerr = nc_strerror( stat ) ;
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write double data for "
 				 + b->name() ;
-		    if( nerr )
-		    {
-			err += ": " + (string)nerr ;
-		    }
-		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
 	    }
@@ -588,21 +561,40 @@ FONcTransform::write_var( BaseType* b )
                       << b->name() << endl )
 }
 
+void
+FONcTransform::handle_error( int stax, string &err,
+			     const string &file, int line )
+{
+    if( stax != NC_NOERR )
+    {
+	const char *nerr = nc_strerror( stax ) ;
+	if( nerr )
+	{
+	    err += (string)": " + nerr ;
+	}
+	else
+	{
+	    err += (string)": unknown error" ;
+	}
+	throw BESInternalError( err, file, line ) ;
+    }
+}
+
 /*
 int
 FONcTransform::copy_all_attributes( const string &var_name,
 					const string &source_file,
 					const string &target_file )
 {
-    int  status ;                        //
+    int  stax ;                        //
     int  ncid, ncidt ;                   //
     int  var_id, var_idt ;               //
     int var_natts ;                      //
 
-    status = nc_open( source_file.c_str(), NC_NOWRITE, &ncid ) ;
-    if( status != NC_NOERR )
+    stax = nc_open( source_file.c_str(), NC_NOWRITE, &ncid ) ;
+    if( stax != NC_NOERR )
     {
-	const char *nerr = nc_strerror( status ) ;
+	const char *nerr = nc_strerror( stax ) ;
 	string err = (string)"fileout.netcdf - "
 		     + "Failed to copy attributes, unable to open file for "
 		     + var_name ;
@@ -612,10 +604,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
 	}
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
-    status = nc_inq_varid( ncid, var_name.c_str(), &var_id ) ;
-    if( status != NC_NOERR )
+    stax = nc_inq_varid( ncid, var_name.c_str(), &var_id ) ;
+    if( stax != NC_NOERR )
     {
-	const char *nerr = nc_strerror( status ) ;
+	const char *nerr = nc_strerror( stax ) ;
 	string err = (string)"fileout.netcdf - "
 		     + "Failed to copy attributes, unable to find variable "
 		     + var_name ;
@@ -625,10 +617,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
 	}
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
-    status = nc_inq_varnatts( ncid, var_id, &var_natts ) ;
-    if( status != NC_NOERR )
+    stax = nc_inq_varnatts( ncid, var_id, &var_natts ) ;
+    if( stax != NC_NOERR )
     {
-	const char *nerr = nc_strerror( status ) ;
+	const char *nerr = nc_strerror( stax ) ;
 	string err = (string)"fileout.netcdf - "
 		     + "Failed to copy attributes, unable to find attrs for "
 		     + var_name ;
@@ -642,10 +634,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
     for( int attnum = 0; attnum < var_natts; attnum++ )
     {
 	char att_name[200] ;
-	status = nc_inq_attname( ncid, var_id, attnum, att_name ) ;
-	if( status != NC_NOERR )
+	stax = nc_inq_attname( ncid, var_id, attnum, att_name ) ;
+	if( stax != NC_NOERR )
 	{
-	    const char *nerr = nc_strerror( status ) ;
+	    const char *nerr = nc_strerror( stax ) ;
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to copy attributes, unable to find attr "
 			 + att_name + " for " + var_name ;
@@ -655,10 +647,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
 	    }
 	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
-	status = nc_open( target_file.c_str(), NC_WRITE, &ncidt ) ;
-	if( status != NC_NOERR )
+	stax = nc_open( target_file.c_str(), NC_WRITE, &ncidt ) ;
+	if( stax != NC_NOERR )
 	{
-	    const char *nerr = nc_strerror( status ) ;
+	    const char *nerr = nc_strerror( stax ) ;
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to copy attributes, "
 			 + "unable to open target file "
@@ -669,10 +661,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
 	    }
 	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
-	status = nc_inq_varid( ncidt, var_name.c_str(), &var_idt ) ;
-	if( status != NC_NOERR )
+	stax = nc_inq_varid( ncidt, var_name.c_str(), &var_idt ) ;
+	if( stax != NC_NOERR )
 	{
-	    const char *nerr = nc_strerror( status ) ;
+	    const char *nerr = nc_strerror( stax ) ;
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to copy attributes, unable to find var "
 			 + var_name + " in target file" ;
@@ -682,10 +674,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
 	    }
 	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
-	status = nc_redef( ncidt ) ;
-	if( status != NC_NOERR )
+	stax = nc_redef( ncidt ) ;
+	if( stax != NC_NOERR )
 	{
-	    const char *nerr = nc_strerror( status ) ;
+	    const char *nerr = nc_strerror( stax ) ;
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to copy attributes, "
 			 + "unable to set define mode for var " + var_name ;
@@ -695,10 +687,10 @@ FONcTransform::copy_all_attributes( const string &var_name,
 	    }
 	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	}
-	status = nc_copy_att( ncid, var_id, att_name, ncidt, var_idt ) ;
-	if( status != NC_NOERR )
+	stax = nc_copy_att( ncid, var_id, att_name, ncidt, var_idt ) ;
+	if( stax != NC_NOERR )
 	{
-	    const char *nerr = nc_strerror( status ) ;
+	    const char *nerr = nc_strerror( stax ) ;
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to copy attributes, unable to copy attr "
 			 + att_name + " for " + var_name ;

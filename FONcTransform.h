@@ -57,7 +57,10 @@ private:
     void			write_grid( BaseType* b ) ;
     void			write_array( BaseType* b ) ;
     void			write_var( BaseType* b ) ;
+    void			write_str( BaseType* b ) ;
 
+    void			handle_error( int stax, string &err,
+					      const string &file, int line ) ;
 public:
     				FONcTransform( DDS *dds,
 					       const string &localfile ) ;
