@@ -193,17 +193,25 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     char *temp_name = 0 ;
     char *nc_temp_pattern = "ncXXXXXX" ;
     int size = strlen( nc_temp_pattern ) ;
-    char *nc_temp = new char[size] ;
+    char *nc_temp = new char[size+1] ;
     strncpy( nc_temp, nc_temp_pattern, size ) ;
+    nc_temp[size] = '\0' ;
+    cerr << nc_temp << endl ;
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
     temp_name = _mktemp( nc_temp ) ;
 #else
     temp_name = mktemp( nc_temp ) ;
 #endif
+    int myerrno = errno ;
     if( !temp_name )
     {
 	string s = (string)"File out netcdf, "
 		   + "was not able to generate temporary file name." ;
+	char *err = strerror( myerrno ) ;
+	if( err )
+	{
+	    s += (string)": " + err ;
+	}
 	throw BESInternalError( s, __FILE__, __LINE__ ) ;
     }
     string temp_full = FONcTransmitter::temp_dir + "/" + temp_name ;

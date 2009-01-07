@@ -35,12 +35,7 @@ CLEANFILES = *.dbg
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > test_config.h
 
-clean-local:
-	rm -rf wcs
-
 if CPPUNIT
-check-local:
-	rm -rf wcs
 else
 check-local:
 	@echo ""
@@ -56,11 +51,14 @@ endif
 #
 
 if CPPUNIT
-UNIT_TESTS = simpleT
+UNIT_TESTS = simpleT arrayT
 else
 UNIT_TESTS =
 endif
 
 simpleT_SOURCES = simpleT.cc
 simpleT_LDADD = ../libfonc_module.la $(AM_LDADD)
+
+arrayT_SOURCES = arrayT.cc
+arrayT_LDADD = ../libfonc_module.la $(AM_LDADD)
 

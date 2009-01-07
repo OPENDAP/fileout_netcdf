@@ -229,15 +229,27 @@ FONcTransform::write_array( BaseType* b )
     }
     BESDEBUG( "fonc", "FONcTransform::write_array for array "
                       << a->name() << endl )
-    int varid ;
+
+    nc_type array_type = get_nc_type( a->var() ) ;
+    int varid = 0 ;
+    int ndims = a->dimensions() ;
+    if( array_type == NC_CHAR )
+    {
+	// if we have array of strings then we need to add the string length
+	// dimension, so add one more to ndims
+	ndims++ ;
+    }
+
     nc_redef( _ncid ) ;
-    int *dimensions = new int[a->dimensions()] ;
-    int j = 0 ;
+
+    int dims[ndims] ;
+    int dim_sizes[ndims] ;
+    int dim_num = 0 ;
+    int nelements = 1 ;
     int stax = NC_NOERR ;
 
     Array::Dim_iter di = a->dim_begin() ;
     Array::Dim_iter de = a->dim_end() ;
-    int number_of_elements = 1 ;
     for( ; di != de; di++ )
     {
 	int this_dimension ;
@@ -259,133 +271,211 @@ FONcTransform::write_array( BaseType* b )
 		handle_error( stax, err, __FILE__, __LINE__ ) ;
 	    }
 	}
-	dimensions[j] = this_dimension ;
-	j++ ;
-	number_of_elements *= this_dimension_size ;
+	dims[dim_num] = this_dimension ;
+	dim_sizes[dim_num] = this_dimension_size ;
+	dim_num++ ;
+	nelements *= this_dimension_size ;
     }
 
-    nc_type array_type = get_nc_type( a->var() ) ;
     ncopts = NC_VERBOSE ;
-    stax = nc_def_var( _ncid, a->name().c_str(), array_type,
-		       a->dimensions(), dimensions, &varid ) ;
-    if( stax != NC_NOERR )
+    if( array_type != NC_CHAR )
     {
-	string err = (string)"fileout.netcdf - "
-		     + "Failed to define variable "
-		     + a->name() ;
-	handle_error( stax, err, __FILE__, __LINE__ ) ;
-    }
-    nc_enddef( _ncid ) ;
-    delete [] dimensions ;
+	stax = nc_def_var( _ncid, a->name().c_str(), array_type,
+			   ndims, dims, &varid ) ;
+	if( stax != NC_NOERR )
+	{
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to define variable "
+			 + a->name() ;
+	    handle_error( stax, err, __FILE__, __LINE__ ) ;
+	}
+	nc_enddef( _ncid ) ;
 
-    // create array to hold data hyperslab
-    switch( array_type )
+	// create array to hold data hyperslab
+	switch( array_type )
+	{
+	    case NC_BYTE:
+		{
+		    unsigned char *data = new unsigned char[nelements] ;
+		    a->buf2val( (void**)&data ) ;
+		    stax = nc_put_var_uchar( _ncid, varid, data ) ;
+		    if( stax != NC_NOERR )
+		    {
+			string err = (string)"fileout.netcdf - "
+				     + "Failed to create array of bytes for "
+				     + a->name() ;
+			handle_error( stax, err, __FILE__, __LINE__ ) ;
+		    }
+		    delete [] data ;
+		}
+		break ;
+	    case NC_SHORT:
+		{
+		    short *data = new short [nelements] ;
+		    a->buf2val( (void**)&data ) ;
+		    int stax = nc_put_var_short( _ncid, varid, data ) ;
+		    if( stax != NC_NOERR )
+		    {
+			string err = (string)"fileout.netcdf - "
+				     + "Failed to create array of shorts for "
+				     + a->name() ;
+			handle_error( stax, err, __FILE__, __LINE__ ) ;
+		    }
+		    delete [] data ;
+		}
+		break ;
+	    case NC_INT:
+		{
+		    int *data = new int[nelements] ;
+		    a->buf2val( (void**)&data ) ;
+		    int stax = nc_put_var_int( _ncid, varid, data ) ;
+		    if( stax != NC_NOERR )
+		    {
+			string err = (string)"fileout.netcdf - "
+				     + "Failed to create array of ints for "
+				     + a->name() ;
+			handle_error( stax, err, __FILE__, __LINE__ ) ;
+		    }
+		    delete [] data ;
+		}
+		break ;
+	    case NC_FLOAT:
+		{
+		    float *data = new float[nelements] ;
+		    a->buf2val( (void**)&data ) ;
+		    int stax = nc_put_var_float( _ncid, varid, data ) ;
+		    ncopts = NC_VERBOSE ;
+		    if( stax != NC_NOERR )
+		    {
+			string err = (string)"fileout.netcdf - "
+				     + "Failed to create array of floats for "
+				     + a->name() ;
+			handle_error( stax, err, __FILE__, __LINE__ ) ;
+		    }
+		    delete [] data ;
+		}
+		break ;
+	    case NC_DOUBLE:
+		{
+		    double *data = new double[nelements] ;
+		    a->buf2val( (void**)&data ) ;
+		    int stax = nc_put_var_double( _ncid, varid, data ) ;
+		    if( stax != NC_NOERR )
+		    {
+			string err = (string)"fileout.netcdf - "
+				     + "Failed to create array of doubles for "
+				     + a->name() ;
+			handle_error( stax, err, __FILE__, __LINE__ ) ;
+		    }
+		    delete [] data ;
+		}
+		break ;
+	    default:
+		string err = "Failed to transform unknown type in file out netcdf" ;
+		throw BESInternalError( err, __FILE__, __LINE__ ) ;
+		break ;
+	} ;
+    }
+    else
     {
-	case NC_BYTE:
+	// special case for string data. We need to add another dimension
+	// for the length of the string.
+
+	// get the data from the dap array
+	int array_length = a->length() ;
+	string *data = new string[array_length] ;
+	a->buf2val( (void**)&data ) ;
+
+	// determine the max length of the strings
+	int max_length = 0 ;
+	for( int i = 0; i < array_length; i++ )
+	{
+	    if( data[i].length() > max_length )
 	    {
-		unsigned char *data = new unsigned char[number_of_elements] ;
-		a->buf2val( (void**)&data ) ;
-		stax = nc_put_var_uchar( _ncid, varid, data ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to create array of bytes for "
-				 + a->name() ;
-		    handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-		delete [] data ;
+		max_length = data[i].length() ;
 	    }
-	    break ;
-	case NC_CHAR:
+	}
+	max_length++ ;
+	dim_sizes[dim_num] = max_length ;
+
+	// create the string dimension with the max length
+	string lendim_name = a->name() + "_len" ;
+	int this_dimension = 0 ;
+	stax = nc_def_dim( _ncid, lendim_name.c_str(),
+			   max_length, &this_dimension ) ;
+	if( stax != NC_NOERR )
+	{
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to define dimension "
+			 + lendim_name ;
+	    handle_error( stax, err, __FILE__, __LINE__ ) ;
+	}
+	dims[dim_num] = this_dimension ;
+
+	stax = nc_def_var( _ncid, a->name().c_str(), array_type,
+			   ndims, dims, &varid ) ;
+	if( stax != NC_NOERR )
+	{
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to define variable "
+			 + a->name() ;
+	    handle_error( stax, err, __FILE__, __LINE__ ) ;
+	}
+	nc_enddef( _ncid ) ;
+
+	size_t var_count[ndims] ;
+	size_t var_start[ndims] ;
+	int dim = 0 ;
+	for( dim = 0; dim < ndims; dim++ )
+	{
+	    // the count for each of the dimensions will always be 1 except
+	    // for the string length dimension
+	    var_count[dim] = 1 ;
+
+	    // the start for each of the dimensions will start at 0. We will
+	    // bump this up in the while loop below
+	    var_start[dim] = 0 ;
+	}
+
+	for( int element = 0; element < nelements; element++ )
+	{
+	    const char *val = data[element].c_str() ;
+	    var_count[ndims-1] = strlen( val ) + 1 ;
+	    var_start[ndims-1] = 0 ;
+
+	    // write out the string
+	    stax = nc_put_vara_text( _ncid, varid, var_start, var_count, val ) ;
+	    if( stax != NC_NOERR )
 	    {
-		string *data = new string[a->length()] ;
-		a->buf2val( (void**)&data ) ;
-		char *char_data = new char[a->length()] ;
-		for( int g = 0; g < a->length(); g++ )
+		string err = (string)"fileout.netcdf - "
+			     + "Failed to create array of strings for "
+			     + a->name() ;
+		handle_error( stax, err, __FILE__, __LINE__ ) ;
+	    }
+
+	    // bump up the start.
+	    if( element+1 < nelements )
+	    {
+		bool done = false ;
+		dim = ndims-2 ;
+		while( !done )
 		{
-		    if( data[g].length() > 0 )
-			char_data[g] = data[g][0] ;
+		    var_start[dim] = var_start[dim] + 1 ;
+		    if( var_start[dim] == dim_sizes[dim] )
+		    {
+			var_start[dim] = 0 ;
+			dim-- ;
+		    }
 		    else
-			char_data[g] = '\0' ;
+		    {
+			done = true ;
+		    }
 		}
-		int stax = nc_put_var_text( _ncid, varid, char_data ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to create array of char for "
-				 + a->name() ;
-		    handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-		delete [] data ;
-		delete [] char_data ;
 	    }
-	    break ;
-	case NC_SHORT:
-	    {
-		short *data = new short [number_of_elements] ;
-		a->buf2val( (void**)&data ) ;
-		int stax = nc_put_var_short( _ncid, varid, data ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to create array of shorts for "
-				 + a->name() ;
-		    handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-		delete [] data ;
-	    }
-	    break ;
-	case NC_INT:
-	    {
-		int *data = new int[number_of_elements] ;
-		a->buf2val( (void**)&data ) ;
-		int stax = nc_put_var_int( _ncid, varid, data ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to create array of ints for "
-				 + a->name() ;
-		    handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-		delete [] data ;
-	    }
-	    break ;
-	case NC_FLOAT:
-	    {
-		float *data = new float[number_of_elements] ;
-		a->buf2val( (void**)&data ) ;
-		int stax = nc_put_var_float( _ncid, varid, data ) ;
-		ncopts = NC_VERBOSE ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to create array of floats for "
-				 + a->name() ;
-		    handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-		delete [] data ;
-	    }
-	    break ;
-	case NC_DOUBLE:
-	    {
-		double *data = new double[number_of_elements] ;
-		a->buf2val( (void**)&data ) ;
-		int stax = nc_put_var_double( _ncid, varid, data ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"fileout.netcdf - "
-				 + "Failed to create array of doubles for "
-				 + a->name() ;
-		    handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-		delete [] data ;
-	    }
-	    break ;
-	default:
-	    string err = "Failed to transform unknown type in file out netcdf" ;
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	    break ;
-    } ;
+	}
+
+	delete [] data ;
+    }
 
     BESDEBUG( "fonc", "FONcTransform::write_array done for "
                       << a->name() << endl )

@@ -16,7 +16,6 @@ using std::ios ;
 using std::cerr ;
 using std::endl ;
 
-#include <BESDebug.h>
 #include <DataDDS.h>
 #include <Byte.h>
 #include <Int16.h>
@@ -27,14 +26,15 @@ using std::endl ;
 #include <Float64.h>
 #include <Str.h>
 
+using namespace::libdap ;
+
 #include <BESDataDDSResponse.h>
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
+#include <BESDebug.h>
 
 #include "test_config.h"
 #include "FONcTransmitter.h"
-
-using namespace::libdap ;
 
 class simpleT: public TestFixture {
 private:
