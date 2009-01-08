@@ -31,6 +31,10 @@
 
 #include "config.h"
 
+#include <sstream>
+
+using std::ostringstream ;
+
 #include "FONcTransform.h"
 
 #include <DDS.h>
@@ -156,58 +160,81 @@ FONcTransform::get_nc_type( BaseType *element )
 void
 FONcTransform::write_structure( BaseType* b )
 {
-    Structure *s = (Structure*)b ;
+    Structure *s = dynamic_cast<Structure *>(b) ;
+    if( !s )
+    {
+	string s = (string)"File out netcdf, write_structure passed a variable "
+	           + "that is not a structure" ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    }
     string myname = s->name() ;
     BESDEBUG( "fonc", "FONcTransform::write_structure for "
                       << myname << endl )
-    Constructor::Vars_iter vi = s->var_begin() ;
-    Constructor::Vars_iter ve = s->var_end() ;
-    for( ; vi != ve; vi++ )
+
+    // add this structure to the embedded list for name generation and
+    // attributes to add.
+    add_embedded( b ) ;
+
+    try
     {
-	BaseType *bt = *vi ;
-	if( bt->send_p() )
+	Constructor::Vars_iter vi = s->var_begin() ;
+	Constructor::Vars_iter ve = s->var_end() ;
+	for( ; vi != ve; vi++ )
 	{
-	    string new_name = myname + string( "__" ) + bt->name() ;
-	    BESDEBUG( "fonc", "FONcTransform::write_structure new name: "
-			      << new_name << endl )
-	    bt->set_name( new_name ) ;
-	    switch( bt->type() )
+	    BaseType *bt = *vi ;
+	    if( bt->send_p() )
 	    {
-		case dods_str_c:
-		case dods_url_c:
-		    write_str( bt ) ;
-		    break ;
-		case dods_byte_c:
-		case dods_int16_c:
-		case dods_uint16_c:
-		case dods_int32_c:
-		case dods_uint32_c:
-		case dods_float32_c:
-		case dods_float64_c:
-		    write_var( bt ) ;
-		    break ;
-		case dods_grid_c:
-		    write_grid( bt ) ;
-		    break ;
-		case dods_array_c:
-		    write_array( bt ) ;
-		    break ;
-		case dods_structure_c:
-		    write_structure( bt ) ;
-		    break ;
-		default:
+		BESDEBUG( "fonc", "FONcTransform::write_structure, done "
+				  << "writing " << bt->name() << endl )
+		switch( bt->type() )
 		{
-		    string s = (string)"File out netcdf, "
-			       + "write_structure for unknown type "
-			       + bt->type_name() ;
-		    throw BESInternalError( s, __FILE__, __LINE__ ) ;
+		    case dods_str_c:
+		    case dods_url_c:
+			write_str( bt ) ;
+			break ;
+		    case dods_byte_c:
+		    case dods_int16_c:
+		    case dods_uint16_c:
+		    case dods_int32_c:
+		    case dods_uint32_c:
+		    case dods_float32_c:
+		    case dods_float64_c:
+			write_var( bt ) ;
+			break ;
+		    case dods_grid_c:
+			write_grid( bt ) ;
+			break ;
+		    case dods_array_c:
+			write_array( bt ) ;
+			break ;
+		    case dods_structure_c:
+			write_structure( bt ) ;
+			break ;
+		    default:
+		    {
+			string s = (string)"File out netcdf, "
+				   + "write_structure for unknown type "
+				   + bt->type_name() ;
+			throw BESInternalError( s, __FILE__, __LINE__ ) ;
+		    }
+		    break ;
 		}
-		break ;
+		BESDEBUG( "fonc", "FONcTransform::write_structure, done "
+				  << "writing " << bt->name() << endl )
 	    }
-	    BESDEBUG( "fonc", "FONcTransform::write_structure, done "
-	                      << "writing " << new_name << endl )
 	}
     }
+    catch( BESError &e )
+    {
+	remove_embedded( b ) ;
+	throw e ;
+    }
+
+    // remove this structure from the list of embedded elements
+    remove_embedded( b ) ;
+
+    BESDEBUG( "fonc", "FONcTransform::write_structure done for "
+                      << myname << endl )
 }
 
 void
@@ -227,8 +254,10 @@ FONcTransform::write_array( BaseType* b )
 	           + "that is not an array" ;
 	throw BESInternalError( s, __FILE__, __LINE__ ) ;
     }
+
+    string varname = embedded_name( a->name() ) ;
     BESDEBUG( "fonc", "FONcTransform::write_array for array "
-                      << a->name() << endl )
+                      << varname << endl )
 
     nc_type array_type = get_nc_type( a->var() ) ;
     int varid = 0 ;
@@ -254,7 +283,14 @@ FONcTransform::write_array( BaseType* b )
     {
 	int this_dimension ;
 	int this_dimension_size = a->dimension_size( di ) ;
-	const char *this_dimension_name = a->dimension_name( di ).c_str() ;
+	string dimname_s = a->dimension_name( di ) ;
+	if( dimname_s.empty() )
+	{
+	    ostringstream dimname_strm ;
+	    dimname_strm << varname << "_dim" << dim_num+1 ;
+	    dimname_s = dimname_strm.str() ;
+	}
+	const char *this_dimension_name = dimname_s.c_str() ;
 
 	// check to see if the dimension is already defined
 	stax = nc_inq_dimid( _ncid, this_dimension_name, &this_dimension ) ;
@@ -280,13 +316,13 @@ FONcTransform::write_array( BaseType* b )
     ncopts = NC_VERBOSE ;
     if( array_type != NC_CHAR )
     {
-	stax = nc_def_var( _ncid, a->name().c_str(), array_type,
+	stax = nc_def_var( _ncid, varname.c_str(), array_type,
 			   ndims, dims, &varid ) ;
 	if( stax != NC_NOERR )
 	{
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to define variable "
-			 + a->name() ;
+			 + varname ;
 	    handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
 	nc_enddef( _ncid ) ;
@@ -303,7 +339,7 @@ FONcTransform::write_array( BaseType* b )
 		    {
 			string err = (string)"fileout.netcdf - "
 				     + "Failed to create array of bytes for "
-				     + a->name() ;
+				     + varname ;
 			handle_error( stax, err, __FILE__, __LINE__ ) ;
 		    }
 		    delete [] data ;
@@ -318,7 +354,7 @@ FONcTransform::write_array( BaseType* b )
 		    {
 			string err = (string)"fileout.netcdf - "
 				     + "Failed to create array of shorts for "
-				     + a->name() ;
+				     + varname ;
 			handle_error( stax, err, __FILE__, __LINE__ ) ;
 		    }
 		    delete [] data ;
@@ -333,7 +369,7 @@ FONcTransform::write_array( BaseType* b )
 		    {
 			string err = (string)"fileout.netcdf - "
 				     + "Failed to create array of ints for "
-				     + a->name() ;
+				     + varname ;
 			handle_error( stax, err, __FILE__, __LINE__ ) ;
 		    }
 		    delete [] data ;
@@ -349,7 +385,7 @@ FONcTransform::write_array( BaseType* b )
 		    {
 			string err = (string)"fileout.netcdf - "
 				     + "Failed to create array of floats for "
-				     + a->name() ;
+				     + varname ;
 			handle_error( stax, err, __FILE__, __LINE__ ) ;
 		    }
 		    delete [] data ;
@@ -364,7 +400,7 @@ FONcTransform::write_array( BaseType* b )
 		    {
 			string err = (string)"fileout.netcdf - "
 				     + "Failed to create array of doubles for "
-				     + a->name() ;
+				     + varname ;
 			handle_error( stax, err, __FILE__, __LINE__ ) ;
 		    }
 		    delete [] data ;
@@ -399,7 +435,7 @@ FONcTransform::write_array( BaseType* b )
 	dim_sizes[dim_num] = max_length ;
 
 	// create the string dimension with the max length
-	string lendim_name = a->name() + "_len" ;
+	string lendim_name = varname + "_len" ;
 	int this_dimension = 0 ;
 	stax = nc_def_dim( _ncid, lendim_name.c_str(),
 			   max_length, &this_dimension ) ;
@@ -412,13 +448,13 @@ FONcTransform::write_array( BaseType* b )
 	}
 	dims[dim_num] = this_dimension ;
 
-	stax = nc_def_var( _ncid, a->name().c_str(), array_type,
+	stax = nc_def_var( _ncid, varname.c_str(), array_type,
 			   ndims, dims, &varid ) ;
 	if( stax != NC_NOERR )
 	{
 	    string err = (string)"fileout.netcdf - "
 			 + "Failed to define variable "
-			 + a->name() ;
+			 + varname ;
 	    handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
 	nc_enddef( _ncid ) ;
@@ -449,7 +485,7 @@ FONcTransform::write_array( BaseType* b )
 	    {
 		string err = (string)"fileout.netcdf - "
 			     + "Failed to create array of strings for "
-			     + a->name() ;
+			     + varname ;
 		handle_error( stax, err, __FILE__, __LINE__ ) ;
 	    }
 
@@ -478,14 +514,16 @@ FONcTransform::write_array( BaseType* b )
     }
 
     BESDEBUG( "fonc", "FONcTransform::write_array done for "
-                      << a->name() << endl )
+                      << varname << endl )
 }
 
 void
 FONcTransform::write_str( BaseType *b )
 {
+    string varname = embedded_name( b->name() ) ;
+
     BESDEBUG( "fonc", "FONcTransform::write_str for var "
-                      << b->name() << endl )
+                      << varname << endl )
     int chid ;			// dimension id for char positions
     int varid ;			// netCDF variable id
     int var_dims[1] ;		// variable shape
@@ -506,22 +544,22 @@ FONcTransform::write_str( BaseType *b )
     b->buf2val( (void**)&data ) ;
     const char *val = data->c_str() ;
 
-    string dimname = b->name() + "_dim" ;
+    string dimname = varname + "_len" ;
     int stax = nc_def_dim( _ncid, dimname.c_str(), strlen( val )+1, &chid ) ;
     if( stax != NC_NOERR )
     {
 	string err = (string)"fileout.netcdf - "
-		     + "Failed to define dim for "
-		     + b->name() ;
+		     + "Failed to define dim " + dimname + " for "
+		     + varname ;
 	handle_error( stax, err, __FILE__, __LINE__ ) ;
     }
 
     var_dims[0] = chid ;
-    stax = nc_def_var( _ncid, b->name().c_str(), NC_CHAR, 1, var_dims, &varid );
+    stax = nc_def_var( _ncid, varname.c_str(), NC_CHAR, 1, var_dims, &varid );
     if( stax != NC_NOERR )
     {
 	string err = (string)"fileout.netcdf - "
-		     + "Failed to define var " + b->name() ;
+		     + "Failed to define var " + varname ;
 	handle_error( stax, err, __FILE__, __LINE__ ) ;
     }
 
@@ -534,7 +572,7 @@ FONcTransform::write_str( BaseType *b )
     {
 	string err = (string)"fileout.netcdf - "
 		     + "Failed to write string data " + *data + " for "
-		     + b->name() ;
+		     + varname ;
 	delete data ;
 	handle_error( stax, err, __FILE__, __LINE__ ) ;
     }
@@ -542,19 +580,21 @@ FONcTransform::write_str( BaseType *b )
     delete data ;
 
     BESDEBUG( "fonc", "FONcTransform::write_str done for "
-                      << b->name() << endl )
+                      << varname << endl )
 }
 
 void
 FONcTransform::write_var( BaseType* b )
 {
+    string varname = embedded_name( b->name() ) ;
+
     BESDEBUG( "fonc", "FONcTransform::write_var for var "
-                      << b->name() << endl )
+                      << varname << endl )
     int varid ;
     size_t var_index[] = {0} ;
     nc_type var_type = get_nc_type( b ) ;
     nc_redef( _ncid ) ;
-    nc_def_var( _ncid, b->name().c_str(), var_type, 0, NULL, &varid ) ;
+    nc_def_var( _ncid, varname.c_str(), var_type, 0, NULL, &varid ) ;
     nc_enddef( _ncid ) ;
     switch( var_type )
     {
@@ -568,7 +608,7 @@ FONcTransform::write_var( BaseType* b )
 		{
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write byte data for "
-				 + b->name() ;
+				 + varname ;
 		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
@@ -584,7 +624,7 @@ FONcTransform::write_var( BaseType* b )
 		{
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write short data for "
-				 + b->name() ;
+				 + varname ;
 		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
@@ -599,7 +639,7 @@ FONcTransform::write_var( BaseType* b )
 		{
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write int data for "
-				 + b->name() ;
+				 + varname ;
 		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
@@ -616,7 +656,7 @@ FONcTransform::write_var( BaseType* b )
 		{
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write float data for "
-				 + b->name() ;
+				 + varname ;
 		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
@@ -632,7 +672,7 @@ FONcTransform::write_var( BaseType* b )
 		{
 		    string err = (string)"fileout.netcdf - "
 				 + "Failed to write double data for "
-				 + b->name() ;
+				 + varname ;
 		    handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
 		delete data ;
@@ -642,13 +682,48 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		string err = (string)"fileout.netcdf - "
 			     + "Unable to write netcdf data type "
-			     + b->type_name() + " for " + b->name() ;
+			     + b->type_name() + " for " + varname ;
 		throw BESInternalError( err, __FILE__, __LINE__ ) ;
 	    }
 	    break ;
     }
     BESDEBUG( "fonc", "FONcTransform::write_var done for "
-                      << b->name() << endl )
+                      << varname << endl )
+}
+
+void
+FONcTransform::add_embedded( BaseType *b )
+{
+    _embedded.push_back( b ) ;
+}
+
+void
+FONcTransform::remove_embedded( BaseType *b )
+{
+    if( !_embedded.size() )
+    {
+	string err = (string)"Removing an embedded structure when "
+		     + "there are none to remove" ;
+	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    }
+    vector<BaseType *>::iterator e = _embedded.end() ;
+    e-- ;
+    _embedded.erase( e ) ;
+}
+
+string
+FONcTransform::embedded_name( const string &name )
+{
+    string new_name ;
+    vector<BaseType *>::const_iterator i = _embedded.begin() ;
+    vector<BaseType *>::const_iterator e = _embedded.end() ;
+    for( ; i != e; i++ )
+    {
+	new_name += (*i)->name() + "." ;
+    }
+    new_name += name ;
+
+    return new_name ;
 }
 
 void
@@ -668,6 +743,46 @@ FONcTransform::handle_error( int stax, string &err,
 	}
 	throw BESInternalError( err, file, line ) ;
     }
+}
+
+void
+FONcTransform::dump( ostream &strm ) const
+{
+    strm << BESIndent::LMarg << "FONcTransform::dump - ("
+			     << (void *)this << ")" << endl ;
+    BESIndent::Indent() ;
+    strm << BESIndent::LMarg << "ncid = " << _ncid << endl ;
+    strm << BESIndent::LMarg << "temporary file = " << _localfile << endl ;
+    strm << BESIndent::LMarg << "dds: " ;
+    if( _dds )
+    {
+	strm << endl ;
+	BESIndent::Indent() ;
+	strm << *_dds ;
+	BESIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << "empty" << endl ;
+    }
+    strm << BESIndent::LMarg << "embedded names: " ;
+    if( _embedded.size() )
+    {
+	BESIndent::Indent() ;
+	vector<BaseType *>::const_iterator i = _embedded.begin() ;
+	vector<BaseType *>::const_iterator e = _embedded.end() ;
+	for( ; i != e; i++ )
+	{
+	    strm << BESIndent::LMarg << (*i)->name() << " of type "
+	         << (*i)->type_name() << endl ;
+	}
+	BESIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << "none" << endl ;
+    }
+    BESIndent::UnIndent() ;
 }
 
 /*

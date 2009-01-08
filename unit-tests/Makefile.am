@@ -51,7 +51,7 @@ endif
 #
 
 if CPPUNIT
-UNIT_TESTS = simpleT arrayT
+UNIT_TESTS = simpleT arrayT structT
 else
 UNIT_TESTS =
 endif
@@ -61,4 +61,7 @@ simpleT_LDADD = ../libfonc_module.la $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc
 arrayT_LDADD = ../libfonc_module.la $(AM_LDADD)
+
+structT_SOURCES = structT.cc
+structT_LDADD = ../libfonc_module.la $(AM_LDADD)
 

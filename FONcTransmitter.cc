@@ -196,7 +196,6 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     char *nc_temp = new char[size+1] ;
     strncpy( nc_temp, nc_temp_pattern, size ) ;
     nc_temp[size] = '\0' ;
-    cerr << nc_temp << endl ;
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
     temp_name = _mktemp( nc_temp ) ;
 #else
@@ -305,7 +304,5 @@ FONcTransmitter::return_temp_stream( const string &filename,
 	bytes += nbytes ;
     }
     os.close();
-    // debug line control how many bytes were sent vs. the size of the target file
-    // cerr<<__FILE__<<":"<<__LINE__<<": wrote "<<bytes<<" in the return stream"<<endl;
 }
 

@@ -1,4 +1,4 @@
-// simpleT.cc
+// structT.cc
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -17,6 +17,7 @@ using std::cerr ;
 using std::endl ;
 
 #include <DataDDS.h>
+#include <Structure.h>
 #include <Byte.h>
 #include <Int16.h>
 #include <Int32.h>
@@ -36,11 +37,11 @@ using namespace::libdap ;
 #include "test_config.h"
 #include "FONcTransmitter.h"
 
-class simpleT: public TestFixture {
+class structT: public TestFixture {
 private:
 public:
-    simpleT() {}
-    ~simpleT() {}
+    structT() {}
+    ~structT() {}
 
     void setUp()
     {
@@ -53,14 +54,14 @@ public:
     {
 	// remove the temporary file that we created
 	/*
-	if( !access( "simpleT.nc", F_OK ) )
+	if( !access( "structT.nc", F_OK ) )
 	{
-	    remove( "simpleT.nc" ) ;
+	    remove( "structT.nc" ) ;
 	}
 	*/
     }
 
-    CPPUNIT_TEST_SUITE( simpleT ) ;
+    CPPUNIT_TEST_SUITE( structT ) ;
 
     CPPUNIT_TEST( do_test ) ;
 
@@ -85,13 +86,14 @@ public:
 	}
     }
 
-    void check_var( int ncid, const string &name )
+    void check_var( int ncid, const string &embed, const string &name )
     {
+	string fullname = embed + "." + name ;
 	int varid = 0 ;
-	int stax = nc_inq_varid( ncid, name.c_str(), &varid ) ;
+	int stax = nc_inq_varid( ncid, fullname.c_str(), &varid ) ;
 	if( stax != NC_NOERR )
 	{
-	    string err = (string)"Failed to check variable " + name ;
+	    string err = (string)"Failed to check variable " + fullname ;
 	    handle_error( stax, err ) ;
 	}
 
@@ -103,13 +105,13 @@ public:
 	stax = nc_inq_var( ncid, varid, varname, &type, &ndims, dims, &natts ) ;
 	if( stax != NC_NOERR )
 	{
-	    string err = (string)"Failed to inquire variable " + name ;
+	    string err = (string)"Failed to inquire variable " + fullname ;
 	    handle_error( stax, err ) ;
 	}
-	int len = strlen( name.c_str() ) ;
-	cerr << "name: " << name
+	int len = strlen( fullname.c_str() ) ;
+	cerr << "fullname: " << fullname
 	     << ", varname: " << varname << endl ;
-	CPPUNIT_ASSERT( name == varname ) ;
+	CPPUNIT_ASSERT( fullname == varname ) ;
 	size_t index[] = {0} ;
 	if( name == "byte" )
 	{
@@ -118,7 +120,7 @@ public:
 	    stax = nc_get_var1_uchar( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get uchar for " + name ;
+		string err = (string)"Failed to get uchar for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    CPPUNIT_ASSERT( val == 28 ) ;
@@ -130,7 +132,7 @@ public:
 	    stax = nc_get_var1_short( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get short for " + name ;
+		string err = (string)"Failed to get short for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    CPPUNIT_ASSERT( val == -2048 ) ;
@@ -142,7 +144,7 @@ public:
 	    stax = nc_get_var1_int( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get int for " + name ;
+		string err = (string)"Failed to get int for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    CPPUNIT_ASSERT( val == -105467 ) ;
@@ -154,7 +156,7 @@ public:
 	    stax = nc_get_var1_short( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get short for " + name ;
+		string err = (string)"Failed to get short for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    CPPUNIT_ASSERT( val == 2048 ) ;
@@ -166,7 +168,7 @@ public:
 	    stax = nc_get_var1_int( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get int for " + name ;
+		string err = (string)"Failed to get int for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    CPPUNIT_ASSERT( val == 105467 ) ;
@@ -178,7 +180,7 @@ public:
 	    stax = nc_get_var1_float( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get float for " + name ;
+		string err = (string)"Failed to get float for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    float baseline = 5.7866 ;
@@ -191,7 +193,7 @@ public:
 	    stax = nc_get_var1_double( ncid, varid, index, &val ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = (string)"Failed to get double for " + name ;
+		string err = (string)"Failed to get double for " + fullname ;
 		handle_error( stax, err ) ;
 	    }
 	    double baseline = 10245.1234 ;
@@ -201,7 +203,7 @@ public:
 	{
 	    CPPUNIT_ASSERT( ndims == 1 ) ;
 	    char dimname[NC_MAX_NAME + 1] ;
-	    string dnbaseline = "str_len" ;
+	    string dnbaseline = embed + "." + "str_len" ;
 	    size_t dimsize = 0 ;
 	    stax = nc_inq_dim( ncid, dims[0], dimname, &dimsize ) ;
 	    if( stax != NC_NOERR )
@@ -240,36 +242,40 @@ public:
 	    // simple types.
 	    DataDDS *dds = new DataDDS( NULL, "virtual" ) ;
 
+	    Structure s( "mystruct" ) ;
+
 	    Byte b( "byte" ) ;
 	    b.set_value( 28 ) ;
-	    dds->add_var( &b ) ;
+	    s.add_var( &b ) ;
 
 	    Int16 i16( "i16" ) ;
 	    i16.set_value( -2048 ) ;
-	    dds->add_var( &i16 ) ;
+	    s.add_var( &i16 ) ;
 
 	    Int32 i32( "i32" ) ;
 	    i32.set_value( -105467 ) ;
-	    dds->add_var( &i32 ) ;
+	    s.add_var( &i32 ) ;
 
 	    UInt16 ui16( "ui16" ) ;
 	    ui16.set_value( 2048 ) ;
-	    dds->add_var( &ui16 ) ;
+	    s.add_var( &ui16 ) ;
 
 	    UInt32 ui32( "ui32" ) ;
 	    ui32.set_value( 105467 ) ;
-	    dds->add_var( &ui32 ) ;
+	    s.add_var( &ui32 ) ;
 
 	    Float32 f32( "f32" ) ;
 	    f32.set_value( 5.7866 ) ;
-	    dds->add_var( &f32 ) ;
+	    s.add_var( &f32 ) ;
 
 	    Float64 f64( "f64" ) ;
 	    f64.set_value( 10245.1234 ) ;
-	    dds->add_var( &f64 ) ;
+	    s.add_var( &f64 ) ;
 
-	    Str s( "str" ) ;
-	    s.set_value( "This is a String Value" ) ;
+	    Str str( "str" ) ;
+	    str.set_value( "This is a String Value" ) ;
+	    s.add_var( &str ) ;
+
 	    dds->add_var( &s ) ;
 
 	    // transform the DataDDS into a netcdf file. The dhi only needs the
@@ -280,7 +286,7 @@ public:
 	    // test file locally
 	    BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
 	    BESDataHandlerInterface dhi ;
-	    ofstream fstrm( "./simpleT.nc", ios::out|ios::trunc ) ;
+	    ofstream fstrm( "./structT.nc", ios::out|ios::trunc ) ;
 	    dhi.set_output_stream( &fstrm ) ;
 	    dhi.data[POST_CONSTRAINT] = "" ;
 	    FONcTransmitter ft ;
@@ -293,10 +299,10 @@ public:
 	    // open the netcdf file and check the contents. NO ATTRIBUTES TO
 	    // START WITH.
 	    int ncid = 0 ;
-	    int stax = nc_open( "./simpleT.nc", NC_NOWRITE, &ncid ) ;
+	    int stax = nc_open( "./structT.nc", NC_NOWRITE, &ncid ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = "unable to open simpleT.nc" ;
+		string err = "unable to open structT.nc" ;
 		handle_error( stax, err ) ;
 	    }
 
@@ -318,19 +324,19 @@ public:
 	    }
 	    CPPUNIT_ASSERT( ndims == 1 ) ;
 
-	    check_var( ncid, "byte" ) ;
-	    check_var( ncid, "i16" ) ;
-	    check_var( ncid, "i32" ) ;
-	    check_var( ncid, "ui16" ) ;
-	    check_var( ncid, "ui32" ) ;
-	    check_var( ncid, "f32" ) ;
-	    check_var( ncid, "f64" ) ;
-	    check_var( ncid, "str" ) ;
+	    check_var( ncid, "mystruct", "byte" ) ;
+	    check_var( ncid, "mystruct", "i16" ) ;
+	    check_var( ncid, "mystruct", "i32" ) ;
+	    check_var( ncid, "mystruct", "ui16" ) ;
+	    check_var( ncid, "mystruct", "ui32" ) ;
+	    check_var( ncid, "mystruct", "f32" ) ;
+	    check_var( ncid, "mystruct", "f64" ) ;
+	    check_var( ncid, "mystruct", "str" ) ;
 
 	    stax = nc_close( ncid ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = "unable to close simpleT.nc" ;
+		string err = "unable to close structT.nc" ;
 		handle_error( stax, err ) ;
 	    }
 
@@ -345,40 +351,49 @@ public:
 	try
 	{
 	    // build a DataDDS of simple types and set values for each of the
-	    // simple types and provide a constraint.
+	    // simple types.
 	    DataDDS *dds = new DataDDS( NULL, "virtual" ) ;
+
+	    Structure s1( "s1" ) ;
+	    Structure s2( "s2" ) ;
+	    Structure s3( "s3" ) ;
 
 	    Byte b( "byte" ) ;
 	    b.set_value( 28 ) ;
-	    dds->add_var( &b ) ;
+	    s1.add_var( &b ) ;
 
 	    Int16 i16( "i16" ) ;
 	    i16.set_value( -2048 ) ;
-	    dds->add_var( &i16 ) ;
+	    s2.add_var( &i16 ) ;
 
 	    Int32 i32( "i32" ) ;
 	    i32.set_value( -105467 ) ;
-	    dds->add_var( &i32 ) ;
+	    s3.add_var( &i32 ) ;
 
 	    UInt16 ui16( "ui16" ) ;
 	    ui16.set_value( 2048 ) ;
-	    dds->add_var( &ui16 ) ;
+	    s1.add_var( &ui16 ) ;
 
 	    UInt32 ui32( "ui32" ) ;
 	    ui32.set_value( 105467 ) ;
-	    dds->add_var( &ui32 ) ;
+	    s2.add_var( &ui32 ) ;
 
 	    Float32 f32( "f32" ) ;
 	    f32.set_value( 5.7866 ) ;
-	    dds->add_var( &f32 ) ;
+	    s3.add_var( &f32 ) ;
 
 	    Float64 f64( "f64" ) ;
 	    f64.set_value( 10245.1234 ) ;
-	    dds->add_var( &f64 ) ;
+	    s1.add_var( &f64 ) ;
 
-	    Str s( "str" ) ;
-	    s.set_value( "This is a String Value" ) ;
-	    dds->add_var( &s ) ;
+	    Str str( "str" ) ;
+	    str.set_value( "This is a String Value" ) ;
+	    s2.add_var( &str ) ;
+
+	    s2.add_var( &s3 ) ;
+	    s1.add_var( &s2 ) ;
+
+	    dds->add_var( &s1 ) ;
 
 	    // transform the DataDDS into a netcdf file. The dhi only needs the
 	    // output stream and the post constraint. Test no constraints and
@@ -388,9 +403,9 @@ public:
 	    // test file locally
 	    BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
 	    BESDataHandlerInterface dhi ;
-	    ofstream fstrm( "./simpleT.nc", ios::out|ios::trunc ) ;
+	    ofstream fstrm( "./structT.nc", ios::out|ios::trunc ) ;
 	    dhi.set_output_stream( &fstrm ) ;
-	    dhi.data[POST_CONSTRAINT] = "i16,f64,str" ;
+	    dhi.data[POST_CONSTRAINT] = "" ;
 	    FONcTransmitter ft ;
 	    FONcTransmitter::send_data( obj, dhi ) ;
 	    fstrm.close() ;
@@ -401,10 +416,127 @@ public:
 	    // open the netcdf file and check the contents. NO ATTRIBUTES TO
 	    // START WITH.
 	    int ncid = 0 ;
-	    int stax = nc_open( "./simpleT.nc", NC_NOWRITE, &ncid ) ;
+	    int stax = nc_open( "./structT.nc", NC_NOWRITE, &ncid ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = "unable to open simpleT.nc" ;
+		string err = "unable to open structT.nc" ;
+		handle_error( stax, err ) ;
+	    }
+
+	    int nvars = 0 ;
+	    stax = nc_inq_nvars( ncid, &nvars ) ;
+	    if( stax != NC_NOERR )
+	    {
+		string err = "unable to inquire nvars" ;
+		handle_error( stax, err ) ;
+	    }
+	    CPPUNIT_ASSERT( nvars == 8 ) ;
+
+	    int ndims = 0 ;
+	    stax = nc_inq_ndims( ncid, &ndims ) ;
+	    if( stax != NC_NOERR )
+	    {
+		string err = "unable to inquire ndims" ;
+		handle_error( stax, err ) ;
+	    }
+	    CPPUNIT_ASSERT( ndims == 1 ) ;
+
+	    check_var( ncid, "s1", "byte" ) ;
+	    check_var( ncid, "s1.s2", "i16" ) ;
+	    check_var( ncid, "s1.s2.s3", "i32" ) ;
+	    check_var( ncid, "s1", "ui16" ) ;
+	    check_var( ncid, "s1.s2", "ui32" ) ;
+	    check_var( ncid, "s1.s2.s3", "f32" ) ;
+	    check_var( ncid, "s1", "f64" ) ;
+	    check_var( ncid, "s1.s2", "str" ) ;
+
+	    stax = nc_close( ncid ) ;
+	    if( stax != NC_NOERR )
+	    {
+		string err = "unable to close structT.nc" ;
+		handle_error( stax, err ) ;
+	    }
+
+	    CPPUNIT_ASSERT( true ) ;
+	}
+	catch( BESError &e )
+	{
+	    cerr << e.get_message() << endl ;
+	    CPPUNIT_ASSERT( false ) ;
+	}
+
+	try
+	{
+	    // build a DataDDS of simple types and set values for each of the
+	    // simple types.
+	    DataDDS *dds = new DataDDS( NULL, "virtual" ) ;
+
+	    Structure s1( "s1" ) ;
+	    Structure s2( "s2" ) ;
+	    Structure s3( "s3" ) ;
+
+	    Byte b( "byte" ) ;
+	    b.set_value( 28 ) ;
+	    s1.add_var( &b ) ;
+
+	    Int16 i16( "i16" ) ;
+	    i16.set_value( -2048 ) ;
+	    s2.add_var( &i16 ) ;
+
+	    Int32 i32( "i32" ) ;
+	    i32.set_value( -105467 ) ;
+	    s3.add_var( &i32 ) ;
+
+	    UInt16 ui16( "ui16" ) ;
+	    ui16.set_value( 2048 ) ;
+	    s1.add_var( &ui16 ) ;
+
+	    UInt32 ui32( "ui32" ) ;
+	    ui32.set_value( 105467 ) ;
+	    s2.add_var( &ui32 ) ;
+
+	    Float32 f32( "f32" ) ;
+	    f32.set_value( 5.7866 ) ;
+	    s3.add_var( &f32 ) ;
+
+	    Float64 f64( "f64" ) ;
+	    f64.set_value( 10245.1234 ) ;
+	    s1.add_var( &f64 ) ;
+
+	    Str str( "str" ) ;
+	    str.set_value( "This is a String Value" ) ;
+	    s2.add_var( &str ) ;
+
+	    s2.add_var( &s3 ) ;
+	    s1.add_var( &s2 ) ;
+
+	    dds->add_var( &s1 ) ;
+
+	    // transform the DataDDS into a netcdf file. The dhi only needs the
+	    // output stream and the post constraint. Test no constraints and
+	    // then some different constraints (1 var, 2 var)
+
+	    // The resulting netcdf file is streamed back. Write this file to a
+	    // test file locally
+	    BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
+	    BESDataHandlerInterface dhi ;
+	    ofstream fstrm( "./structT.nc", ios::out|ios::trunc ) ;
+	    dhi.set_output_stream( &fstrm ) ;
+	    dhi.data[POST_CONSTRAINT] = "s1.ui16,s1.s2.str,s1.s2.s3.i32" ;
+	    FONcTransmitter ft ;
+	    FONcTransmitter::send_data( obj, dhi ) ;
+	    fstrm.close() ;
+
+	    // deleting the response object deletes the DataDDS
+	    delete obj ;
+
+	    // open the netcdf file and check the contents. NO ATTRIBUTES TO
+	    // START WITH.
+	    int ncid = 0 ;
+	    int stax = nc_open( "./structT.nc", NC_NOWRITE, &ncid ) ;
+	    if( stax != NC_NOERR )
+	    {
+		string err = "unable to open structT.nc" ;
 		handle_error( stax, err ) ;
 	    }
 
@@ -426,115 +558,14 @@ public:
 	    }
 	    CPPUNIT_ASSERT( ndims == 1 ) ;
 
-	    check_var( ncid, "i16" ) ;
-	    check_var( ncid, "f64" ) ;
-	    check_var( ncid, "str" ) ;
+	    check_var( ncid, "s1.s2.s3", "i32" ) ;
+	    check_var( ncid, "s1", "ui16" ) ;
+	    check_var( ncid, "s1.s2", "str" ) ;
 
 	    stax = nc_close( ncid ) ;
 	    if( stax != NC_NOERR )
 	    {
-		string err = "unable to close simpleT.nc" ;
-		handle_error( stax, err ) ;
-	    }
-
-	    CPPUNIT_ASSERT( true ) ;
-	}
-	catch( BESError &e )
-	{
-	    cerr << e.get_message() << endl ;
-	    CPPUNIT_ASSERT( false ) ;
-	}
-
-	try
-	{
-	    // build a DataDDS of simple types and set values for each of the
-	    // simple types and provide a constraint.
-	    DataDDS *dds = new DataDDS( NULL, "virtual" ) ;
-
-	    Byte b( "byte" ) ;
-	    b.set_value( 28 ) ;
-	    dds->add_var( &b ) ;
-
-	    Int16 i16( "i16" ) ;
-	    i16.set_value( -2048 ) ;
-	    dds->add_var( &i16 ) ;
-
-	    Int32 i32( "i32" ) ;
-	    i32.set_value( -105467 ) ;
-	    dds->add_var( &i32 ) ;
-
-	    UInt16 ui16( "ui16" ) ;
-	    ui16.set_value( 2048 ) ;
-	    dds->add_var( &ui16 ) ;
-
-	    UInt32 ui32( "ui32" ) ;
-	    ui32.set_value( 105467 ) ;
-	    dds->add_var( &ui32 ) ;
-
-	    Float32 f32( "f32" ) ;
-	    f32.set_value( 5.7866 ) ;
-	    dds->add_var( &f32 ) ;
-
-	    Float64 f64( "f64" ) ;
-	    f64.set_value( 10245.1234 ) ;
-	    dds->add_var( &f64 ) ;
-
-	    Str s( "str" ) ;
-	    s.set_value( "This is a String Value" ) ;
-	    dds->add_var( &s ) ;
-
-	    // transform the DataDDS into a netcdf file. The dhi only needs the
-	    // output stream and the post constraint. Test no constraints and
-	    // then some different constraints (1 var, 2 var)
-
-	    // The resulting netcdf file is streamed back. Write this file to a
-	    // test file locally
-	    BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
-	    BESDataHandlerInterface dhi ;
-	    ofstream fstrm( "./simpleT.nc", ios::out|ios::trunc ) ;
-	    dhi.set_output_stream( &fstrm ) ;
-	    dhi.data[POST_CONSTRAINT] = "byte" ;
-	    FONcTransmitter ft ;
-	    FONcTransmitter::send_data( obj, dhi ) ;
-	    fstrm.close() ;
-
-	    // deleting the response object deletes the DataDDS
-	    delete obj ;
-
-	    // open the netcdf file and check the contents. NO ATTRIBUTES TO
-	    // START WITH.
-	    int ncid = 0 ;
-	    int stax = nc_open( "./simpleT.nc", NC_NOWRITE, &ncid ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = "unable to open simpleT.nc" ;
-		handle_error( stax, err ) ;
-	    }
-
-	    int nvars = 0 ;
-	    stax = nc_inq_nvars( ncid, &nvars ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = "unable to inquire nvars" ;
-		handle_error( stax, err ) ;
-	    }
-	    CPPUNIT_ASSERT( nvars == 1 ) ;
-
-	    int ndims = 0 ;
-	    stax = nc_inq_ndims( ncid, &ndims ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = "unable to inquire ndims" ;
-		handle_error( stax, err ) ;
-	    }
-	    CPPUNIT_ASSERT( ndims == 0 ) ;
-
-	    check_var( ncid, "byte" ) ;
-
-	    stax = nc_close( ncid ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = "unable to close simpleT.nc" ;
+		string err = "unable to close structT.nc" ;
 		handle_error( stax, err ) ;
 	    }
 
@@ -548,7 +579,7 @@ public:
     }
 } ;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( simpleT ) ;
+CPPUNIT_TEST_SUITE_REGISTRATION( structT ) ;
 
 int 
 main( int, char** )

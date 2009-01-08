@@ -44,13 +44,15 @@ using std::vector ;
 
 using namespace::libdap ;
 
-class FONcTransform
+#include <BESObj.h>
+
+class FONcTransform : public BESObj
 {
 private:
     int				_ncid ;
     DDS				*_dds ;
     string			_localfile ;
-    vector<string>		_flatten ;
+    vector<BaseType *>		_embedded ;
 
     nc_type			get_nc_type( BaseType *element ) ;
     void			write_structure( BaseType* b ) ;
@@ -59,6 +61,10 @@ private:
     void			write_var( BaseType* b ) ;
     void			write_str( BaseType* b ) ;
 
+    void			add_embedded( BaseType *b ) ;
+    void			remove_embedded( BaseType *b ) ;
+    string			embedded_name( const string &name ) ;
+
     void			handle_error( int stax, string &err,
 					      const string &file, int line ) ;
 public:
@@ -66,6 +72,8 @@ public:
 					       const string &localfile ) ;
     virtual			~FONcTransform() ;
     virtual int			transform( ) ;
+
+    virtual void		dump( ostream &strm ) const ;
 } ;
 
 #endif // FONcGridTransfrom_h_
