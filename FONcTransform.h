@@ -60,6 +60,16 @@ private:
     void			write_array( BaseType* b ) ;
     void			write_var( BaseType* b ) ;
     void			write_str( BaseType* b ) ;
+    void			add_attributes( int varid, BaseType *b ) ;
+    void			addattrs( int varid, BaseType *b,
+					  const string &var_name ) ;
+    void			addattrs( int varid, AttrTable &attrs,
+					  const string &var_name,
+					  const string &prepend_attr ) ;
+    void			addattrs( int varid, const string &var_name,
+					  AttrTable &attrs,
+					  AttrTable::Attr_iter &attr,
+					  const string &prepend_attr ) ;
 
     void			add_embedded( BaseType *b ) ;
     void			remove_embedded( BaseType *b ) ;

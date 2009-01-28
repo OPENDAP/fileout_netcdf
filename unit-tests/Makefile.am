@@ -2,8 +2,6 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-# Headers in 'tests' are used by the arrayT unit tests.
-
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS)
 AM_LDADD = 
 if CPPUNIT
@@ -51,7 +49,7 @@ endif
 #
 
 if CPPUNIT
-UNIT_TESTS = simpleT arrayT structT
+UNIT_TESTS = simpleT arrayT structT attrT
 else
 UNIT_TESTS =
 endif
@@ -64,4 +62,7 @@ arrayT_LDADD = ../libfonc_module.la $(AM_LDADD)
 
 structT_SOURCES = structT.cc
 structT_LDADD = ../libfonc_module.la $(AM_LDADD)
+
+attrT_SOURCES = attrT.cc
+attrT_LDADD = ../libfonc_module.la $(AM_LDADD)
 

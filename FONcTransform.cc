@@ -34,6 +34,7 @@
 #include <sstream>
 
 using std::ostringstream ;
+using std::istringstream ;
 
 #include "FONcTransform.h"
 
@@ -42,6 +43,9 @@ using std::ostringstream ;
 #include <Array.h>
 #include <BESDebug.h>
 #include <BESInternalError.h>
+
+#define EMBEDDED_SEPARATOR "."
+#define ATTRIBUTE_SEPARATOR "."
 
 FONcTransform::FONcTransform( DDS *dds, const string &localfile )
     : _ncid( 0 ), _dds( 0 )
@@ -119,6 +123,13 @@ FONcTransform::transform( )
 		}
 	    }
 	}
+	// These should be global attributes. Although, for multi-container
+	// datasets, the globals are stored in the container structures.
+	// They need to be tagged as such in some way.
+	nc_redef( _ncid ) ;
+	AttrTable &globals = _dds->get_attr_table() ;
+	addattrs( NC_GLOBAL, globals, "", "" ) ;
+	nc_enddef( _ncid ) ;
     }
     catch( BESError &e )
     {
@@ -325,6 +336,7 @@ FONcTransform::write_array( BaseType* b )
 			 + varname ;
 	    handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
+	add_attributes( varid, b ) ;
 	nc_enddef( _ncid ) ;
 
 	// create array to hold data hyperslab
@@ -457,6 +469,8 @@ FONcTransform::write_array( BaseType* b )
 			 + varname ;
 	    handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
+	add_attributes( varid, b ) ;
+
 	nc_enddef( _ncid ) ;
 
 	size_t var_count[ndims] ;
@@ -562,6 +576,7 @@ FONcTransform::write_str( BaseType *b )
 		     + "Failed to define var " + varname ;
 	handle_error( stax, err, __FILE__, __LINE__ ) ;
     }
+    add_attributes( varid, b ) ;
 
     nc_enddef( _ncid ) ;
 
@@ -593,17 +608,28 @@ FONcTransform::write_var( BaseType* b )
     int varid ;
     size_t var_index[] = {0} ;
     nc_type var_type = get_nc_type( b ) ;
+
     nc_redef( _ncid ) ;
-    nc_def_var( _ncid, varname.c_str(), var_type, 0, NULL, &varid ) ;
+
+    int stax = nc_def_var( _ncid, varname.c_str(), var_type, 0, NULL, &varid ) ;
+    if( stax != NC_NOERR )
+    {
+	string err = (string)"fileout.netcdf - "
+		     + "Failed to define variable "
+		     + varname ;
+	handle_error( stax, err, __FILE__, __LINE__ ) ;
+    }
+    add_attributes( varid, b ) ;
+
     nc_enddef( _ncid ) ;
+
     switch( var_type )
     {
 	case NC_BYTE:
 	    {
 		unsigned char *data = new unsigned char ;
 		b->buf2val( (void**)&data ) ;
-		int stax =
-		    nc_put_var1_uchar( _ncid, varid, var_index, data ) ;
+		stax = nc_put_var1_uchar( _ncid, varid, var_index, data ) ;
 		if( stax != NC_NOERR )
 		{
 		    string err = (string)"fileout.netcdf - "
@@ -618,8 +644,7 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		short *data = new short ;
 		b->buf2val( (void**)&data ) ;
-		int stax =
-		    nc_put_var1_short( _ncid, varid, var_index, data ) ;
+		stax = nc_put_var1_short( _ncid, varid, var_index, data ) ;
 		if( stax != NC_NOERR )
 		{
 		    string err = (string)"fileout.netcdf - "
@@ -634,7 +659,7 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		int *data = new int ;
 		b->buf2val( (void**)&data ) ;
-		int stax = nc_put_var1_int( _ncid, varid, var_index, data ) ;
+		stax = nc_put_var1_int( _ncid, varid, var_index, data ) ;
 		if( stax != NC_NOERR )
 		{
 		    string err = (string)"fileout.netcdf - "
@@ -649,8 +674,7 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		float *data = new float ;
 		b->buf2val( (void**)&data ) ;
-		int stax =
-		    nc_put_var1_float( _ncid, varid, var_index, data ) ;
+		stax = nc_put_var1_float( _ncid, varid, var_index, data ) ;
 		ncopts = NC_VERBOSE ;
 		if( stax != NC_NOERR )
 		{
@@ -666,8 +690,7 @@ FONcTransform::write_var( BaseType* b )
 	    {
 		double *data = new double ;
 		b->buf2val( (void**)&data ) ;
-		int stax =
-		    nc_put_var1_double( _ncid, varid, var_index, data ) ;
+		stax = nc_put_var1_double( _ncid, varid, var_index, data ) ;
 		if( stax != NC_NOERR )
 		{
 		    string err = (string)"fileout.netcdf - "
@@ -689,6 +712,290 @@ FONcTransform::write_var( BaseType* b )
     }
     BESDEBUG( "fonc", "FONcTransform::write_var done for "
                       << varname << endl )
+}
+
+void
+FONcTransform::add_attributes( int varid, BaseType *b )
+{
+    // add the attributes from b to this varid and all the attributes from
+    // any embedded structures/grids.
+    vector<BaseType *>::const_iterator i = _embedded.begin() ;
+    vector<BaseType *>::const_iterator e = _embedded.end() ;
+    string new_name ;
+    for( ; i != e; i++ )
+    {
+	if( !new_name.empty() )
+	{
+	    new_name += EMBEDDED_SEPARATOR ;
+	}
+	new_name += (*i)->name() ;
+	addattrs( varid, (*i), new_name ) ;
+    }
+    addattrs( varid, b, "" ) ;
+}
+
+void
+FONcTransform::addattrs( int varid, BaseType *b, const string &var_name )
+{
+    AttrTable &attrs = b->get_attr_table() ;
+    addattrs( varid, attrs, var_name, "" ) ;
+}
+
+void
+FONcTransform::addattrs( int varid, AttrTable &attrs,
+			 const string &var_name, const string &prepend_attr )
+{
+    unsigned int num_attrs = attrs.get_size() ;
+    if( num_attrs )
+    {
+	AttrTable::Attr_iter i = attrs.attr_begin() ;
+	AttrTable::Attr_iter e = attrs.attr_end() ;
+	for( ; i != e; i++ )
+	{
+	    unsigned int num_vals = attrs.get_attr_num( i ) ;
+	    if( num_vals )
+	    {
+		addattrs( varid, var_name, attrs, i, prepend_attr ) ;
+	    }
+	}
+    }
+}
+
+void
+FONcTransform::addattrs( int varid, const string &var_name,
+			 AttrTable &attrs,
+			 AttrTable::Attr_iter &attr,
+			 const string &prepend_attr )
+{
+    string attr_name = attrs.get_name( attr ) ;
+    string new_attr_name ;
+    if( !prepend_attr.empty() )
+    {
+	new_attr_name = prepend_attr + EMBEDDED_SEPARATOR + attr_name ;
+    }
+    else
+    {
+	new_attr_name = attr_name ;
+    }
+
+    string new_name ;
+    if( !var_name.empty() )
+    {
+	new_name = var_name + ATTRIBUTE_SEPARATOR + new_attr_name ;
+    }
+    else
+    {
+	new_name = new_attr_name ;
+    }
+
+    int stax = NC_NOERR ;
+    unsigned int attri = 0 ;
+    AttrType type = attrs.get_attr_type( attr ) ;
+    unsigned int num_vals = attrs.get_attr_num( attr ) ;
+    switch( type )
+    {
+	case Attr_container:
+	    {
+		// flatten
+		AttrTable *container = attrs.get_attr_table( attr ) ;
+		if( container )
+		{
+		    addattrs( varid, *container, var_name, new_attr_name ) ;
+		}
+	    }
+	    break ;
+	case Attr_byte:
+	    {
+		// unsigned char
+		unsigned char vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    unsigned int uival = 0 ;
+		    is >> uival ;
+		    vals[attri] = (unsigned char)uival ;
+		}
+		stax = nc_put_att_uchar( _ncid, varid, new_name.c_str(),
+					 NC_BYTE, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write byte attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_int16:
+	    {
+		// short
+		short vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    short sval = 0 ;
+		    is >> sval ;
+		    vals[attri] = sval ;
+		}
+		stax = nc_put_att_short( _ncid, varid, new_name.c_str(),
+					 NC_SHORT, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write short attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_uint16:
+	    {
+		// unsigned short
+		// (needs to be big enough to store an unsigned short
+		int vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    int ival = 0 ;
+		    is >> ival ;
+		    vals[attri] = ival ;
+		}
+		stax = nc_put_att_int( _ncid, varid, new_name.c_str(),
+				       NC_INT, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write unsinged short attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_int32:
+	    {
+		// int
+		int vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    int ival = 0 ;
+		    is >> ival ;
+		    vals[attri] = ival ;
+		}
+		stax = nc_put_att_int( _ncid, varid, new_name.c_str(),
+				       NC_INT, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write int attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_uint32:
+	    {
+		// uint
+		// needs to be big enough to store an unsigned int
+		long vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    long lval = 0 ;
+		    is >> lval ;
+		    vals[attri] = lval ;
+		}
+		stax = nc_put_att_long( _ncid, varid, new_name.c_str(),
+					NC_LONG, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write byte attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_float32:
+	    {
+		// float
+		float vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    float fval = 0 ;
+		    is >> fval ;
+		    vals[attri] = fval ;
+		}
+		stax = nc_put_att_float( _ncid, varid, new_name.c_str(),
+					 NC_FLOAT, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write float attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_float64:
+	    {
+		// double
+		double vals[num_vals] ;
+		for( attri = 0; attri < num_vals; attri++ )
+		{
+		    string val = attrs.get_attr( attr, attri ) ;
+		    istringstream is( val ) ;
+		    double dval = 0 ;
+		    is >> dval ;
+		    vals[attri] = dval ;
+		}
+		stax = nc_put_att_double( _ncid, varid, new_name.c_str(),
+					  NC_DOUBLE, num_vals, vals ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write double attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_string:
+	case Attr_url:
+	    {
+		// string
+		string val = attrs.get_attr( attr, 0 ) ;
+		for( attri = 1; attri < num_vals; attri++ )
+		{
+		    val += "\n" + attrs.get_attr( attr, attri ) ;
+		}
+		stax = nc_put_att_text( _ncid, varid, new_name.c_str(),
+					val.length(), val.c_str());
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"File out netcdf, "
+				 + "failed to write string attribute "
+				 + new_name ;
+		    handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+	    }
+	    break ;
+	case Attr_unknown:
+	    {
+		string err = (string)"File out netcdf, "
+			     + "failed to write unknown type of attribute "
+			     + new_name ;
+		handle_error( stax, err, __FILE__, __LINE__ ) ;
+	    }
+	    break ;
+    }
 }
 
 void
@@ -719,7 +1026,7 @@ FONcTransform::embedded_name( const string &name )
     vector<BaseType *>::const_iterator e = _embedded.end() ;
     for( ; i != e; i++ )
     {
-	new_name += (*i)->name() + "." ;
+	new_name += (*i)->name() + EMBEDDED_SEPARATOR ;
     }
     new_name += name ;
 
@@ -784,132 +1091,4 @@ FONcTransform::dump( ostream &strm ) const
     }
     BESIndent::UnIndent() ;
 }
-
-/*
-int
-FONcTransform::copy_all_attributes( const string &var_name,
-					const string &source_file,
-					const string &target_file )
-{
-    int  stax ;                        //
-    int  ncid, ncidt ;                   //
-    int  var_id, var_idt ;               //
-    int var_natts ;                      //
-
-    stax = nc_open( source_file.c_str(), NC_NOWRITE, &ncid ) ;
-    if( stax != NC_NOERR )
-    {
-	const char *nerr = nc_strerror( stax ) ;
-	string err = (string)"fileout.netcdf - "
-		     + "Failed to copy attributes, unable to open file for "
-		     + var_name ;
-	if( nerr )
-	{
-	    err += ": " + (string)nerr ;
-	}
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
-    }
-    stax = nc_inq_varid( ncid, var_name.c_str(), &var_id ) ;
-    if( stax != NC_NOERR )
-    {
-	const char *nerr = nc_strerror( stax ) ;
-	string err = (string)"fileout.netcdf - "
-		     + "Failed to copy attributes, unable to find variable "
-		     + var_name ;
-	if( nerr )
-	{
-	    err += ": " + (string)nerr ;
-	}
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
-    }
-    stax = nc_inq_varnatts( ncid, var_id, &var_natts ) ;
-    if( stax != NC_NOERR )
-    {
-	const char *nerr = nc_strerror( stax ) ;
-	string err = (string)"fileout.netcdf - "
-		     + "Failed to copy attributes, unable to find attrs for "
-		     + var_name ;
-	if( nerr )
-	{
-	    err += ": " + (string)nerr ;
-	}
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
-    }
-
-    for( int attnum = 0; attnum < var_natts; attnum++ )
-    {
-	char att_name[200] ;
-	stax = nc_inq_attname( ncid, var_id, attnum, att_name ) ;
-	if( stax != NC_NOERR )
-	{
-	    const char *nerr = nc_strerror( stax ) ;
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to copy attributes, unable to find attr "
-			 + att_name + " for " + var_name ;
-	    if( nerr )
-	    {
-		err += ": " + (string)nerr ;
-	    }
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	}
-	stax = nc_open( target_file.c_str(), NC_WRITE, &ncidt ) ;
-	if( stax != NC_NOERR )
-	{
-	    const char *nerr = nc_strerror( stax ) ;
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to copy attributes, "
-			 + "unable to open target file "
-			 + target_file ;
-	    if( nerr )
-	    {
-		err += ": " + (string)nerr ;
-	    }
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	}
-	stax = nc_inq_varid( ncidt, var_name.c_str(), &var_idt ) ;
-	if( stax != NC_NOERR )
-	{
-	    const char *nerr = nc_strerror( stax ) ;
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to copy attributes, unable to find var "
-			 + var_name + " in target file" ;
-	    if( nerr )
-	    {
-		err += ": " + (string)nerr ;
-	    }
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	}
-	stax = nc_redef( ncidt ) ;
-	if( stax != NC_NOERR )
-	{
-	    const char *nerr = nc_strerror( stax ) ;
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to copy attributes, "
-			 + "unable to set define mode for var " + var_name ;
-	    if( nerr )
-	    {
-		err += ": " + (string)nerr ;
-	    }
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	}
-	stax = nc_copy_att( ncid, var_id, att_name, ncidt, var_idt ) ;
-	if( stax != NC_NOERR )
-	{
-	    const char *nerr = nc_strerror( stax ) ;
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to copy attributes, unable to copy attr "
-			 + att_name + " for " + var_name ;
-	    if( nerr )
-	    {
-		err += ": " + (string)nerr ;
-	    }
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	}
-	nc_close( ncidt ) ;
-    }
-    nc_close( ncid ) ;
-
-    return 0 ;
-}
-*/
 
