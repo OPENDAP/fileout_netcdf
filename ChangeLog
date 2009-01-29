@@ -1,0 +1,194 @@
+2009-01-28  Patrick West <pwest@ucar.edu>
+
+	Attributes complete.
+	
+	A    unit-tests/attrT.cc
+	M    unit-tests/Makefile.am
+	M    FONcTransform.cc
+	D    infile
+	D    outfile
+	M    FONcTransform.h
+	D    outfile.dump
+
+2009-01-08  Patrick West <pwest@ucar.edu>
+
+	Structures now work. Now on to grids and attributes.
+	
+	M    unit-tests/simpleT.cc
+	M    unit-tests/Makefile.am
+	A    unit-tests/structT.cc
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+
+2009-01-07  Patrick West <pwest@ucar.edu>
+
+	Fixed memory bug in FONcTransform creating temporary file. Fixed
+	array of strings. Added array unit test.
+	
+	M    unit-tests/simpleT.cc
+	A    unit-tests/arrayT.cc
+	M    unit-tests/Makefile.am
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+
+2009-01-06  Patrick West <pwest@ucar.edu>
+
+	Fixed string transformation to netcdf. Added more debug
+	statements, corrected some error conditions. Added unit test for
+	the simple types.
+
+	Now on to arrays and then structures. With the changes made to the
+	simple types I do not guarantee that anything else works at this
+	point.
+
+	Also need to determine if I should be using nc_put_var_type
+	instead of nc_put_var1_type for the simple types.
+	
+	M    unit-tests/simpleT.cc
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+
+2009-01-04  Patrick West <pwest@ucar.edu>
+
+	Actually set ignore property.
+	
+	_M   unit-tests
+
+2009-01-04  Patrick West <pwest@ucar.edu>
+
+	Set property svn:ignore
+	
+	_M   unit-tests
+
+2009-01-04  Patrick West <pwest@ucar.edu>
+
+	Fixed includes in headers and source. BES includes now in angle
+	brackets rather than quotes. Added unit-tests directory with shell
+	of test. Set svn:ignore on some files.
+	
+	_M   .
+	M    FONcModule.cc
+	A    unit-tests
+	A    unit-tests/test_config.h.in
+	A    unit-tests/simpleT.cc
+	A    unit-tests/Makefile.am
+	A    unit-tests/bes.conf
+	A    conf/cppunit.m4
+	M    configure.ac
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+	M    FONcTransmitter.h
+	M    Makefile.am
+
+2009-01-04  Patrick West <pwest@ucar.edu>
+
+	Added check after dynamic cast. Added more debug statements into
+	FONcTransmitter code.
+	
+	M    FONcTransmitter.cc
+
+2009-01-04  Patrick West <pwest@ucar.edu>
+
+	Added check for large files. removed config.h.in as it is
+	automatically generated. Made FONcTransform a class with methods
+	instead of statuc functions in the scope of the class. Constructor
+	now makes sure the dds is complete, opens the temporary file using
+	nc_create, and does other checks. Switched to making netcdf 3
+	calls instead of 2 calls. Added more exception handling and
+	cleanup code. Added more debug statements.
+	
+	D    config.h.in
+	M    configure.ac
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+	M    FONcTransmitter.h
+
+2008-12-17  Patrick West <pwest@ucar.edu>
+
+	Moved GridTransform class to Transform. It's not just transforming
+	a grid but transforming DAP to NetCDF.
+
+	Replaced cerr and exit calls to exception throws and cout calls
+	for debug to BESDebug calls.
+
+	AM + FONcTransform.cc
+	M    FONcTransmitter.cc
+	AM + FONcTransform.h
+	M    Makefile.am
+	D    FONcGridTransform.cc
+	D    FONcGridTransform.h
+
+2008-11-14  Nathan Potter <ndp@coas.oregonstate.edu>
+
+2008-11-13  Patrick West <pwest@ucar.edu>
+
+	Added todo of writing grids
+
+	M    README
+
+2008-11-13  Patrick West <pwest@ucar.edu>
+
+	If Structure, then add container__ to the front of the variable
+	names in the structure. Added some debugging and some exception
+	messages.
+
+	M    FONcGridTransform.cc
+
+2008-11-13  Patrick West <pwest@ucar.edu>
+
+	Added requirement for testsuite directory, should be bes-testsuite
+	for BES standalone tests and tests or unit-tests as well.
+
+	M    README
+
+2008-11-13  Patrick West <pwest@ucar.edu>
+
+	Explains the module, how to run the test using infile and outfile,
+	and things remaining to do.
+
+	A    README
+
+2008-11-11  Patrick West <pwest@ucar.edu>
+
+	First pass at fileout netcdf. Refer to infile for example use.
+	This generated outfile. Using ncdump on outfile and original file
+	shows good results. Only thing missing are attributes, which is to
+	be expected in this version.
+	
+	A    FONcModule.cc
+	A    FONcModule.h
+	A    bes-fonc-data.sh.in
+	A    conf
+	AM   conf/mkinstalldirs
+	A    conf/pkg.m4
+	A    conf/netcdf.m4
+	A    conf/acinclude.m4
+	AM   conf/depcomp
+	A    conf/bes.m4
+	AM   conf/missing
+	AM   conf/config.guess
+	A    conf/libdap.m4
+	A    conf/netcdf_header.m4
+	AM   conf/config.sub
+	AM   conf/ltmain.sh
+	AM   conf/install-sh
+	A    config.h.in
+	A    configure.ac
+	A    FONcTransmitter.cc
+	A    infile
+	AM   outfile
+	A    FONcTransmitter.h
+	A    Makefile.am
+	A    fnoc1.dump
+	A    FONcGridTransform.cc
+	A    outfile.dump
+	A    FONcGridTransform.h
+
+2008-11-11  Patrick West <pwest@ucar.edu>
+
+	netcdf file out
+	
+	A    http://scm.opendap.org/svn/trunk/fileout_netcdf

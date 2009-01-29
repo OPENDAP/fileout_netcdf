@@ -1,3 +1,6 @@
+
+Updated for version 0.9.0 (29 Jan 2009)
+
 fileout_netcdf is a module to be loaded by the BES that will allow users to
 return a 'get dods' request as a netcdf file. A file is generated and then
 streamed back in the response.
