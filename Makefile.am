@@ -25,8 +25,7 @@ FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcModule.cc
 
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcModule.h
 
-EXTRA_DIST = data COPYRIGHT COPYING fonc_module.spec \
-    bes-fonc-data.sh.in OSX_Resources
+EXTRA_DIST = data COPYING bes-fonc-data.sh.in
 
 CLEANFILES = *~
 

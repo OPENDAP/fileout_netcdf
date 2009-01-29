@@ -24,7 +24,8 @@ TESTS = $(UNIT_TESTS)
 
 DIRS_EXTRA = 
 
-EXTRA_DIST = $(DIRS_EXTRA) test_config.h.in err.xml bes.conf
+EXTRA_DIST = $(DIRS_EXTRA) test_config.h.in bes.conf
+# err.xml
 
 DISTCLEANFILES = test_config.h
 
