@@ -1,9 +1,10 @@
-// FONcModule.h
+// FONcRequestHandler.h
 
-// This file is part of BES ESG Module.
+// This file is part of bes, A C++ back-end server implementation framework
+// for the OPeNDAP Data Access Protocol.
 
 // Copyright (c) 2004,2005 University Corporation for Atmospheric Research
-// Author: Patrick West <pwest@ucar.org>
+// Author: Patrick West <pwest@ucar.edu> and Jose Garcia <jgarcia@ucar.edu>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,36 +28,25 @@
 //
 // Authors:
 //      pwest       Patrick West <pwest@ucar.edu>
+//      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef A_FONcModule_H
-#define A_FONcModule_H 1
 
-#include <BESAbstractModule.h>
+#ifndef I_FONcRequestHandler_H
+#define I_FONcRequestHandler_H 1
 
-/** @brief Module that allows for OPeNDAP Data objects to be returned as
- * netcdf files
- *
- * The FONcModule (File Out Netcdf Module) is provided to allow for OPenDAP
- * Data objects to be returned as netcdf files. The get request to the BES
- * would be for the dods data product with the added element attribute of
- * returnAs="netcdf".
- *
- * This is accomplished by adding a BESTransmitter called "netcdf". When the
- * BES sees the returnAs property of the get command it looks for a
- * transmitter with that name.
- *
- * @see BESTransmitter
- */
-class FONcModule : public BESAbstractModule
+#include "BESRequestHandler.h"
+
+class FONcRequestHandler : public BESRequestHandler
 {
 public:
-    				FONcModule() {}
-    virtual		    	~FONcModule() {}
-    virtual void		initialize( const string &modname ) ;
-    virtual void		terminate( const string &modname ) ;
+			FONcRequestHandler( const string &name ) ;
+    virtual		~FONcRequestHandler( void ) ;
 
-    virtual void		dump( ostream &strm ) const ;
-} ;
+    virtual void	dump( ostream &strm ) const ;
 
-#endif // A_FONcModule_H
+    static bool		build_help( BESDataHandlerInterface &dhi ) ;
+    static bool		build_version( BESDataHandlerInterface &dhi ) ;
+};
+
+#endif
 

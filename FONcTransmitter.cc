@@ -9,20 +9,20 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact University Corporation for Atmospheric Research at
 // 3080 Center Green Drive, Boulder, CO 80301
- 
-// (c) COPYRIGHT University Corporation for Atmostpheric Research 2004-2005
+
+// (c) COPYRIGHT University Corporation for Atmospheric Research 2004-2005
 // Please read the full copyright statement in the file COPYRIGHT_UCAR.
 //
 // Authors:
@@ -36,11 +36,15 @@
 #endif
 
 #include <stdio.h>
+#include <sys/types.h>                  // For umask
+#include <sys/stat.h>
+
 #include <iostream>
 #include <fstream>
 
 #include <DataDDS.h>
 #include <BaseType.h>
+#include <escaping.h>
 
 using namespace::libdap ;
 
@@ -50,17 +54,28 @@ using namespace::libdap ;
 #include <TheBESKeys.h>
 #include <BESDataDDSResponse.h>
 #include <BESDataNames.h>
+#include <BESResponseNames.h>
 #include <BESDebug.h>
 
 #define FONC_TEMP_DIR "/tmp"
-#define DATA_TRANSMITTER "data"
 
 string FONcTransmitter::temp_dir ;
 
+/** @brief Construct the FONcTransmitter, adding it with name netcdf to be
+ * able to transmit a data response
+ *
+ * The transmitter is created to add the ability to return OPeNDAP data
+ * objects (DataDDS) as a netcdf file.
+ *
+ * The OPeNDAP data object is written to a netcdf file locally in a
+ * temporary directory specified by the BES configuration parameter
+ * FONc.Tempdir. If this variable is not found or is not set then it
+ * defaults to the macro definition FONC_TEMP_DIR.
+ */
 FONcTransmitter::FONcTransmitter()
     : BESBasicTransmitter()
 {
-    add_method( DATA_TRANSMITTER, FONcTransmitter::send_data ) ;
+    add_method( DATA_SERVICE, FONcTransmitter::send_data ) ;
 
     if( FONcTransmitter::temp_dir.empty() )
     {
@@ -82,6 +97,21 @@ FONcTransmitter::FONcTransmitter()
     }
 }
 
+/** @brief The static method registered to transmit OPeNDAP data objects as
+ * a netcdf file.
+ *
+ * This function takes the OPeNDAP DataDDS object, reads in the data (can be
+ * used with any data handler), transforms the data into a netcdf file, and
+ * streams back that netcdf file back to the requester using the stream
+ * specified in the BESDataHandlerInterface.
+ *
+ * @param obj The BESResponseObject containing the OPeNDAP DataDDS object
+ * @param dhi BESDataHandlerInterface containing information about the
+ * request and response
+ * @throws BESInternalError if the response is not an OPeNDAP DataDDS or if
+ * there are any problems reading the data, writing to a netcdf file, or
+ * streaming the netcdf file
+ */
 void
 FONcTransmitter::send_data( BESResponseObject *obj,
 			    BESDataHandlerInterface &dhi )
@@ -103,14 +133,15 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - parsing the constraint" << endl )
-    string ce = dhi.data[POST_CONSTRAINT] ;
+
+    // ticket 1248 jhrg 2/23/09
+    string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
     try
     {
 	bdds->get_ce().parse_constraint( ce, *dds);
     }
     catch( Error &e )
     {
-	ErrorCode ec = e.get_error_code() ;
 	string em = e.get_error_message() ;
 	string err = "Failed to parse the constraint expression: " + em ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
@@ -131,9 +162,13 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     // now we need to read the data
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - reading data into DataDDS" << endl )
+    // This is used to record whetehr this is a functional CE or not. If so,
+    // the code allocates a new DDS object to hold the BaseType returned by
+    // the function and we need to delete that DDS before exiting this code.
+    bool functional_constraint = false;
     try
     {
-	// Handle *functional* constraint expressions specially 
+	// Handle *functional* constraint expressions specially
 	if( bdds->get_ce().functional_expression() )
 	{
 	    // This returns a new BaseType, not a pointer to one in the DataDDS
@@ -145,83 +180,76 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 
 	    var->read( ) ;
 
-	    // FIXME: Do I need to delete the other DataDDS? Do I need it
-	    // anymore. I've got what I need doing the eval_function call
-	    // and I'm going to create a new DataDDS with it. So I don't
-	    // think I need the old one.
-	    //
-	    // delete dds ;
 	    dds = new DataDDS( NULL, "virtual" ) ;
+	    // Set 'functional_constraint' here so that below we know that if
+	    // it's true we must delete 'dds'.
+	    functional_constraint = true;
 	    dds->add_var( var ) ;
 	}
 	else
 	{
-	    // Iterate through the variables in the DataDDS and read in the data
-	    // if the variable has the send flag set. 
+	    // Iterate through the variables in the DataDDS and read
+	    // in the data if the variable has the send flag set.
 
-	    // FIXME: A problem here is that the netcdf handler really
-	    // expects there to only be one container. This is a problem.
-
-            // Note the special case for Sequence. The transfer_data() method
-            // uses the same logic as serialize() to read values but transfers
-            // them to the d_values field instead of writing them to a XDR sink
-            // pointer. jhrg 9/13/06
+            // Note the special case for Sequence. The
+	    // transfer_data() method uses the same logic as
+	    // serialize() to read values but transfers them to the
+	    // d_values field instead of writing them to a XDR sink
+	    // pointer. jhrg 9/13/06
 	    for( DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++ )
 	    {
 		if( (*i)->send_p() )
 		{
 		    // FIXME: we don't have sequences in netcdf so let's not
 		    // worry about that right now.
-		    (*i)->read( ) ;
+                    (*i)->intern_data(bdds->get_ce(), *dds);
 		}
 	    }
 	}
     }
     catch( Error &e )
     {
-	ErrorCode ec = e.get_error_code() ;
+        if (functional_constraint)
+            delete dds;
 	string em = e.get_error_message() ;
 	string err = "Failed to read data: " + em ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
     catch( ... )
     {
+        if (functional_constraint)
+            delete dds;
 	string err = "Failed to read data: Unknown exception caught" ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
 
-    char *temp_name = 0 ;
-    char *nc_temp_pattern = "ncXXXXXX" ;
-    int size = strlen( nc_temp_pattern ) ;
-    char *nc_temp = new char[size+1] ;
-    strncpy( nc_temp, nc_temp_pattern, size ) ;
-    nc_temp[size] = '\0' ;
-#if defined(WIN32) || defined(TEST_WIN32_TEMPS)
-    temp_name = _mktemp( nc_temp ) ;
-#else
-    temp_name = mktemp( nc_temp ) ;
-#endif
-    int myerrno = errno ;
-    if( !temp_name )
-    {
-	string s = (string)"File out netcdf, "
-		   + "was not able to generate temporary file name." ;
-	char *err = strerror( myerrno ) ;
-	if( err )
-	{
-	    s += (string)": " + err ;
-	}
-	throw BESInternalError( s, __FILE__, __LINE__ ) ;
-    }
-    string temp_full = FONcTransmitter::temp_dir + "/" + temp_name ;
-    delete nc_temp ;
+    string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
+    char *temp_full = new char[temp_file_name.length() + 1];
+    string::size_type len = temp_file_name.copy(temp_full, temp_file_name.length());
+    *(temp_full + len) = '\0';
+    // cover the case where older versions of mkstemp() create the file using
+    // a mode of 666.
+    mode_t original_mode = umask( 077 );
+    int fd = mkstemp( temp_full ) ;
+    umask( original_mode );
 
+    if( fd == -1 )
+    {
+        delete [] temp_full;
+        if (functional_constraint)
+            delete dds;
+        string err = string("Failed to open the temporary file: ")
+		     + temp_file_name ;
+        throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    }
+
+    // transform the OPeNDAP DataDDS to the netcdf file
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - transforming into temporary file "
 	      << temp_full << endl )
     try
     {
-	FONcTransform ft( dds, temp_full ) ;
+	FONcTransform ft( dds, dhi, temp_full ) ;
 	ft.transform() ;
 
 	BESDEBUG( "fonc",
@@ -231,32 +259,44 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     }
     catch( BESError &e )
     {
-	if( !access( temp_full.c_str(), F_OK ) )
-	{
-	    remove( temp_full.c_str() ) ;
-	}
+        close(fd);
+	(void)unlink( temp_full ) ;
+	delete[] temp_full;
+	if (functional_constraint)
+	    delete dds;
 	throw e ;
     }
     catch( ... )
     {
-	if( !access( temp_full.c_str(), F_OK ) )
-	{
-	    remove( temp_full.c_str() ) ;
-	}
+        close(fd);
+	(void)unlink( temp_full ) ;
+	delete[] temp_full;
+        if (functional_constraint)
+            delete dds;
 	string err = (string)"File out netcdf, "
 		     + "was not able to transform to netcdf, unknown error" ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
 
-    if( !access( temp_full.c_str(), F_OK ) )
-    {
-	remove( temp_full.c_str() ) ;
-    }
+    close(fd);
+    (void)unlink( temp_full ) ;
+    delete[] temp_full;
+    if (functional_constraint)
+        delete dds;
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - done transmitting to netcdf"
 	      << endl )
 }
 
+/** @brief stream the temporary netcdf file back to the requester
+ *
+ * Streams the temporary netcdf file specified by filename to the specified
+ * C++ ostream
+ *
+ * @param filename The name of the file to stream back to the requester
+ * @param strm C++ ostream to write the contents of the file to
+ * @throws BESInternalError if problem opening the file
+ */
 void
 FONcTransmitter::return_temp_stream( const string &filename,
 				     ostream &strm )

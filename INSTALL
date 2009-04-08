@@ -1,5 +1,101 @@
 
-Version 0.9.0
+Version 0.9.2 (08 April 2009)
 
-Look in another handler's INSTALL file...
+---------------------------------------------------------------------------
+
+BUILDING THE SOFTWARE
+REQUIREMENTS
+NOTES
+
+---------------------------------------------------------------------------
+
+BUILDING THE SOFTWARE
+
+0) Please skim REQUIREMENTS and NOTES sections of this file before reporting
+   problems. Thanks.
+
+1) Type `./configure' at the system prompt. On some systems you may have to
+   type `sh configure.' If you want this part of the server to install
+   someplace other than /usr/local/bin, use --prefix to change the prefix
+   from the default "/use/local/." 
+
+2) Type `make' to build the handler
+
+3) Install the server component in $prefix by running `make install.'
+
+4) Type 'make bes-conf' to run the bes-fonc-data.sh script which inserts the
+   handler in the bes.conf file and adds test data to 
+   $prefix/share/hyrax/data.
+
+5) For many installations, you must arrange for your operating system to find
+   the shared libraries installed by default in $prefix/lib. Do this by
+   either setting an environment variable such as LD_LIBRARY_PATH or by
+   editing /etc/ld.so.conf. Different operating systems handle this in
+   different ways.
+
+Building from Our SVN Repository
+
+  If you are building from a SVN checkout, run 'autoreconf --verbose' before
+  './configure; make'. If you try to run autoconf, et c., by hand and wind up
+  with build files that don't work, use 'autoreconf --force --verbose'. Once
+  autoreconf has made the configure and Makefile.in files, do ./configure;
+  make; make install as outlined above.
+
+REQUIREMENTS
+
+  o You need the libdap library version 3.9.x to build and install this
+    software. If you're using Linux, this means either building from source
+    or using the libdap and libdap-devel RPM packages.
+
+  o If you're planning on using this with the OPeNDAP 4 Data Server (Hyrax),
+    you'll need version 3.7.x of the BES software. Make sure to build that 
+    first.
+
+  o You also need a recent copy of netCDF. We've tested this server with
+    netcdf version 3.6.2, although any recent version should work fine. If the
+    configure script cannot find your copy of libnetcdf, use the
+    --with-netcdf options to tell it where to look (see configure --help).
+
+NOTES
+
+  o TESTING ISSUES
+
+    - If you are having problems with the 'make check' target, i.e. all
+      the tests fail, then you might need to check the version of
+      ncdump. If you have hdf4 installed, a version of ncdump comes with
+      hdf4 that might have overridden your netcdf version of ncdump.
+      Make sure you are using the netcdf version of ncdump and not the
+      hdf4 version of ncdump. Run the following:
+
+      % ncdump -version
+
+      If you get a response where the bottom line reads something like:
+
+      netcdf library version "3.6.3" of Mar 10 2009 05:55:09 $
+
+      then you are running the netcdf version. Running this command on
+      the hdf4 version results in no response.
+
+  o DEBUGGING AIDS
+
+    - The OPeNDAP libdap library includes the following debugging aids that
+      may be of help to you in developing new applications.
+
+    - DBG: simple program instrumentation -- see the file debug.h distributed
+      with libdap (which is installed in the libdap header directory; use
+      'config-libdap --cflags' and look at the value if -I).
+
+    - DBG2: more elaborate program instrumentation -- by convention this is
+      used for output that is half a page or more, while DEBUG is used for
+      single line output.
+
+    - To build with program instrumentation use `--enable-debug=<level>'
+      where <level> is 1 or 2.
+
+    - By default, both debug and dbnew are *not* enabled. Thus, if you want
+      to build a straight version of the libraries and test code, use
+      `./configure'. If you want the extra features, use:
+
+      ./configure --enable-dbnew --enable-debug=2
+
 

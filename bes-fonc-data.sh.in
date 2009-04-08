@@ -41,4 +41,21 @@ awk "BEGIN {bes_module_found=0}
 mv tmp.conf $bes_conf
 
 # Set/append any handler-specific params.
+comment_1="# File Out Netcdf (FONc) module specific parameters"
+comment_2="# FONc.Tempdir: Directory to store temporary netcdf files during transformation"
+comment_3="# FONc.Reference: URL to the FONc Reference Page at docs.opendap.org"
+tmp_dir="FONc.Tempdir=/tmp"
+ref="FONc.Reference=http://docs.opendap.org/index.php/BES_-_Modules_-_FileOut_Netcdf"
+
+awk "BEGIN {fonc_found=0}
+	/# Data Handler Specific/ {fonc_found=1}
+	/^$/ && fonc_found == 1 {print}
+	/^$/ && fonc_found == 1 {print \"$comment_1\"}
+	/^$/ && fonc_found == 1 {print \"$comment_2\"}
+	/^$/ && fonc_found == 1 {print \"$comment_3\"}
+	/^$/ && fonc_found == 1 {print \"$ref\"}
+	/^$/ && fonc_found == 1 {print \"$tmp_dir\"; fonc_found=0}
+	{print}" \
+	< $bes_conf > tmp.conf
+mv tmp.conf $bes_conf
 

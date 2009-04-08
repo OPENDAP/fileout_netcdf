@@ -1,4 +1,15 @@
- Version 0.9.0
+
+Version 0.9.2 (08 April 2009)
+
+Many new capabilities. The handler does not process Sequences, but it can
+process a response that contains them - an attribute will be added that
+indicates that a sequence was found and left out (elided) from the netCDF
+file.
+
+Among the many new tweaks, the resulting file contains names compatible with
+netCDF 3.6.2.
+
+Version 0.9.0
 
 It's brand new. Still to do: Seqences. This contains no explicit support CF,
 although that's slated for a future version.

@@ -1,3 +1,258 @@
+2009-04-08  Patrick West <pwest@ucar.edu>
+
+	Problem with 'make check' target if the ncdump version the person is
+	using is hdf4's version and not netcdf's version.
+	M    INSTALL
+
+2009-03-16  James Gallagher <jgallagher@opendap.org>
+
+	Code review.
+
+	M    FONcModule.cc
+	M    FONcRequestHandler.cc
+	M    FONcModule.h
+	M    FONcRequestHandler.h
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+	M    FONcTransmitter.h
+
+2009-03-13  Patrick West <pwest@ucar.edu>
+
+	Checking that names of variables, dimensions and attributes ok with
+	netcdf naming conventions 3.6.2 and earlier.
+	
+	A    fileout_netcdf-0.9.0/unit-tests/fonc.tests/fonc.names.00.exp
+	A    fileout_netcdf-0.9.0/unit-tests/baselines/fonc.names.00.baseline
+	M    fileout_netcdf-0.9.0/unit-tests/Makefile.am
+	A    fileout_netcdf-0.9.0/unit-tests/namesT.cc
+	M    fileout_netcdf-0.9.0/FONcTransform.cc
+	M    fileout_netcdf-0.9.0/FONcTransmitter.cc
+	M    fileout_netcdf-0.9.0/FONcTransform.h
+
+2009-03-13  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a bug where the unit test drivers to build the netcdf files
+	were not run correctly. Since '.' is not on my path, the names
+	need to be prefixed with './'.
+
+	M    unit-tests/config/unix.exp
+
+2009-03-11  James Gallagher <jgallagher@opendap.org>
+
+	Audit fixes.
+
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+
+2009-03-10  Patrick West <pwest@ucar.edu>
+
+	Instead of calling read now calling intern_data. Changed seqT
+	because of this to use new Sequence class that implements the read
+	method.
+	
+	M    fileout_netcdf-0.9.0/unit-tests/seqT.cc
+	M    fileout_netcdf-0.9.0/FONcTransmitter.cc
+
+2009-02-27  Patrick West <pwest@ucar.edu>
+
+	Adding netcdf as format to dods command in dap service.
+	
+	M    FONcModule.cc
+	M    FONcTransmitter.cc
+
+2009-02-24  James Gallagher <jgallagher@opendap.org>
+
+	Added call to www2id() in the BES Transmitter method. This ensures
+	that WWW escape codes are removed before the CE is parsed (except that
+	spaces and '&' are left encoded to match behavior of the current
+	DDS implementation. This changes means that names can be quoted,
+	allowing all kinds of unwise characters to appear in a variable name.
+	See ticket 1248
+
+2009-02-24  Patrick West <pwest@ucar.edu>
+
+	Added version and help responses to FONc with reference to module page
+	on docs.opendap.org.
+	
+	M    FONcModule.cc
+	A    FONcRequestHandler.cc
+	M    bes-fonc-data.sh.in
+	A    FONcRequestHandler.h
+	M    Makefile.am
+
+2009-02-20  James Gallagher <jgallagher@opendap.org>
+
+	Added paths to the netcdf.m4 file for macports and fink
+
+2009-02-18  Patrick West <pwest@ucar.edu>
+
+	Making sure I get the constrained size of a dimension and calculate the
+	number of elements as constrained. Added more debug for the
+	transformation of grids and arrays.
+	
+	M    FONcTransform.cc
+
+2009-02-07  Patrick West <pwest@ucar.edu>
+
+	Added doxygen comments to each of the classes. Added more to the
+	FONcTransform dump method. Added more error checking to the
+	transformation.
+	
+	M    FONcModule.h
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+	M    FONcTransmitter.h
+
+2009-02-06  Patrick West <pwest@ucar.edu>
+
+	Added write of sequence to write_structure, an embedded sequence.
+	Also added cast to write_sequence (consistent with other methods)
+	to make sure received a sequence.
+	
+	M    FONcTransform.cc
+
+2009-02-06  Patrick West <pwest@ucar.edu>
+
+	Changed the name of the sequence global attribute to the embedded
+	name, just in case it is embedded.
+	
+	M    FONcTransform.cc
+
+2009-02-06  Patrick West <pwest@ucar.edu>
+
+	Not throwing an exception for sequences now. Writing out a global
+	variable with the name of the sequence saying that it has been
+	elided. Added a quick test to make sure it actually works.
+	
+	A    unit-tests/fonc.tests/fonc.seq.00.exp
+	A    unit-tests/seqT.cc
+	A    unit-tests/baselines/fonc.seq.00.baseline
+	M    unit-tests/Makefile.am
+	M    FONcTransform.cc
+	M    FONcTransform.h
+
+2009-02-06  Patrick West <pwest@ucar.edu>
+
+	Took care of instance where the map arrays are also outside of the
+	grids and have already been written. Also fixed where grid
+	attributes were not being written. Added an array variable that is
+	one of the grid maps to the DataDDS in the grid test.
+	
+	M    unit-tests/gridT.cc
+	M    FONcTransform.cc
+	M    FONcTransform.h
+
+2009-02-05  Patrick West <pwest@ucar.edu>
+
+	Adding FONc.Tempdir to the bes.conf file with bes-conf target
+	
+	M    bes-fonc-data.sh.in
+
+2009-02-05  Patrick West <pwest@ucar.edu>
+
+	Grids work now. Modified tests to not use cppunit and don't have
+	to open the netcdf file to make sure the test worked. Using
+	dejagnu instead.
+	
+	M    unit-tests/attrT.cc
+	M    unit-tests/arrayT.cc
+	A    unit-tests/fonc.tests
+	A    unit-tests/fonc.tests/fonc.struct.00.exp
+	A    unit-tests/fonc.tests/fonc.grid.00.exp
+	A    unit-tests/fonc.tests/fonc.struct.01.exp
+	A    unit-tests/fonc.tests/fonc.struct.02.exp
+	A    unit-tests/fonc.tests/fonc.simple.00.exp
+	A    unit-tests/fonc.tests/fonc.attr.00.exp
+	A    unit-tests/fonc.tests/fonc.simple.01.exp
+	A    unit-tests/fonc.tests/fonc.simple.02.exp
+	A    unit-tests/fonc.tests/fonc.array.00.exp
+	A    unit-tests/structT00.cc
+	M    unit-tests/structT.cc
+	A    unit-tests/structT01.cc
+	M    unit-tests/gridT.cc
+	A    unit-tests/structT02.cc
+	M    unit-tests/test_config.h.in
+	A    unit-tests/simpleT00.cc
+	M    unit-tests/simpleT.cc
+	A    unit-tests/simpleT01.cc
+	A    unit-tests/simpleT02.cc
+	A    unit-tests/baselines
+	A    unit-tests/baselines/fonc.array.00.baseline
+	A    unit-tests/baselines/fonc.struct.00.baseline
+	A    unit-tests/baselines/fonc.grid.00.baseline
+	A    unit-tests/baselines/fonc.struct.01.baseline
+	A    unit-tests/baselines/fonc.struct.02.baseline
+	A    unit-tests/baselines/fonc.simple.00.baseline
+	A    unit-tests/baselines/fonc.attr.00.baseline
+	A    unit-tests/baselines/fonc.simple.01.baseline
+	A    unit-tests/baselines/fonc.simple.02.baseline
+	A    unit-tests/common_tests.exp
+	A    unit-tests/config
+	A    unit-tests/config/unix.exp
+	M    unit-tests/Makefile.am
+	M    configure.ac
+	M    Makefile.am
+
+2009-02-05  Patrick West <pwest@ucar.edu>
+
+	Frist pass at grids is complete. Still need to run more tests.
+	Added the framework for a grid test. Need to change all of the
+	unit tests to build the frameworks for the tests, do the
+	transform, run ncdump against the resulting netcdf file, and
+	compare the results against a baseline.
+	
+	M    unit-tests/Makefile.am
+	M    unit-tests/structT.cc
+	A    unit-tests/gridT.cc
+	M    FONcTransform.cc
+	M    FONcTransform.h
+	D    fnoc1.dump
+
+2009-01-30  James Gallagher <jgallagher@opendap.org>
+
+	Moved here to coalesce the branches
+
+2009-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Fairly significant changes/additions to get the dist target to work.
+
+	M    unit-tests/Makefile.am
+	A    COPYING
+	M    Makefile.am
+	A    data
+
+2009-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.5
+
+	A    http://scm.opendap.org/svn/branch/fileout_netcdf/0.9.0
+
+2009-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Release 0.9.0
+
+	A    ChangeLog
+	M    README
+	M    configure.ac
+	A    INSTALL
+	A    NEWS
+
+2009-01-28  Patrick West <pwest@ucar.edu>
+
+	Attributes complete.
+	A    unit-tests/attrT.cc
+	M    unit-tests/Makefile.am
+	M    FONcTransform.cc
+	D    infile
+	D    outfile
+	M    FONcTransform.h
+	D    outfile.dump
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2009-01-28  Patrick West <pwest@ucar.edu>
 
 	Attributes complete.

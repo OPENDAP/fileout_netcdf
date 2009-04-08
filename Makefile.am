@@ -9,7 +9,7 @@ AUTOMAKE_OPTIONS = foreign check-news
 
 ACLOCAL_AMFLAGS = -I conf
 
-SUBDIRS = unit-tests
+SUBDIRS = . unit-tests
 DIST_SUBDIRS = unit-tests
 
 lib_besdir=$(libdir)/bes
@@ -21,12 +21,13 @@ libfonc_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libfonc_module_la_LDFLAGS = -avoid-version -module 
 libfonc_module_la_LIBADD = $(BES_DAP_LIBS)
 
-FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcModule.cc
+FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
+	FONcModule.cc
 
-FONC_HDR = FONcTransform.h FONcTransmitter.h FONcModule.h
+FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
+	FONcModule.h
 
-EXTRA_DIST = data COPYRIGHT COPYING fonc_module.spec \
-    bes-fonc-data.sh.in OSX_Resources
+EXTRA_DIST = data COPYING bes-fonc-data.sh.in
 
 CLEANFILES = *~
 

@@ -85,7 +85,8 @@ dnl  AC_LINK_IFELSE([AC_LANG_CALL([],[$ac_check_func_checked])],
        /usr/lib/netcdf-${ac_check_nc_interface} \
        /usr/local/netcdf/lib /opt/netcdf/lib \
        /usr/netcdf/lib /usr/local/lib/netcdf /opt/lib/netcdf \
-       /usr/lib/netcdf ; do
+       /usr/lib/netcdf \
+       /opt/local/lib /opt/local/include /sw/lib /sw/include ; do
         AS_IF([test "z$ac_netcdf_libdir" = 'z'],
           [NC_LDFLAGS=],
           [
