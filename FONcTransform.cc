@@ -61,7 +61,8 @@ using std::istringstream ;
  */
 FONcTransform::FONcTransform( DDS *dds, BESDataHandlerInterface &dhi,
 			      const string &localfile )
-    : _ncid( 0 ), _dds( 0 ), _embedded_set( false ), _doing_grids( false )
+    : _ncid( 0 ), _dds( 0 ), _embedded_set( false ),
+      _doing_grids( false ), _dim_name_num( 0 )
 {
     if( !dds )
     {
@@ -757,7 +758,8 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 	if( dimname_s.empty() )
 	{
 	    ostringstream dimname_strm ;
-	    dimname_strm << "dim" << dim_num+1 ;
+	    dimname_strm << "dim" << _dim_name_num+1 ;
+	    _dim_name_num++ ;
 	    dimname_s = dimname_strm.str() ;
 	}
 	dimname_s = id2netcdf( embedded_name( dimname_s ) ) ;

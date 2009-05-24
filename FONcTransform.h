@@ -67,6 +67,7 @@ private:
     bool			_embedded_set ;
     string			_embedded_name ;
     bool			_doing_grids ;
+    unsigned int		_dim_name_num ;
 
     // private class representing a grid map, or possible grid map
     class FONcMap
