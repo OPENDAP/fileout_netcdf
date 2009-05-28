@@ -2,15 +2,15 @@ netcdf gridT {
 dimensions:
 	i = 2 ;
 	j = 3 ;
-	bstruct.k = 4 ;
+	k = 4 ;
 	bstruct.k_len = 5 ;
 variables:
 	int i(i) ;
 	float j(j) ;
-	char bstruct.k(bstruct.k, bstruct.k_len) ;
+	char bstruct.k(k, bstruct.k_len) ;
 	short order(i, j) ;
 	int gstruct.shot(i, j) ;
-	int bstruct.bears(i, bstruct.k) ;
+	int bstruct.bears(i, k) ;
 data:
 
  i = 2, 4 ;

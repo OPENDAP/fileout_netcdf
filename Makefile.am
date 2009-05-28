@@ -22,10 +22,10 @@ libfonc_module_la_LDFLAGS = -avoid-version -module
 libfonc_module_la_LIBADD = $(BES_DAP_LIBS)
 
 FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
-	FONcModule.cc
+	FONcModule.cc FONcUtils.cc
 
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
-	FONcModule.h
+	FONcModule.h FONcUtils.h
 
 EXTRA_DIST = data COPYING bes-fonc-data.sh.in
 

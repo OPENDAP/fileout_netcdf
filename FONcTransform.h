@@ -29,8 +29,8 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcGridTransfrom_h_
-#define FONcGridTransfrom_h_ 1
+#ifndef FONcTransfrom_h_
+#define FONcTransfrom_h_ 1
 
 #include <netcdf.h>
 
@@ -43,6 +43,7 @@ using std::vector ;
 using std::map ;
 
 #include <DDS.h>
+#include <Array.h>
 
 using namespace::libdap ;
 
@@ -111,6 +112,26 @@ private:
 
     vector<FONcGrid *>		_grids ;
 
+    class FONcDimSet
+    {
+    private:
+	FONcDimSet() : numdims( 0 ) {}
+    public:
+	FONcDimSet( int ndims ) ;
+	int numdims ;
+	vector<string> dimnames ;
+	vector<string> ncdimnames ;
+	vector<int> dimsizes ;
+	vector<int> dimnums ;
+	void add_dimension( Array *a, Array::Dim_iter di ) ;
+	bool check_dims( FONcDimSet *set, int dims[],
+			 int dim_sizes[], int ndims, int &nelements ) ;
+	int add_dims( int ncid, int dims[], int dim_sizes[],
+		      int ndims, int &nelements, unsigned int &dim_name_num ) ;
+    } ;
+
+    vector<FONcDimSet *> _dims ;
+
     nc_type			get_nc_type( BaseType *element ) ;
     void			write_structure( BaseType* b ) ;
     void			write_array( BaseType* b, int dimids[] = NULL );
@@ -145,7 +166,6 @@ private:
 
     void			write_sequence( BaseType *b ) ;
 
-    string			id2netcdf( string in ) ;
     void			add_original_attr( BaseType *b,
 						   const string &orig ) ;
 public:
@@ -158,5 +178,5 @@ public:
     virtual void		dump( ostream &strm ) const ;
 } ;
 
-#endif // FONcGridTransfrom_h_
+#endif // FONcTransfrom_h_
 

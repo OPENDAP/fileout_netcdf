@@ -33,7 +33,8 @@ UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 	structT00 structT01 structT02		\
 	attrT gridT namesT seqT
 
-SRCS = ../FONcTransform.cc ../FONcTransmitter.cc
+SRCS = ../FONcTransform.cc ../FONcTransmitter.cc ../FONcUtils.cc
+
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 simpleT00_LDADD = $(AM_LDADD)
 

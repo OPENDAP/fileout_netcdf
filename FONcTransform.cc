@@ -37,6 +37,7 @@ using std::ostringstream ;
 using std::istringstream ;
 
 #include "FONcTransform.h"
+#include "FONcUtils.h"
 
 #include <DDS.h>
 #include <Structure.h>
@@ -492,6 +493,8 @@ FONcTransform::write_grids()
 	}
     }
 
+    BESDEBUG( "fonc", *this << endl )
+
     // write out the grid arrays now given the dimensions
     gi = _grids.begin() ;
     ge = _grids.end() ;
@@ -700,6 +703,99 @@ FONcTransform::FONcMap::compare( Array *tomap )
     return true ;
 }
 
+FONcTransform::FONcDimSet::FONcDimSet( int ndims )
+    : numdims( ndims )
+{
+}
+
+void
+FONcTransform::FONcDimSet::add_dimension( Array *a, Array::Dim_iter di )
+{
+    dimnames.push_back( a->dimension_name( di ) ) ;
+    dimsizes.push_back( a->dimension_size( di, true ) ) ;
+}
+
+bool
+FONcTransform::FONcDimSet::check_dims( FONcDimSet *set, int dims[],
+				       int dim_sizes[], int ndims,
+				       int &nelements )
+{
+    if( set->numdims != numdims )
+    {
+	return false ;
+    }
+
+    int index = 0 ;
+    for( index = 0; index < numdims; index++ )
+    {
+	if( set->dimnames[index] != dimnames[index] )
+	{
+	    return false ;
+	}
+	if( set->dimsizes[index] != dimsizes[index] )
+	{
+	    return false ;
+	}
+    }
+
+    if( ndims < numdims )
+    {
+	string s = (string)"FONcDimSet::check_dims not enough space in "
+	           + "dims and dimsizes" ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    }
+
+    for( index = 0; index < numdims; index++ )
+    {
+	dims[index] = dimnums[index] ;
+	dim_sizes[index] = dimsizes[index] ;
+	nelements *= dimsizes[index] ;
+    }
+
+    return true ;
+}
+
+int
+FONcTransform::FONcDimSet::add_dims( int ncid, int dims[],
+				     int dim_sizes[], int ndims,
+				     int &nelements,
+				     unsigned int &dim_name_num )
+{
+    if( ndims < numdims )
+    {
+	string s = (string)"FONcDimSet::add_dims - not enough space in "
+		   "dims and dimsizes" ;
+	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    }
+    for( int index = 0; index < numdims; index++ )
+    {
+	if( dimnames[index].empty() )
+	{
+	    ostringstream dimname_strm ;
+	    dimname_strm << "dim" << dim_name_num+1 ;
+	    dim_name_num++ ;
+	    ncdimnames.push_back( dimname_strm.str() ) ;
+	}
+	else
+	{
+	    ncdimnames.push_back( dimnames[index] ) ;
+	}
+	ncdimnames[index] = FONcUtils::id2netcdf( ncdimnames[index] ) ;
+	int this_dimension = 0 ;
+	int stax = nc_def_dim( ncid, ncdimnames[index].c_str(),
+			       dimsizes[index], &this_dimension ) ;
+	if( stax != NC_NOERR )
+	{
+	    return stax ;
+	}
+	dimnums.push_back( this_dimension ) ;
+	dims[index] = this_dimension ;
+	dim_sizes[index] = dimsizes[index] ;
+	nelements *= dimsizes[index] ;
+    }
+    return NC_NOERR ;
+}
+
 /** @brief write an OPeNDAP Array to netcdf
  *
  * Writes out an OpeNDAP Array instance out to the netcdf file. First the
@@ -729,6 +825,7 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 
     nc_type array_type = get_nc_type( a->var() ) ;
     int ndims = a->dimensions() ;
+    int actual_ndims = ndims ;
     if( array_type == NC_CHAR )
     {
 	// if we have array of strings then we need to add the string length
@@ -740,14 +837,9 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 
     int *dims = new int[ndims];
     int *dim_sizes = new int[ndims];
-#if 0
-    int dims[ndims] ;
-    int dim_sizes[ndims] ;
-#endif
-    int dim_num = 0 ;
     int nelements = 1 ;
-    int stax = NC_NOERR ;
 
+/*
     Array::Dim_iter di = a->dim_begin() ;
     Array::Dim_iter de = a->dim_end() ;
     for( ; di != de; di++ )
@@ -762,7 +854,7 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 	    _dim_name_num++ ;
 	    dimname_s = dimname_strm.str() ;
 	}
-	dimname_s = id2netcdf( embedded_name( dimname_s ) ) ;
+	dimname_s = FONcUtils::id2netcdf( embedded_name( dimname_s ) ) ;
 	const char *this_dimension_name = dimname_s.c_str() ;
 
 	// check to see if the dimension is already defined
@@ -793,6 +885,51 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 	dim_num++ ;
 	nelements *= this_dimension_size ;
     }
+*/
+
+    Array::Dim_iter di = a->dim_begin() ;
+    Array::Dim_iter de = a->dim_end() ;
+
+    FONcDimSet *set = new FONcDimSet( actual_ndims ) ;
+    for( ; di != de; di++ )
+    {
+	set->add_dimension( a, di ) ;
+    }
+
+    vector<FONcDimSet *>::iterator dsi = _dims.begin() ;
+    vector<FONcDimSet *>::iterator dse = _dims.end() ;
+    bool found = false ;
+    for( ; dsi != dse && !found; dsi++ )
+    {
+	found = (*dsi)->check_dims( set, dims, dim_sizes,
+				    actual_ndims, nelements ) ;
+    }
+
+    if( !found )
+    {
+	int stax = set->add_dims( _ncid, dims, dim_sizes,
+				  actual_ndims, nelements, _dim_name_num ) ;
+	if( stax != NC_NOERR )
+	{
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to define dimension" ;
+	    handle_error( stax, err, __FILE__, __LINE__ ) ;
+	}
+	_dims.push_back( set ) ;
+    }
+    else
+    {
+	delete set ;
+	set = 0 ;
+    }
+
+    if( dimids )
+    {
+	for( int index = 0; index < actual_ndims; index++ )
+	{
+	    dimids[index] = dims[index] ;
+	}
+    }
 
     write_array( a, array_type, nelements, ndims, dims, dim_sizes ) ;
 
@@ -822,7 +959,7 @@ FONcTransform::write_array( Array *a, nc_type array_type,
     ncopts = NC_VERBOSE ;
     int stax = NC_NOERR ;
     string tmp_varname = embedded_name( a->name() ) ;
-    string varname = id2netcdf( tmp_varname ) ;
+    string varname = FONcUtils::id2netcdf( tmp_varname ) ;
 
     // if the variable name has been adjusted to be netcdf compliant
     // then add an attribute "original_name" with the original name
@@ -1069,7 +1206,7 @@ void
 FONcTransform::write_str( BaseType *b )
 {
     string tmp_varname = embedded_name( b->name() ) ;
-    string varname = id2netcdf( tmp_varname ) ;
+    string varname = FONcUtils::id2netcdf( tmp_varname ) ;
 
     // if the variable name has been adjusted to be netcdf compliant
     // then add an attribute "original_name" with the original name
@@ -1154,7 +1291,7 @@ void
 FONcTransform::write_var( BaseType* b )
 {
     string tmp_varname = embedded_name( b->name() ) ;
-    string varname = id2netcdf( tmp_varname ) ;
+    string varname = FONcUtils::id2netcdf( tmp_varname ) ;
 
     // if the variable name has been adjusted to be netcdf compliant
     // then add an attribute "original_name" with the original name
@@ -1404,7 +1541,7 @@ FONcTransform::addattrs( int varid, const string &var_name,
     {
 	new_name = new_attr_name ;
     }
-    new_name = id2netcdf( new_name ) ;
+    new_name = FONcUtils::id2netcdf( new_name ) ;
 
     int stax = NC_NOERR ;
     unsigned int attri = 0 ;
@@ -1628,7 +1765,7 @@ FONcTransform::addattrs( int varid, const string &var_name,
 void
 FONcTransform::write_sequence( BaseType *b )
 {
-    string varname = id2netcdf( embedded_name( b->name() ) ) ;
+    string varname = FONcUtils::id2netcdf( embedded_name( b->name() ) ) ;
 
     BESDEBUG( "fonc", "FONcTransform::write_sequence for var "
                       << varname << endl )
@@ -1810,40 +1947,6 @@ FONcTransform::handle_error( int stax, string &err,
     }
 }
 
-/** @brief convert the provided string to a netcdf allowed
- * identifier.
- *
- * The function makes a copy of the incoming parameter to use and
- * returns the new string.
- *
- * @param in identifier to convert
- * @returns new netcdf compliant identifier
- */
-string
-FONcTransform::id2netcdf( string in )
-{
-    // string of allowed characters in netcdf naming convention
-    string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_.@" ;
-    // string of allowed first characters in netcdf naming
-    // convention
-    string first = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ;
-
-    string::size_type i = 0;
-
-    while( (i = in.find_first_not_of( allowed, i ) ) != string::npos)
-    {
-        in.replace( i, 1, "_" ) ;
-        i++ ;
-    }
-
-    if( first.find( in[0] ) == string::npos )
-    {
-	in = (string)"h4_" + in ;
-    }
-
-    return in;
-}
-
 void
 FONcTransform::add_original_attr( BaseType *b, const string &orig )
 {
@@ -1932,14 +2035,41 @@ FONcTransform::dump( ostream &strm ) const
     {
 	strm << "none" << endl ;
     }
+    strm << BESIndent::LMarg << "dims: " << endl ;
+    if( _dims.size() )
+    {
+	BESIndent::Indent() ;
+	vector<FONcDimSet *>::const_iterator di = _dims.begin() ;
+	vector<FONcDimSet *>::const_iterator de = _dims.begin() ;
+	for( ; di != de; di++ )
+	{
+	    strm << BESIndent::LMarg << "dimension set:" << endl ;
+	    BESIndent::Indent() ;
+	    strm << BESIndent::LMarg << "num dims = "
+				     << (*di)->numdims << endl ;
+	    strm << BESIndent::LMarg << "dim names =" ;
+	    vector<string>::iterator dni = (*di)->ncdimnames.begin() ;
+	    vector<string>::iterator dne = (*di)->ncdimnames.end() ;
+	    for( ; dni != dne; dni++ )
+	    {
+		strm << " " << (*dni) ;
+	    }
+	    strm << endl ;
+	    BESIndent::UnIndent() ;
+	}
+	BESIndent::UnIndent() ;
+    }
+    else
+    {
+	strm << "none" << endl ;
+    }
     strm << BESIndent::LMarg << "maps: " << endl ;
     if( _maps.size() )
     {
 	BESIndent::Indent() ;
 	vector<FONcMap *>::const_iterator vi = _maps.begin() ;
 	vector<FONcMap *>::const_iterator ve = _maps.end() ;
-	bool done = false ;
-	for( ; vi != ve && !done; vi++ )
+	for( ; vi != ve; vi++ )
 	{
 	    ostringstream display ;
 	    display << "map " << (*vi)->map->name() << " shared by" ;
