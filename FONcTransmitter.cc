@@ -330,6 +330,9 @@ FONcTransmitter::return_temp_stream( const string &filename,
     }
     else
     {
+	// close the stream before we leave.
+	os.close() ;
+
 	string err = (string)"0XAAE234F: failed to stream. Internal server "
 	             + "error, got zero count on stream buffer." + filename ;
 	BESInternalError pe( err, __FILE__, __LINE__ ) ;

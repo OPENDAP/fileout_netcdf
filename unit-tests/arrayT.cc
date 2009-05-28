@@ -66,6 +66,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "byte_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for byte_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_byte> ba ;
 	    for( dods_byte i = 0; i < 10; i++ )
@@ -84,6 +90,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "i16_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for i16_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_int16> i16a ;
 	    for( dods_int16 i = 0; i < 18; i++ )
@@ -102,6 +114,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "i32_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for i32_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_int32> i32a ;
 	    for( dods_int32 i = 0; i < 40; i++ )
@@ -120,6 +138,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "ui16_array" )) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for ui16_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_uint16> ui16a ;
 	    for( dods_uint16 i = 0; i < 21; i++ )
@@ -138,6 +162,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "ui32_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for ui32_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_uint32> ui32a ;
 	    for( dods_uint32 i = 0; i < 120; i++ )
@@ -155,6 +185,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "f32_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for f32_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_float32> f32a ;
 	    for( int i = 0; i < 100; i++ )
@@ -174,6 +210,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "f64_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for f64_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<dods_float64> f64a ;
 	    for( int i = 0; i < 400; i++ )
@@ -193,6 +235,12 @@ main( int argc, char **argv )
 	    delete a ; a = 0 ;
 
 	    a = dynamic_cast<Array *>(dds->var( "str_array" ) ) ;
+	    if( !a )
+	    {
+		delete dds ;
+		string err = "cast error for str_array" ;
+		throw BESError( err, 0, __FILE__, __LINE__ ) ;
+	    }
 
 	    vector<string> stra ;
 	    for( int i = 0; i < 2; i++ )
