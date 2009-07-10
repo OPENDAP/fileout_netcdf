@@ -1,5 +1,6 @@
 // structT.cc
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 

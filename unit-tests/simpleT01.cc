@@ -1,5 +1,6 @@
 // simpleT.cc
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 

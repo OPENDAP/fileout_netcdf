@@ -27,7 +27,7 @@ FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
 	FONcModule.h FONcUtils.h
 
-EXTRA_DIST = data COPYING bes-fonc-data.sh.in
+EXTRA_DIST = data COPYRIGHT COPYING bes-fonc-data.sh.in fileout_netcdf.spec
 
 CLEANFILES = *~
 
@@ -71,10 +71,10 @@ fortifyclean:
 # Build linux RPMs
 
 srpm: dist
-	rpmbuild -ts netcdf_handler-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts fileout_netcdf-@PACKAGE_VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb netcdf_handler-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb fileout_netcdf-@PACKAGE_VERSION@.tar.gz
 
 ###########################################################################
 

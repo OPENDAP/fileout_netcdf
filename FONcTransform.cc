@@ -1151,12 +1151,21 @@ FONcTransform::write_array( Array *a, nc_type array_type,
 
 	for( int element = 0; element < nelements; element++ )
 	{
+#if 0
 	    const char *val = data[element].c_str() ;
+#endif
+#if 0
 	    var_count[ndims-1] = strlen( val ) + 1 ;
+#endif
+	    var_count[ndims-1] = data[element].size() + 1 ;
 	    var_start[ndims-1] = 0 ;
 
 	    // write out the string
+#if 0
 	    stax = nc_put_vara_text( _ncid, varid, var_start, var_count, val ) ;
+#endif
+	    stax = nc_put_vara_text( _ncid, varid, var_start, var_count, 
+				     data[element].c_str() ) ;
 	    if( stax != NC_NOERR )
 	    {
 		string err = (string)"fileout.netcdf - "
@@ -1236,10 +1245,15 @@ FONcTransform::write_str( BaseType *b )
 
     string *data = new string ;
     b->buf2val( (void**)&data ) ;
+#if 0
     const char *val = data->c_str() ;
+#endif
 
     string dimname = varname + "_len" ;
+#if 0
     int stax = nc_def_dim( _ncid, dimname.c_str(), strlen( val )+1, &chid ) ;
+#endif
+    int stax = nc_def_dim( _ncid, dimname.c_str(), data->size() + 1, &chid ) ;
     if( stax != NC_NOERR )
     {
 	string err = (string)"fileout.netcdf - "
@@ -1260,9 +1274,16 @@ FONcTransform::write_str( BaseType *b )
 
     nc_enddef( _ncid ) ;
 
+#if 0
     var_count[0] = strlen( val) + 1 ;
+#endif
+    var_count[0] = data->size() + 1 ;
     var_start[0] = 0 ;
+#if 0
     stax = nc_put_vara_text( _ncid, varid, var_start, var_count, val ) ;
+#endif
+    stax = nc_put_vara_text( _ncid, varid, var_start, var_count, 
+			     data->c_str() ) ;
     if( stax != NC_NOERR )
     {
 	string err = (string)"fileout.netcdf - "

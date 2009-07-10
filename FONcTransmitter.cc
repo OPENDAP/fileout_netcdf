@@ -31,11 +31,16 @@
 
 #include "config.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#include <stdio.h>
+#include <sys/types.h>                  // For umask
+#include <sys/stat.h>
+
 #include <sys/types.h>                  // For umask
 #include <sys/stat.h>
 

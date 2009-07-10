@@ -1,3 +1,54 @@
+2009-06-05  James Gallagher <jgallagher@opendap.org>
+
+	Added include files so these will compile with gcc 4.3.2 on FC 10.
+
+	M    unit-tests/attrT.cc
+	M    unit-tests/arrayT.cc
+	M    unit-tests/structT00.cc
+	M    unit-tests/structT01.cc
+	M    unit-tests/gridT.cc
+	M    unit-tests/structT02.cc
+	M    unit-tests/simpleT00.cc
+	M    unit-tests/simpleT01.cc
+	M    unit-tests/simpleT02.cc
+	M    unit-tests/namesT.cc
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+
+2009-06-04  Patrick West <pwest@ucar.edu>
+
+	Ref #1300
+	M    unit-tests/baselines/fonc.grid.00.baseline
+	M    unit-tests/baselines/fonc.struct.01.baseline
+	M    unit-tests/Makefile.am
+	A    FONcUtils.cc
+	A    FONcUtils.h
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+	M    Makefile.am
+
+2009-05-21  James Gallagher <jgallagher@opendap.org>
+
+	Added tests' config directory to Makefile.am
+
+2009-04-22  Patrick West <pwest@ucar.edu>
+
+	the module is fileout_netcdf, not fileout_handler. We'll have more than
+	one fileout module. Missing COPYRIGHT file, so added. Corrected some
+	rpm build issues.
+	M    unit-tests/Makefile.am
+	A  + fileout_netcdf.spec
+	D    fileout_handler.spec
+	A    COPYRIGHT
+	M    Makefile.am
+
+2009-04-08  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	fileout_netcdf: Tagging version 0.9.2
+
+2009-04-08  Nathan Potter <ndp@coas.oregonstate.edu>
+
 2009-04-08  Patrick West <pwest@ucar.edu>
 
 	Problem with 'make check' target if the ncdump version the person is

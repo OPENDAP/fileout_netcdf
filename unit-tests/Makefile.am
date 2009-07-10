@@ -15,14 +15,14 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 # This determines what gets built by make check
 noinst_PROGRAMS = $(UNIT_TESTS)
 
-nodist_include_HEADERS = test_config.h
+noinst_HEADERS = test_config.h
 
 
 DISTCLEANFILES = test_config.h
 
 CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
-EXTRA_DIST = baselines fonc.tests common_tests.exp test_config.h.in bes.conf
+EXTRA_DIST = baselines config fonc.tests common_tests.exp test_config.h.in bes.conf
 
 ############################################################################
 # Unit Tests
