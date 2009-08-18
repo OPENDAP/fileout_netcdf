@@ -211,6 +211,7 @@ FONcTransform::transform( )
 	// They need to be tagged as such in some way.
 	nc_redef( _ncid ) ;
 	AttrTable &globals = _dds->get_attr_table() ;
+	BESDEBUG( "fonc", "Adding Global Attributes" << endl << globals << endl ) ;
 	addattrs( NC_GLOBAL, globals, "", "" ) ;
 	nc_enddef( _ncid ) ;
     }
@@ -1563,6 +1564,10 @@ FONcTransform::addattrs( int varid, const string &var_name,
 	new_name = new_attr_name ;
     }
     new_name = FONcUtils::id2netcdf( new_name ) ;
+    if( varid == NC_GLOBAL )
+	BESDEBUG( "fonc", "Adding global attributes " << new_name << endl )
+    else
+	BESDEBUG( "fonc", "Adding attributes " << new_name << endl )
 
     int stax = NC_NOERR ;
     unsigned int attri = 0 ;
@@ -1573,6 +1578,8 @@ FONcTransform::addattrs( int varid, const string &var_name,
 	case Attr_container:
 	    {
 		// flatten
+		BESDEBUG( "fonc", "Attribute " << new_name
+				  << " is an attribute container" << endl )
 		AttrTable *container = attrs.get_attr_table( attr ) ;
 		if( container )
 		{

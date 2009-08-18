@@ -43,7 +43,7 @@ using std::endl ;
 #include <BESReturnManager.h>
 
 #include <BESServiceRegistry.h>
-#include <BESResponseNames.h>
+#include <BESDapNames.h>
 
 #include <TheBESKeys.h>
 #include <BESDebug.h>

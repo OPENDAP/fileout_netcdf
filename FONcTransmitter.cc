@@ -58,8 +58,8 @@ using namespace::libdap ;
 #include <BESInternalError.h>
 #include <TheBESKeys.h>
 #include <BESDataDDSResponse.h>
+#include <BESDapNames.h>
 #include <BESDataNames.h>
-#include <BESResponseNames.h>
 #include <BESDebug.h>
 
 #define FONC_TEMP_DIR "/tmp"
