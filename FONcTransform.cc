@@ -211,7 +211,8 @@ FONcTransform::transform( )
 	// They need to be tagged as such in some way.
 	nc_redef( _ncid ) ;
 	AttrTable &globals = _dds->get_attr_table() ;
-	BESDEBUG( "fonc", "Adding Global Attributes" << endl << globals << endl ) ;
+	BESDEBUG( "fonc", "Adding Global Attributes" << endl
+			  << globals << endl ) ;
 	addattrs( NC_GLOBAL, globals, "", "" ) ;
 	nc_enddef( _ncid ) ;
     }
@@ -280,7 +281,7 @@ FONcTransform::write_structure( BaseType* b )
     }
     string myname = s->name() ;
     BESDEBUG( "fonc", "FONcTransform::write_structure for "
-                      << myname << endl )
+                      << myname << endl ) ;
 
     // add this structure to the embedded list for name generation and
     // attributes to add.
@@ -296,7 +297,7 @@ FONcTransform::write_structure( BaseType* b )
 	    if( bt->send_p() )
 	    {
 		BESDEBUG( "fonc", "FONcTransform::write_structure, done "
-				  << "writing " << bt->name() << endl )
+				  << "writing " << bt->name() << endl ) ;
 		switch( bt->type() )
 		{
 		    case dods_str_c:
@@ -334,7 +335,7 @@ FONcTransform::write_structure( BaseType* b )
 		    break ;
 		}
 		BESDEBUG( "fonc", "FONcTransform::write_structure, done "
-				  << "writing " << bt->name() << endl )
+				  << "writing " << bt->name() << endl ) ;
 	    }
 	}
     }
@@ -348,7 +349,7 @@ FONcTransform::write_structure( BaseType* b )
     remove_embedded( b ) ;
 
     BESDEBUG( "fonc", "FONcTransform::write_structure done for "
-                      << myname << endl )
+                      << myname << endl ) ;
 }
 
 /** @brief write out an OPeNDAP Grid to netcdf
@@ -390,7 +391,8 @@ FONcTransform::write_grid( BaseType* b )
 void
 FONcTransform::write_grids()
 {
-    BESDEBUG( "fonc", "FONcTransform::write_grids - writing any grids" << endl )
+    BESDEBUG( "fonc", "FONcTransform::write_grids - writing any grids"
+		      << endl ) ;
     _doing_grids = true ;
     // need to compare all of the grids and try to find common maps with
     // common dimensions, types, and values. If they match, then they
@@ -457,7 +459,7 @@ FONcTransform::write_grids()
 	}
     }
 
-    BESDEBUG( "fonc", *this << endl )
+    BESDEBUG( "fonc", *this << endl ) ;
 
     // now, we should have everything that we need to write out all of the
     // arrays. when we write out the arrays we record the dimension ids
@@ -484,7 +486,8 @@ FONcTransform::write_grids()
 		set_embedded( (*mi)->embedded_name ) ;
 	    }
 	    Array *a = (*mi)->map ;
-	    BESDEBUG( "fonc", "write_grids writing map " << a->name() << endl )
+	    BESDEBUG( "fonc", "write_grids writing map "
+			      << a->name() << endl ) ;
 	    write_array( (*mi)->map, dimids ) ;
 	    (*mi)->dimid = dimids[0] ;
 	    if( is_single )
@@ -494,7 +497,7 @@ FONcTransform::write_grids()
 	}
     }
 
-    BESDEBUG( "fonc", *this << endl )
+    BESDEBUG( "fonc", *this << endl ) ;
 
     // write out the grid arrays now given the dimensions
     gi = _grids.begin() ;
@@ -502,10 +505,10 @@ FONcTransform::write_grids()
     for( ; gi != ge; gi++ )
     {
 	Array *a = (*gi)->grid->get_array() ;
-	BESDEBUG( "fonc", "write_grids writing grid " << a->name() << endl )
+	BESDEBUG( "fonc", "write_grids writing grid " << a->name() << endl ) ;
 	nc_type array_type = get_nc_type( a->var() ) ;
 	int ndims = (*gi)->maps.size() ;
-	BESDEBUG( "fonc", "    ndims = " << ndims << endl )
+	BESDEBUG( "fonc", "    ndims = " << ndims << endl ) ;
 	int *gdims = new int[ndims];
 	int *gdim_sizes = new int[ndims];
 #if 0
@@ -529,7 +532,7 @@ FONcTransform::write_grids()
 	    nelements *= gdim_sizes[dimnum] ;
 	    dimnum++ ;
 	}
-	BESDEBUG( "fonc", "    nelements = " << nelements << endl )
+	BESDEBUG( "fonc", "    nelements = " << nelements << endl ) ;
 
 	// need to do this for each grid array because the write_array
 	// method ends the definition
@@ -540,24 +543,25 @@ FONcTransform::write_grids()
 	    write_array( a, array_type, nelements, ndims, gdims, gdim_sizes ) ;
 	unset_embedded() ;
 	BESDEBUG( "fonc", "write_grids done writing grid "
-			  << a->name() << endl )
+			  << a->name() << endl ) ;
 
 	// add the attributes for this grid. Definition mode was turned off
 	// in the write_array call.
 	BESDEBUG( "fonc", "write_grids writing grid attrs for "
-			  << a->name() << endl )
+			  << a->name() << endl ) ;
 	nc_redef( _ncid ) ;
 	add_attributes( varid, (*gi)->grid ) ;
 	nc_enddef( _ncid ) ;
 	BESDEBUG( "fonc", "write_grids done writing grid attrs for "
-			  << a->name() << endl )
+			  << a->name() << endl ) ;
 
 	delete[] gdims;
         delete[] gdim_sizes;
     }
 
     _doing_grids = false ;
-    BESDEBUG( "fonc", "FONcTransform::write_grids - done writing grids" << endl)
+    BESDEBUG( "fonc", "FONcTransform::write_grids - done writing grids"
+		      << endl) ;
 }
 
 /** @brief a method to compare two grid maps, or possible grid maps.
@@ -578,7 +582,7 @@ FONcTransform::FONcMap::compare( Array *tomap )
 {
     BESDEBUG( "fonc",
 	      "comparing " << tomap->name()
-	      << " to " << map->name() << endl )
+	      << " to " << map->name() << endl ) ;
     // compare the name
     if( tomap->name() != map->name() ) return false ;
     // compare the type
@@ -700,7 +704,7 @@ FONcTransform::FONcMap::compare( Array *tomap )
 	    break ;
     }
 
-    BESDEBUG( "fonc", "same" << endl )
+    BESDEBUG( "fonc", "same" << endl ) ;
     return true ;
 }
 
@@ -822,7 +826,7 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 
     string varname = embedded_name( a->name() ) ;
     BESDEBUG( "fonc", "FONcTransform::write_array for array "
-                      << varname << endl )
+                      << varname << endl ) ;
 
     nc_type array_type = get_nc_type( a->var() ) ;
     int ndims = a->dimensions() ;
@@ -1200,7 +1204,7 @@ FONcTransform::write_array( Array *a, nc_type array_type,
     }
 
     BESDEBUG( "fonc", "FONcTransform::write_array done for "
-                      << varname << endl )
+                      << varname << endl ) ;
     return varid ;
 }
 
@@ -1227,7 +1231,7 @@ FONcTransform::write_str( BaseType *b )
     }
 
     BESDEBUG( "fonc", "FONcTransform::write_str for var "
-                      << varname << endl )
+                      << varname << endl ) ;
     int chid ;			// dimension id for char positions
     int varid ;			// netCDF variable id
     int var_dims[1] ;		// variable shape
@@ -1297,7 +1301,7 @@ FONcTransform::write_str( BaseType *b )
     delete data ;
 
     BESDEBUG( "fonc", "FONcTransform::write_str done for "
-                      << varname << endl )
+                      << varname << endl ) ;
 }
 
 /** @brief Write a simple type variable to netcdf
@@ -1324,7 +1328,7 @@ FONcTransform::write_var( BaseType* b )
     }
 
     BESDEBUG( "fonc", "FONcTransform::write_var for var "
-                      << varname << endl )
+                      << varname << endl ) ;
     int varid ;
     size_t var_index[] = {0} ;
     nc_type var_type = get_nc_type( b ) ;
@@ -1430,7 +1434,7 @@ FONcTransform::write_var( BaseType* b )
 	    }
     }
     BESDEBUG( "fonc", "FONcTransform::write_var done for "
-                      << varname << endl )
+                      << varname << endl ) ;
 }
 
 /** @brief Add the attributes for an OPeNDAP variable to the netcdf file
@@ -1565,9 +1569,9 @@ FONcTransform::addattrs( int varid, const string &var_name,
     }
     new_name = FONcUtils::id2netcdf( new_name ) ;
     if( varid == NC_GLOBAL )
-	BESDEBUG( "fonc", "Adding global attributes " << new_name << endl )
+	BESDEBUG( "fonc", "Adding global attributes " << new_name << endl ) ;
     else
-	BESDEBUG( "fonc", "Adding attributes " << new_name << endl )
+	BESDEBUG( "fonc", "Adding attributes " << new_name << endl ) ;
 
     int stax = NC_NOERR ;
     unsigned int attri = 0 ;
@@ -1579,7 +1583,7 @@ FONcTransform::addattrs( int varid, const string &var_name,
 	    {
 		// flatten
 		BESDEBUG( "fonc", "Attribute " << new_name
-				  << " is an attribute container" << endl )
+				  << " is an attribute container" << endl ) ;
 		AttrTable *container = attrs.get_attr_table( attr ) ;
 		if( container )
 		{
@@ -1796,7 +1800,7 @@ FONcTransform::write_sequence( BaseType *b )
     string varname = FONcUtils::id2netcdf( embedded_name( b->name() ) ) ;
 
     BESDEBUG( "fonc", "FONcTransform::write_sequence for var "
-                      << varname << endl )
+                      << varname << endl ) ;
 
     Sequence *s = dynamic_cast<Sequence *>(b) ;
     if( !s )
@@ -1824,7 +1828,7 @@ FONcTransform::write_sequence( BaseType *b )
     nc_enddef( _ncid ) ;
 
     BESDEBUG( "fonc", "FONcTransform::write_sequence done for "
-                      << varname << endl )
+                      << varname << endl ) ;
 }
 
 /** @brief add an embedded object to the list of embedded objects

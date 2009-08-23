@@ -53,44 +53,44 @@ using std::endl ;
 void
 FONcModule::initialize( const string &modname )
 {
-    BESDEBUG( "fonc", "Initializing ESG module " << modname << endl )
+    BESDEBUG( "fonc", "Initializing ESG module " << modname << endl ) ;
 
-    BESDEBUG( "fonc", "    adding " << modname << " request handler" << endl )
+    BESDEBUG( "fonc", "    adding " << modname << " request handler" << endl ) ;
     BESRequestHandler *handler = new FONcRequestHandler( modname ) ;
     BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
 
     BESDEBUG( "fonc", "    adding " << RETURNAS_NETCDF << " transmitter"
-		     << endl )
+		     << endl ) ;
     BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF,
 						     new FONcTransmitter( ) ) ;
 
-    BESDEBUG( "fonc", "    adding fonc service to dap" << endl )
+    BESDEBUG( "fonc", "    adding fonc service to dap" << endl ) ;
     BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE,
 						   DATA_SERVICE,
 						   RETURNAS_NETCDF ) ;
 
-    BESDEBUG( "fonc", "    adding fonc debug context" << endl )
+    BESDEBUG( "fonc", "    adding fonc debug context" << endl ) ;
     BESDebug::Register( "fonc" ) ;
 
-    BESDEBUG( "fonc", "Done Initializing ESG module " << modname << endl )
+    BESDEBUG( "fonc", "Done Initializing ESG module " << modname << endl ) ;
 }
 
 void
 FONcModule::terminate( const string &modname )
 {
-    BESDEBUG( "fonc", "Cleaning ESG module " << modname << endl )
+    BESDEBUG( "fonc", "Cleaning ESG module " << modname << endl ) ;
 
     BESDEBUG( "fonc", "    removing " << RETURNAS_NETCDF << " transmitter"
-		     << endl )
+		     << endl ) ;
     BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF ) ;
 
     BESDEBUG( "fonc", "    removing " << modname << " request handler "
-		      << endl )
+		      << endl ) ;
     BESRequestHandler *rh =
 	BESRequestHandlerList::TheList()->remove_handler( modname ) ;
     if( rh ) delete rh ;
 
-    BESDEBUG( "fonc", "Done Cleaning ESG module " << modname << endl )
+    BESDEBUG( "fonc", "Done Cleaning ESG module " << modname << endl ) ;
 }
 
 void

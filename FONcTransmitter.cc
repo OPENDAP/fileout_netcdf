@@ -137,7 +137,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     }
 
     BESDEBUG( "fonc",
-	      "FONcTransmitter::send_data - parsing the constraint" << endl )
+	      "FONcTransmitter::send_data - parsing the constraint" << endl ) ;
 
     // ticket 1248 jhrg 2/23/09
     string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
@@ -165,8 +165,8 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     string dataset_name = "" ;
 
     // now we need to read the data
-    BESDEBUG( "fonc",
-	      "FONcTransmitter::send_data - reading data into DataDDS" << endl )
+    BESDEBUG( "fonc", "FONcTransmitter::send_data - reading data into DataDDS"
+		      << endl ) ;
     // This is used to record whetehr this is a functional CE or not. If so,
     // the code allocates a new DDS object to hold the BaseType returned by
     // the function and we need to delete that DDS before exiting this code.
@@ -251,7 +251,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     // transform the OPeNDAP DataDDS to the netcdf file
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - transforming into temporary file "
-	      << temp_full << endl )
+	      << temp_full << endl ) ;
     try
     {
 	FONcTransform ft( dds, dhi, temp_full ) ;
@@ -259,7 +259,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 
 	BESDEBUG( "fonc",
 		  "FONcTransmitter::send_data - transmitting temp file "
-		  << temp_full << endl )
+		  << temp_full << endl ) ;
 	FONcTransmitter::return_temp_stream( temp_full, strm ) ;
     }
     catch( BESError &e )
@@ -290,7 +290,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
         delete dds;
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - done transmitting to netcdf"
-	      << endl )
+	      << endl ) ;
 }
 
 /** @brief stream the temporary netcdf file back to the requester
