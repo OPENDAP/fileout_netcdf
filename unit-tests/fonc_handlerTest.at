@@ -1,0 +1,33 @@
+# Process with autom4te to create an -*- Autotest -*- test suite.
+
+
+# ------------------------------
+#
+
+AT_INIT([bes.conf])
+# AT_COPYRIGHT([])
+
+AT_TESTED([ncdump])
+
+# Usage: _AT_TEST_*(<bescmd source>, <baseline file>)
+
+m4_define([AT_FONC_TEST],   
+[AT_SETUP([FONC $1])
+AT_KEYWORDS([fonc])
+AT_CHECK([$abs_builddir/$1 || true], [], [ignore], [ignore])
+AT_CHECK([ncdump $2 || true], [], [stdout], [stderr])
+AT_CHECK([diff -b -B $abs_srcdir/$3 stdout || diff -b -B $abs_srcdir/$3 stderr], [], [ignore],[],[])
+AT_CLEANUP])
+
+AT_FONC_TEST([arrayT], [arrayT.nc], [baselines/fonc.array.00.baseline])
+AT_FONC_TEST([attrT], [attrT.nc], [baselines/fonc.attr.00.baseline])
+AT_FONC_TEST([gridT], [gridT.nc], [baselines/fonc.grid.00.baseline])
+AT_FONC_TEST([namesT], [namesT.nc], [baselines/fonc.names.00.baseline])
+AT_FONC_TEST([seqT], [seqT.nc], [baselines/fonc.seq.00.baseline])
+AT_FONC_TEST([simpleT00], [simpleT00.nc], [baselines/fonc.simple.00.baseline])
+AT_FONC_TEST([simpleT01], [simpleT01.nc], [baselines/fonc.simple.01.baseline])
+AT_FONC_TEST([simpleT02], [simpleT02.nc], [baselines/fonc.simple.02.baseline])
+AT_FONC_TEST([structT00], [structT00.nc], [baselines/fonc.struct.00.baseline])
+AT_FONC_TEST([structT01], [structT01.nc], [baselines/fonc.struct.01.baseline])
+AT_FONC_TEST([structT02], [structT02.nc], [baselines/fonc.struct.02.baseline])
+

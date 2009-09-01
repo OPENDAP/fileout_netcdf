@@ -5,7 +5,8 @@ AC_PREREQ(2.59)
 AC_INIT(fileout_netcdf, 0.9.3, opendap-tech@opendap.org)
 AC_CONFIG_AUX_DIR([conf])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE(1.10)
+AC_CONFIG_TESTDIR(unit-tests, [.])
 
 AC_CONFIG_SRCDIR([FONcTransmitter.h])
 AC_CONFIG_HEADER([config.h])
@@ -60,7 +61,7 @@ AC_CHECK_BES([3.7.0],
 [ AC_MSG_ERROR([Cannot find bes])
 ])
 
-AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/test_config.h])
+AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/test_config.h unit-tests/atlocal])
 
 AC_OUTPUT
 

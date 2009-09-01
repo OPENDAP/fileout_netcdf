@@ -1,8 +1,6 @@
 # Tests
 
-AUTOMAKE_OPTIONS = foreign dejagnu
-
-DEJATOOL=fonc
+AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS)
 AM_LDADD = $(BES_DAP_LIBS)
@@ -12,17 +10,13 @@ AM_LDADD = $(BES_DAP_LIBS)
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-# This determines what gets built by make check
-noinst_PROGRAMS = $(UNIT_TESTS)
-
-noinst_HEADERS = test_config.h
-
-
 DISTCLEANFILES = test_config.h
 
 CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
-EXTRA_DIST = baselines config fonc.tests common_tests.exp test_config.h.in bes.conf
+EXTRA_DIST = baselines test_config.h.in bes.conf fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
+
+check_PROGRAMS = $(UNIT_TESTS)
 
 ############################################################################
 # Unit Tests
@@ -67,4 +61,36 @@ namesT_LDADD = $(AM_LDADD)
 
 seqT_SOURCES = seqT.cc $(SRCS)
 seqT_LDADD = $(AM_LDADD)
+
+############## Autotest follows #####################
+
+AUTOM4TE = autom4te
+DIRS_EXTRA = bes-testsuite nc besstandalone.netcdf common_tests.exp bes.conf.in
+ 
+TESTSUITE = $(srcdir)/fonc_handlerTest
+
+check-local: $(UNIT_TESTS) atconfig atlocal $(TESTSUITE)
+	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+
+clean-local:
+	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
+
+distclean-local:
+	-rm atconfig
+
+AUTOTEST = $(AUTOM4TE) --language=autotest
+$(TESTSUITE): $(srcdir)/fonc_handlerTest.at $(srcdir)/package.m4
+	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
+	mv $@.tmp $@
+
+# The `:;' works around a Bash 3.2 bug when the output is not writeable.
+$(srcdir)/package.m4: $(top_srcdir)/configure.ac
+	:;{ \
+	echo '# Signature of the current package.' && \
+	echo 'm4_define([AT_PACKAGE_NAME],      [@PACKAGE_NAME@])' && \
+	echo 'm4_define([AT_PACKAGE_TARNAME],   [@PACKAGE_TARNAME@])' && \
+	echo 'm4_define([AT_PACKAGE_VERSION],   [@PACKAGE_VERSION@])' && \
+	echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])' && \
+	echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])'; \
+	} >'$(srcdir)/package.m4'
 
