@@ -7,7 +7,7 @@ AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([conf])
 
 AM_INIT_AUTOMAKE(1.10)
-AC_CONFIG_TESTDIR(unit-tests, [.])
+AC_CONFIG_TESTDIR(unit-tests, [/usr/local/netcdf/bin])
 
 AC_CONFIG_SRCDIR([FONcTransmitter.h])
 AC_CONFIG_HEADER([config.h])
