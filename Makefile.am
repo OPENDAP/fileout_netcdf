@@ -52,6 +52,11 @@ bes-conf: bes-fonc-data.sh
 	    ./bes-fonc-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
 	fi)
 
+C4_DIR=./cccc
+.PHONY: cccc
+cccc:	
+	cccc --outdir=$(C4_DIR) $(FONC_SRC) $(FONC_HDR)
+
 ###########################################################################
 
 # Fortify targets.
