@@ -76,10 +76,10 @@ fortifyclean:
 # Build linux RPMs
 
 srpm: dist
-	rpmbuild -ts fileout_netcdf-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb fileout_netcdf-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 ###########################################################################
 
