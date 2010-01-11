@@ -87,8 +87,8 @@ FONcTransmitter::FONcTransmitter()
 	// Where is the temp directory for creating these files
 	bool found = false ;
 	string key = "FONc.Tempdir" ;
-	FONcTransmitter::temp_dir =
-	    TheBESKeys::TheKeys()->get_key( key, found ) ;
+	TheBESKeys::TheKeys()->get_value( key,
+					  FONcTransmitter::temp_dir, found ) ;
 	if( !found || FONcTransmitter::temp_dir.empty() )
 	{
 	    FONcTransmitter::temp_dir = FONC_TEMP_DIR ;
@@ -323,7 +323,10 @@ FONcTransmitter::return_temp_stream( const string &filename,
     if( nbytes > 0 )
     {
 	bool found = false ;
-	if( TheBESKeys::TheKeys()->get_key( "BES.Communication.Protocol", found ) == "HTTP" )
+	string protocol ;
+	TheBESKeys::TheKeys()->get_value( "BES.Communication.Protocol",
+					  protocol, found ) ;
+	if( protocol == "HTTP" )
 	{
 	    cout << "HTTP/1.0 200 OK\n" ;
 	    cout << "Content-type: application/octet-stream\n" ;
