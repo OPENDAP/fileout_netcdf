@@ -1,5 +1,5 @@
 
-# Automake file for fileout_netcdf
+# Automake file for fileout_netfonc
 #
 # 11/11/2008 pcw
 #
@@ -14,7 +14,6 @@ DIST_SUBDIRS = unit-tests
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libfonc_module.la
-dist_bin_SCRIPTS = bes-fonc-data.sh
 
 libfonc_module_la_SOURCES = $(FONC_SRC) $(FONC_HDR)
 libfonc_module_la_CPPFLAGS = $(BES_CPPFLAGS)
@@ -27,30 +26,22 @@ FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
 	FONcModule.h FONcUtils.h
 
-EXTRA_DIST = data COPYRIGHT COPYING bes-fonc-data.sh.in fileout_netcdf.spec
+EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netfonc.spec
 
-CLEANFILES = *~
+CLEANFILES = *~ fonc.conf
 
-CLEANFILES += bes-fonc-data.sh
+install-data-local: fonc.conf
+	@currdate=`date +"%y%m%d%H%M"`; \
+	test -d $(DESTDIR)$(sysconfdir)/bes || $(MKDIR_P) $(DESTDIR)$(sysconfdir)/bes; \
+	test -d $(DESTDIR)$(sysconfdir)/bes/modules || $(MKDIR_P) $(DESTDIR)$(sysconfdir)/bes/modules; \
+	test -f $(DESTDIR)$(sysconfdir)/bes/modules/fonc.conf && mv -f $(DESTDIR)$(sysconfdir)/bes/modules/fonc.conf $(DESTDIR)$(sysconfdir)/bes/modules/fonc.conf.$$currdate; \
+	$(INSTALL_DATA) fonc.conf $(DESTDIR)$(sysconfdir)/bes/modules/fonc.conf
 
-do_subst = sed -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
-		   	   -e 's,[@]libdir[@],$(libdir),g' \
-		   	   -e 's,[@]datadir[@],$(datadir),g'
+uninstall-local:
+	rm -f $(DESTDIR)$(sysconfdir)/bes/modules/fonc.conf
 
-bes-fonc-data.sh: bes-fonc-data.sh.in config.status
-	$(do_subst) < $(srcdir)/bes-fonc-data.sh.in > bes-fonc-data.sh
-	chmod +x bes-fonc-data.sh
-
-# This makes sure that the handler modifies the bes which configure found
-# even when distcheck is run.
-bes-conf: bes-fonc-data.sh
-	(bes_prefix=`bes-config --prefix` ; \
-	if test "$$bes_prefix" = "/usr" ; \
-	 then \
-	    ./bes-fonc-data.sh /etc/bes/bes.conf /usr/lib/bes ;\
-	else \
-	    ./bes-fonc-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
-	fi)
+fonc.conf: fonc.conf.in config.status
+	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > fonc.conf
 
 C4_DIR=./cccc
 .PHONY: cccc

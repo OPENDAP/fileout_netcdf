@@ -1,0 +1,16 @@
+#-----------------------------------------------------------------------#
+# OPeNDAP File Out NetCDF (FONc) BES Module Configuration file          #
+#-----------------------------------------------------------------------#
+
+#-----------------------------------------------------------------------#
+# modules to load, includes data modules and command modules            #
+#-----------------------------------------------------------------------#
+
+BES.modules=fonc
+BES.module.fonc=@bes_modules_dir@/libfonc_module.so
+
+# File Out Netcdf (FONc) module specific parameters"
+# FONc.Tempdir: Directory to store temporary netcdf files during transformation"
+# FONc.Reference: URL to the FONc Reference Page at docs.opendap.org"
+FONc.Tempdir=/tmp
+FONc.Reference=http://docs.opendap.org/index.php/BES_-_Modules_-_FileOut_Netcdf
