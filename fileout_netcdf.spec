@@ -38,7 +38,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/bes-fonc-data.sh
+%dir %{_sysconfdir}/bes/
+%dir %{_sysconfdir}/bes/modules
+%config(noreplace) %{_sysconfdir}/bes/modules/fonc.conf
 %{_libdir}/bes/libfonc_module.so
 %doc COPYING COPYRIGHT NEWS README
 
