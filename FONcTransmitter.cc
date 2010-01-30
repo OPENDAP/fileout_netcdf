@@ -57,6 +57,7 @@ using namespace::libdap ;
 #include "FONcTransform.h"
 #include <BESInternalError.h>
 #include <TheBESKeys.h>
+#include <BESContextManager.h>
 #include <BESDataDDSResponse.h>
 #include <BESDapNames.h>
 #include <BESDataNames.h>
@@ -323,15 +324,16 @@ FONcTransmitter::return_temp_stream( const string &filename,
     if( nbytes > 0 )
     {
 	bool found = false ;
-	string protocol ;
-	TheBESKeys::TheKeys()->get_value( "BES.Communication.Protocol",
-					  protocol, found ) ;
+	string context = "transmit_protocol" ;
+	string protocol =
+	    BESContextManager::TheManager()->get_context( context, found ) ;
 	if( protocol == "HTTP" )
 	{
-	    cout << "HTTP/1.0 200 OK\n" ;
-	    cout << "Content-type: application/octet-stream\n" ;
-	    cout << "Content-Description: " << "BES dataset" << "\n\n" ;
-	    cout << flush ;
+	    strm << "HTTP/1.0 200 OK\n" ;
+	    strm << "Content-type: application/octet-stream\n" ;
+	    strm << "Content-Description: " << "BES dataset" << "\n" ;
+	    strm << "Content-Disposition: filename=" << filename << ".nc;\n\n" ;
+	    strm << flush ;
 	}
 	strm.write( block, nbytes ) ;
 	bytes += nbytes ;

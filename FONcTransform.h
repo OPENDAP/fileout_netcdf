@@ -127,7 +127,8 @@ private:
 	bool check_dims( FONcDimSet *set, int dims[],
 			 int dim_sizes[], int ndims, int &nelements ) ;
 	int add_dims( int ncid, int dims[], int dim_sizes[],
-		      int ndims, int &nelements, unsigned int &dim_name_num ) ;
+		      int ndims, int &nelements, unsigned int &dim_name_num,
+		      const string &name_prefix ) ;
     } ;
 
     vector<FONcDimSet *> _dims ;

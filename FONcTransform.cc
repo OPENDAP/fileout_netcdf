@@ -77,8 +77,8 @@ FONcTransform::FONcTransform( DDS *dds, BESDataHandlerInterface &dhi,
 		   + "empty local file name passed to constructor" ;
 	throw BESInternalError( s, __FILE__, __LINE__ ) ;
     }
-    _dds = dds ;
     _localfile = localfile ;
+    _dds = dds ;
 
     // if there is a variable, attribute, dimension name that is not
     // compliant with netcdf naming conventions then we will create
@@ -764,7 +764,8 @@ int
 FONcTransform::FONcDimSet::add_dims( int ncid, int dims[],
 				     int dim_sizes[], int ndims,
 				     int &nelements,
-				     unsigned int &dim_name_num )
+				     unsigned int &dim_name_num,
+				     const string &name_prefix )
 {
     if( ndims < numdims )
     {
@@ -785,7 +786,8 @@ FONcTransform::FONcDimSet::add_dims( int ncid, int dims[],
 	{
 	    ncdimnames.push_back( dimnames[index] ) ;
 	}
-	ncdimnames[index] = FONcUtils::id2netcdf( ncdimnames[index] ) ;
+	ncdimnames[index] = FONcUtils::id2netcdf( ncdimnames[index],
+						  name_prefix ) ;
 	int this_dimension = 0 ;
 	int stax = nc_def_dim( ncid, ncdimnames[index].c_str(),
 			       dimsizes[index], &this_dimension ) ;
@@ -859,7 +861,8 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 	    _dim_name_num++ ;
 	    dimname_s = dimname_strm.str() ;
 	}
-	dimname_s = FONcUtils::id2netcdf( embedded_name( dimname_s ) ) ;
+	dimname_s = FONcUtils::id2netcdf( embedded_name( dimname_s,
+					  _name_prefix ) ) ;
 	const char *this_dimension_name = dimname_s.c_str() ;
 
 	// check to see if the dimension is already defined
@@ -913,7 +916,9 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
     if( !found )
     {
 	int stax = set->add_dims( _ncid, dims, dim_sizes,
-				  actual_ndims, nelements, _dim_name_num ) ;
+				  actual_ndims, nelements,
+				  _dim_name_num,
+				  _name_prefix ) ;
 	if( stax != NC_NOERR )
 	{
 	    string err = (string)"fileout.netcdf - "
@@ -964,7 +969,8 @@ FONcTransform::write_array( Array *a, nc_type array_type,
     ncopts = NC_VERBOSE ;
     int stax = NC_NOERR ;
     string tmp_varname = embedded_name( a->name() ) ;
-    string varname = FONcUtils::id2netcdf( tmp_varname ) ;
+    string varname = FONcUtils::id2netcdf( tmp_varname,
+					   _name_prefix ) ;
 
     // if the variable name has been adjusted to be netcdf compliant
     // then add an attribute "original_name" with the original name
@@ -1220,7 +1226,8 @@ void
 FONcTransform::write_str( BaseType *b )
 {
     string tmp_varname = embedded_name( b->name() ) ;
-    string varname = FONcUtils::id2netcdf( tmp_varname ) ;
+    string varname = FONcUtils::id2netcdf( tmp_varname,
+					   _name_prefix ) ;
 
     // if the variable name has been adjusted to be netcdf compliant
     // then add an attribute "original_name" with the original name
@@ -1317,7 +1324,8 @@ void
 FONcTransform::write_var( BaseType* b )
 {
     string tmp_varname = embedded_name( b->name() ) ;
-    string varname = FONcUtils::id2netcdf( tmp_varname ) ;
+    string varname = FONcUtils::id2netcdf( tmp_varname,
+					   _name_prefix ) ;
 
     // if the variable name has been adjusted to be netcdf compliant
     // then add an attribute "original_name" with the original name
@@ -1567,7 +1575,8 @@ FONcTransform::addattrs( int varid, const string &var_name,
     {
 	new_name = new_attr_name ;
     }
-    new_name = FONcUtils::id2netcdf( new_name ) ;
+    new_name = FONcUtils::id2netcdf( new_name,
+				     _name_prefix ) ;
     if( varid == NC_GLOBAL )
 	BESDEBUG( "fonc", "Adding global attributes " << new_name << endl ) ;
     else
@@ -1797,7 +1806,8 @@ FONcTransform::addattrs( int varid, const string &var_name,
 void
 FONcTransform::write_sequence( BaseType *b )
 {
-    string varname = FONcUtils::id2netcdf( embedded_name( b->name() ) ) ;
+    string varname = FONcUtils::id2netcdf( embedded_name( b->name() ),
+					   _name_prefix ) ;
 
     BESDEBUG( "fonc", "FONcTransform::write_sequence for var "
                       << varname << endl ) ;

@@ -46,7 +46,7 @@ using std::string ;
 class FONcUtils
 {
 public:
-    static string		id2netcdf( string in ) ;
+    static string		id2netcdf( string in, const string &prefix ) ;
 } ;
 
 #endif // FONcUtils

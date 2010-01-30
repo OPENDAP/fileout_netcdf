@@ -42,7 +42,7 @@
  * @returns new netcdf compliant identifier
  */
 string
-FONcUtils::id2netcdf( string in )
+FONcUtils::id2netcdf( string in, const string &prefix )
 {
     // string of allowed characters in netcdf naming convention
     string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_.@" ;
@@ -54,13 +54,13 @@ FONcUtils::id2netcdf( string in )
 
     while( (i = in.find_first_not_of( allowed, i ) ) != string::npos)
     {
-        in.replace( i, 1, "_" ) ;
-        i++ ;
+	in.replace( i, 1, "_" ) ;
+	i++ ;
     }
 
     if( first.find( in[0] ) == string::npos )
     {
-	in = (string)"h4_" + in ;
+	in = prefix + in ;
     }
 
     return in;
