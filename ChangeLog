@@ -1,3 +1,109 @@
+2010-02-01  rduncan
+
+	Release 1/01/2010
+
+2010-01-29  Patrick West <pwest@ucar.edu>
+
+	Using strm instead of cout to output the http headers. Checking the
+	context variable instead of the parameter to see if protocol is http.
+	Passing the name prefix to the different methods to fix variable names,
+	attribute names, dimension names, etc...
+	M    unit-tests/baselines/fonc.names.00.baseline
+	M    FONcUtils.cc
+	M    FONcUtils.h
+	M    FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    FONcTransform.h
+
+2010-01-22  Patrick West <pwest@ucar.edu>
+
+	RPM to use fonc.conf instead of bes-fonc-data.sh
+	M    fileout_netcdf.spec
+
+2010-01-12  Patrick West <pwest@ucar.edu>
+
+	Replacing script that modifies bes.conf with standalone configuration
+	file
+	D    bes-fonc-data.sh.in
+	M    Makefile.am
+	A    fonc.conf.in
+
+2010-01-10  Patrick West <pwest@ucar.edu>
+
+	API change to BESKeys
+	M    FONcRequestHandler.cc
+	M    FONcTransmitter.cc
+
+2010-01-08  Patrick West <pwest@ucar.edu>
+
+	--clean to clean build and src files for rpmbuild
+	M    Makefile.am
+
+2009-12-29  James Gallagher <jgallagher@opendap.org>
+
+	Shrew build changes that will hopefully lead to a version that we can build using NMI's B&T system. Also, I added 'cccc' targets so that we can take a 'metrics snapshot' without undue pain.
+
+2009-11-08  James Gallagher <jgallagher@opendap.org>
+
+	Hardwire tests to look in /usr/local/netcdf in addition to PATH for ncdump (in fileout_netcdf).
+
+2009-09-25  James Gallagher <jgallagher@opendap.org>
+
+	It just seem right to save things at this point. Most of the configure.ac files have been updated. The libdap software has had a number of the FILE* methods/functions commented out using #if FILE_METHODS and then #undef FILE_METHODS. We'll see how much of the redundant code can be removed before the next Hyrax 1.6 release.
+
+2009-09-01  Patrick West <pwest@ucar.edu>
+
+	Converted dejagnu tests to autotest.
+	A    unit-tests/atlocal.in
+	A    unit-tests/fonc_handlerTest.at
+	D    unit-tests/fonc.tests
+	D    unit-tests/config
+	D    unit-tests/common_tests.exp
+	M    unit-tests/Makefile.am
+	M    configure.ac
+
+2009-08-23  Patrick West <pwest@ucar.edu>
+
+	Added ; after each BESDEBUG statement
+
+2009-08-19  James Gallagher <jgallagher@opendap.org>
+
+	Deleted generated files
+
+2009-08-18  Patrick West <pwest@ucar.edu>
+
+	DAP Macro changes
+
+2009-07-10  Patrick West <pwest@ucar.edu>
+
+	Merged Hyrax 1.5.2 tag to trunk
+	_M   .
+	M    unit-tests/attrT.cc
+	M    unit-tests/arrayT.cc
+	M    unit-tests/structT00.cc
+	M    unit-tests/gridT.cc
+	M    unit-tests/structT01.cc
+	M    unit-tests/structT02.cc
+	M    unit-tests/simpleT00.cc
+	M    unit-tests/simpleT01.cc
+	M    unit-tests/simpleT02.cc
+	M    unit-tests/Makefile.am
+	M    unit-tests/namesT.cc
+	A  + fileout_netcdf.spec
+	M    ChangeLog
+	M    README
+	M    configure.ac
+	MM   FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    INSTALL
+	_M   FONcTransform.h
+	A  + COPYRIGHT
+	M    Makefile.am
+	M    NEWS
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2009-06-05  James Gallagher <jgallagher@opendap.org>
 
 	Added include files so these will compile with gcc 4.3.2 on FC 10.
