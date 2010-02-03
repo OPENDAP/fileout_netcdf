@@ -1,4 +1,24 @@
 
+Version 1.0.0 (02 February 2010)
+
+This release is a bug fix release, with memory leaks cleaned up, fortify
+security issues resolved, and shared dimensions cleaned up.
+
+From the TODO list below:
+1.  FONc.Tempdir=/tmp parameter added to the fileout_netcdf configuration. And the filename used for the temporary file is randomly generated.
+2. debug statements added using the BESDebug method, using the context
+fonc. For debugging fileout_netcdf, use -d "bes.dbg,fonc"
+3. Correct exceptions generated and returned to the client as with any
+of the other modules.
+4. Writing of attributes is done as part of creating the variables,
+instead of a separate pass, as was done before.
+5. bes-testsuite created to use besstandalone application for running
+and testing fileout_netcdf capabilities. Also added unit tests.
+
+Still left TODO:
+1. Handling of sequence data
+2. Further cleanup of shared dimensions.
+
 Version 0.9.3 (09 June 2009)
 
 Fix for ticket 1300 - some Grids from HDF4 files were not represented
@@ -19,3 +39,17 @@ Version 0.9.0
 
 It's brand new. Still to do: Seqences. This contains no explicit support CF,
 although that's slated for a future version.
+
+TODO:
+- Need to be able to configure where the temporary netcdf file is stored and
+  generate a uniq name for the file as it is possible for multiple requests
+  of this type to be handled at the same time by different processes.
+- Add debug statements using BESDEBUG and the debug context of fonc
+- Change any error conditions from simply printing to cerr to throwing an
+  exception. Please refer to the different exception types.
+- Look into how attributes are written to the file. I believe that it
+  requires the container.attributes section of the define statement.
+- Create a testsuite that is stand alone, not requiring any other modules
+  except the dap modules.
+- Need to be able to write out Grid data.
+

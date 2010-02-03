@@ -8,8 +8,8 @@ URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/%{name}-%{version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.9.0 netcdf-devel
-BuildRequires:   bes-devel >= 3.7.0
+BuildRequires:   libdap-devel >= 3.10.0 netcdf-devel
+BuildRequires:   bes-devel >= 3.8.0
 
 %description
 This is the fileout netCDF response handler for Hyrax - the OPeNDAP data
@@ -45,6 +45,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
+* Tue Feb  2 2010 Patrick West <westp@rpi.edu> - 1.0.0-1
+- Update to 1.0.0
+
 * Mon Mar 16 2009 James Gallagher <jgallagher@opendap.org> - 
 - Initial build.
 
