@@ -26,7 +26,7 @@ FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
 	FONcModule.h FONcUtils.h
 
-EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netfonc.spec
+EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec
 
 CLEANFILES = *~ fonc.conf
 
