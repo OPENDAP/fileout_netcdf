@@ -1,5 +1,5 @@
 
-# Automake file for fileout_netfonc
+# Automake file for fileout_netcdf
 #
 # 11/11/2008 pcw
 #
