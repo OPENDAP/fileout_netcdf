@@ -27,7 +27,7 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install INSTALL="install -p"
 
-rm $RPM_BUILD_ROOT%{_libdir}/bes/*.la
+rm $RPM_BUILD_ROOT%{_libdir}/bes/libfonc_module.la
 
 %clean
 rm -rf $RPM_BUILD_ROOT
