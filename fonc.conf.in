@@ -6,7 +6,7 @@
 # modules to load, includes data modules and command modules            #
 #-----------------------------------------------------------------------#
 
-BES.modules=fonc
+BES.modules+=fonc
 BES.module.fonc=@bes_modules_dir@/libfonc_module.so
 
 # File Out Netcdf (FONc) module specific parameters"
