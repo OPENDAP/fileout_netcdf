@@ -846,64 +846,22 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
     int *dim_sizes = new int[ndims];
     int nelements = 1 ;
 
-/*
-    Array::Dim_iter di = a->dim_begin() ;
-    Array::Dim_iter de = a->dim_end() ;
-    for( ; di != de; di++ )
-    {
-	int this_dimension ;
-	int this_dimension_size = a->dimension_size( di, true ) ;
-	string dimname_s = a->dimension_name( di ) ;
-	if( dimname_s.empty() )
-	{
-	    ostringstream dimname_strm ;
-	    dimname_strm << "dim" << _dim_name_num+1 ;
-	    _dim_name_num++ ;
-	    dimname_s = dimname_strm.str() ;
-	}
-	dimname_s = FONcUtils::id2netcdf( embedded_name( dimname_s,
-					  _name_prefix ) ) ;
-	const char *this_dimension_name = dimname_s.c_str() ;
-
-	// check to see if the dimension is already defined
-	stax = nc_inq_dimid( _ncid, this_dimension_name, &this_dimension ) ;
-	if( stax != NC_NOERR )
-	{
-	    // The dimension does not exist add it...
-	    stax = nc_def_dim( _ncid, this_dimension_name,
-			       this_dimension_size, &this_dimension ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = (string)"fileout.netcdf - "
-			     + "Failed to define dimension "
-			     + this_dimension_name ;
-		handle_error( stax, err, __FILE__, __LINE__ ) ;
-	    }
-	}
-
-	if (!(dim_num < ndims)) {
-	    delete[] dims;
-	    delete[] dim_sizes;
-	    throw BESInternalError("dim_num too large", __FILE__, __LINE__);
-	}
-
-	dims[dim_num] = this_dimension ;
-	if( dimids ) dimids[dim_num] = this_dimension ;
-	dim_sizes[dim_num] = this_dimension_size ;
-	dim_num++ ;
-	nelements *= this_dimension_size ;
-    }
-*/
-
-    Array::Dim_iter di = a->dim_begin() ;
-    Array::Dim_iter de = a->dim_end() ;
-
+    // Add each dimension to a dimension set. this keeps the order of
+    // the dimensions, the size of the dimensions, and the names of the
+    // dimensions. A shared dimension must have the same name, size, and
+    // belong to arrays of the same dimensionality.
     FONcDimSet *set = new FONcDimSet( actual_ndims ) ;
+    Array::Dim_iter di = a->dim_begin() ;
+    Array::Dim_iter de = a->dim_end() ;
     for( ; di != de; di++ )
     {
 	set->add_dimension( a, di ) ;
     }
 
+    // Take the new dimension set and compare it to the already exiting
+    // dimension sets to make see if there are any shared dimensions. A
+    // shared dimension must have the same name, size, and belong to
+    // arrays of the same dimensionality
     vector<FONcDimSet *>::iterator dsi = _dims.begin() ;
     vector<FONcDimSet *>::iterator dse = _dims.end() ;
     bool found = false ;
@@ -915,6 +873,9 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 
     if( !found )
     {
+	// If these aren't share dimensions, haven't been defined before in
+	// other words, then add the dimensions to the netcdf target file,
+	// getting their dimension ids for defining the array.
 	int stax = set->add_dims( _ncid, dims, dim_sizes,
 				  actual_ndims, nelements,
 				  _dim_name_num,
@@ -922,13 +883,15 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 	if( stax != NC_NOERR )
 	{
 	    string err = (string)"fileout.netcdf - "
-			 + "Failed to define dimension" ;
+			 + "Failed to add dimensions" ;
 	    handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
 	_dims.push_back( set ) ;
     }
     else
     {
+	// If the are shared already, then delete this new set and use
+	// the ones that matched.
 	delete set ;
 	set = 0 ;
     }
@@ -941,6 +904,7 @@ FONcTransform::write_array( BaseType* b, int dimids[] )
 	}
     }
 
+    // Now create the array
     write_array( a, array_type, nelements, ndims, dims, dim_sizes ) ;
 
     delete[] dims;
