@@ -30,7 +30,7 @@ BUILDING THE SOFTWARE
    bes.conf file, such as the TypeMatch parameter for finding your
    files.
 
-4) For many installations, you must arrange for your operating system to find
+4) For some installations, you must arrange for your operating system to find
    the shared libraries installed by default in $prefix/lib. Do this by
    either setting an environment variable such as LD_LIBRARY_PATH or by
    editing /etc/ld.so.conf. Different operating systems handle this in
@@ -59,6 +59,10 @@ REQUIREMENTS
     netcdf version 3.6.2, although any recent version should work fine. If the
     configure script cannot find your copy of libnetcdf, use the
     --with-netcdf options to tell it where to look (see configure --help).
+
+  o If the build will fails because of problems linking with the netcdf
+    library, you may need to build the library from source and force the 
+    compiler/linker to use the option '-fPIC' (poisition Independet Code).
 
 NOTES
 
