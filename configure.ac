@@ -42,19 +42,35 @@ AC_CHECK_LIBDAP([3.10.0],
  [ AC_MSG_ERROR([Cannot find libdap])
 ])
   
-AC_CHECK_NETCDF(
-   [
-       LIBS="$LIBS $NC_LIBS"
-       LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-       CPPFLAGS="$CPPFLAGS $NC_CPPFLAGS"
-   ],
-   [
-       echo "*** Use --with-netcdf for the root netcdf directory."
-       echo "*** Otherwise use --with-netcdf-include switch for includes directory"
-       echo "*** and --with-netcdf-libdir switch for libraries directory."
-       AC_MSG_ERROR([netcdf library and netcdf headers are required.])
-   ],[3]
+AX_PATH_GENERIC([nc], [4.0.0], [],
+    [
+	LIBS="$LIBS $NC_LIBS"
+	LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+	CPPFLAGS="$CPPFLAGS $NC_CPPFLAGS"
+	handler_netcdf4_found=1
+    ],
+    [
+	AC_MSG_WARN([Could not find netcdf 4; looking for the older library])
+	handler_netcdf_4_found=0
+    ]
 )
+
+if test $handler_netcdf4_found -ne 1
+then
+    AC_CHECK_NETCDF(
+       [
+	   LIBS="$LIBS $NC_LIBS"
+	   LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+	   CPPFLAGS="$CPPFLAGS $NC_CPPFLAGS"
+       ],
+       [
+	   echo "*** Use --with-netcdf for the root netcdf directory."
+	   echo "*** Otherwise use --with-netcdf-include switch for includes directory"
+	   echo "*** and --with-netcdf-libdir switch for libraries directory."
+	   AC_MSG_ERROR([netcdf library and netcdf headers are required.])
+       ],[3]
+    )
+fi
 
 AC_CHECK_BES([3.8.0],
 [
