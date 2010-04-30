@@ -21,10 +21,16 @@ libfonc_module_la_LDFLAGS = -avoid-version -module
 libfonc_module_la_LIBADD = $(BES_DAP_LIBS)
 
 FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
-	FONcModule.cc FONcUtils.cc
+	FONcModule.cc FONcUtils.cc FONcStr.cc FONcShort.cc FONcInt.cc	\
+	FONcFloat.cc FONcDouble.cc FONcStructure.cc FONcArray.cc	\
+	FONcGrid.cc FONcSequence.cc FONcByte.cc FONcBaseType.cc		\
+	FONcDim.cc FONcMap.cc FONcAttributes.cc
 
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
-	FONcModule.h FONcUtils.h
+	FONcModule.h FONcUtils.h FONcStr.h FONcShort.h FONcInt.h	\
+	FONcFloat.h FONcDouble.h FONcStructure.h FONcArray.h		\
+	FONcGrid.h FONcSequence.h FONcByte.h FONcBaseType.h		\
+	FONcDim.h FONcMap.h FONcAttributes.h
 
 EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec
 

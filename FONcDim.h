@@ -1,4 +1,4 @@
-// FONcTransform.h
+// FONcDim.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,53 +29,36 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcTransfrom_h_
-#define FONcTransfrom_h_ 1
-
-#include <netcdf.h>
-
-#include <string>
-#include <vector>
-#include <map>
-
-using std::string ;
-using std::vector ;
-using std::map ;
-
-#include <DDS.h>
-#include <Array.h>
-
-using namespace::libdap ;
+#ifndef FONcDim_h_
+#define FONcDim_h_ 1
 
 #include <BESObj.h>
-#include <BESDataHandlerInterface.h>
 
-class FONcBaseType ;
-
-/** @brief Transformation object that converts an OPeNDAP DataDDS to a
- * netcdf file
- *
- * This class transforms each variable of the DataDDS to a netcdf file. For
- * more information on the transformation please refer to the OpeNDAP
- * documents wiki.
- */
-class FONcTransform : public BESObj
+class FONcDim : public BESObj
 {
 private:
-    int				_ncid ;
-    DDS				*_dds ;
-    string			_localfile ;
-    vector<FONcBaseType *>	_fonc_vars ;
-
+    string			_name ;
+    int				_size ;
+    int				_dimid ;
+    bool			_defined ;
+    int				_ref ;
 public:
-    				FONcTransform( DDS *dds,
-					       BESDataHandlerInterface &dhi,
-					       const string &localfile ) ;
-    virtual			~FONcTransform() ;
-    virtual void		transform( ) ;
+    				FONcDim( const string &name, int size ) ;
+    virtual			~FONcDim() {}
+    virtual void		incref() { _ref++ ; }
+    virtual void		decref() ;
+
+    virtual void		define( int ncid ) ;
+
+    virtual string		name() { return _name ; }
+    virtual int			size() { return _size ; }
+    virtual int			dimid() { return _dimid ; }
+    virtual bool		defined() { return _defined ; }
 
     virtual void		dump( ostream &strm ) const ;
+
+    static int			DimNameNum ;
 } ;
 
-#endif // FONcTransfrom_h_
+#endif // FONcDim_h_
 

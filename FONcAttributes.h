@@ -1,4 +1,4 @@
-// FONcTransform.h
+// FONcAttributes.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,26 +29,16 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcTransfrom_h_
-#define FONcTransfrom_h_ 1
+#ifndef FONcAttributes_h_
+#define FONcAttributes_h_ 1
 
 #include <netcdf.h>
 
 #include <string>
-#include <vector>
-#include <map>
-
 using std::string ;
-using std::vector ;
-using std::map ;
 
-#include <DDS.h>
-#include <Array.h>
-
-using namespace::libdap ;
-
-#include <BESObj.h>
-#include <BESDataHandlerInterface.h>
+#include <BaseType.h>
+using namespace libdap ;
 
 class FONcBaseType ;
 
@@ -59,23 +49,29 @@ class FONcBaseType ;
  * more information on the transformation please refer to the OpeNDAP
  * documents wiki.
  */
-class FONcTransform : public BESObj
+class FONcAttributes
 {
 private:
-    int				_ncid ;
-    DDS				*_dds ;
-    string			_localfile ;
-    vector<FONcBaseType *>	_fonc_vars ;
-
+    static void			add_attributes( int ncid, int varid,
+						BaseType *b,
+						string &emb_name ) ;
+    static void			addattrs( int ncid, int varid, BaseType *b,
+					  const string &var_name ) ;
+    static void			addattrs( int ncid, int varid,
+					  const string &var_name,
+					  AttrTable &attrs,
+					  AttrTable::Attr_iter &attr,
+					  const string &prepend_attr ) ;
 public:
-    				FONcTransform( DDS *dds,
-					       BESDataHandlerInterface &dhi,
-					       const string &localfile ) ;
-    virtual			~FONcTransform() ;
-    virtual void		transform( ) ;
-
-    virtual void		dump( ostream &strm ) const ;
+    static void			add_attributes( int ncid, int varid,
+						BaseType *b ) ;
+    static void			addattrs( int ncid, int varid, AttrTable &attrs,
+					  const string &var_name,
+					  const string &prepend_attr ) ;
+    static void			add_original_name( int ncid, int varid,
+						   const string &var_name,
+						   const string &orig ) ;
 } ;
 
-#endif // FONcTransfrom_h_
+#endif // FONcAttributes
 

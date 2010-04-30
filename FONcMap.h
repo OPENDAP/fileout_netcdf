@@ -1,4 +1,4 @@
-// FONcTransform.h
+// FONcMap.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,53 +29,40 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcTransfrom_h_
-#define FONcTransfrom_h_ 1
-
-#include <netcdf.h>
-
-#include <string>
-#include <vector>
-#include <map>
-
-using std::string ;
-using std::vector ;
-using std::map ;
-
-#include <DDS.h>
-#include <Array.h>
-
-using namespace::libdap ;
+#ifndef FONcMap_h_
+#define FONcMap_h_ 1
 
 #include <BESObj.h>
-#include <BESDataHandlerInterface.h>
 
-class FONcBaseType ;
+#include "FONcArray.h"
 
-/** @brief Transformation object that converts an OPeNDAP DataDDS to a
- * netcdf file
- *
- * This class transforms each variable of the DataDDS to a netcdf file. For
- * more information on the transformation please refer to the OpeNDAP
- * documents wiki.
- */
-class FONcTransform : public BESObj
+class FONcMap : public BESObj
 {
 private:
-    int				_ncid ;
-    DDS				*_dds ;
-    string			_localfile ;
-    vector<FONcBaseType *>	_fonc_vars ;
-
+    FONcArray *			_arr ;
+    bool			_ingrid ;
+    vector<string>		_shared_by ;
+    bool			_defined ;
+    int				_ref ;
+    				FONcMap() : _arr( 0 ), _ingrid( false ),
+					    _defined( false ), _ref( 1 ) {}
 public:
-    				FONcTransform( DDS *dds,
-					       BESDataHandlerInterface &dhi,
-					       const string &localfile ) ;
-    virtual			~FONcTransform() ;
-    virtual void		transform( ) ;
+    				FONcMap( FONcArray *a, bool ingrid = false )
+				    : _arr( a ), _ingrid( ingrid ),
+				      _defined( false ), _ref( 1 ) {}
+    virtual			~FONcMap() ;
+
+    virtual void		incref() { _ref++ ; }
+    virtual void		decref() ;
+
+    virtual bool		compare( Array *arr ) ;
+    virtual void		add_grid( const string &name ) ;
+    virtual void		clear_embedded() ;
+    virtual void		define( int ncid ) ;
+    virtual void		write( int ncid ) ;
 
     virtual void		dump( ostream &strm ) const ;
 } ;
 
-#endif // FONcTransfrom_h_
+#endif // FONcMap_h_
 

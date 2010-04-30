@@ -1,4 +1,4 @@
-// FONcTransform.h
+// FONcStr.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,53 +29,39 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcTransfrom_h_
-#define FONcTransfrom_h_ 1
+#ifndef FONcStr_h_
+#define FONcStr_h_ 1
 
-#include <netcdf.h>
+#include <Str.h>
 
-#include <string>
-#include <vector>
-#include <map>
+using namespace libdap ;
 
-using std::string ;
-using std::vector ;
-using std::map ;
+#include "FONcBaseType.h"
 
-#include <DDS.h>
-#include <Array.h>
-
-using namespace::libdap ;
-
-#include <BESObj.h>
-#include <BESDataHandlerInterface.h>
-
-class FONcBaseType ;
-
-/** @brief Transformation object that converts an OPeNDAP DataDDS to a
- * netcdf file
+/** @brief A class representing the DAP Str class for file out netcdf
  *
- * This class transforms each variable of the DataDDS to a netcdf file. For
- * more information on the transformation please refer to the OpeNDAP
- * documents wiki.
+ * This class represents a DAP Str with additional information
+ * needed to write it out to a netcdf file. Includes a reference to the
+ * actual DAP Str being converted
  */
-class FONcTransform : public BESObj
+class FONcStr : public FONcBaseType
 {
 private:
-    int				_ncid ;
-    DDS				*_dds ;
-    string			_localfile ;
-    vector<FONcBaseType *>	_fonc_vars ;
-
+    Str *			_str ;
+    int				_dimid ;
+    string *			_data ;
 public:
-    				FONcTransform( DDS *dds,
-					       BESDataHandlerInterface &dhi,
-					       const string &localfile ) ;
-    virtual			~FONcTransform() ;
-    virtual void		transform( ) ;
+    				FONcStr( BaseType *b ) ;
+    virtual			~FONcStr() ;
+
+    virtual void		define( int ncid ) ;
+    virtual void		write( int ncid ) ;
+
+    virtual string 		name() ;
+    virtual nc_type		type() ;
 
     virtual void		dump( ostream &strm ) const ;
 } ;
 
-#endif // FONcTransfrom_h_
+#endif // FONcStr_h_
 

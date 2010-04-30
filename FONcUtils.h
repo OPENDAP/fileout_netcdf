@@ -32,9 +32,19 @@
 #ifndef FONcUtils_h_
 #define FONcUtils_h_ 1
 
-#include <string>
+#include <netcdf.h>
 
+#include <string>
 using std::string ;
+
+#include <BaseType.h>
+using namespace libdap ;
+
+class FONcBaseType ;
+
+#define FONC_EMBEDDED_SEPARATOR "."
+#define FONC_ATTRIBUTE_SEPARATOR "."
+#define FONC_ORIGINAL_NAME "fonc_original_name"
 
 /** @brief Transformation object that converts an OPeNDAP DataDDS to a
  * netcdf file
@@ -46,7 +56,17 @@ using std::string ;
 class FONcUtils
 {
 public:
-    static string		id2netcdf( string in, const string &prefix ) ;
+    static string		name_prefix ;
+    static void			reset() ;
+    static string		id2netcdf( string in ) ;
+    static nc_type		get_nc_type( BaseType *element ) ;
+    static string		gen_name( const vector<string> &embed,
+					  const string &name,
+					  string &original ) ;
+    static FONcBaseType *	convert( BaseType *v ) ;
+    static void			handle_error( int stax, string &err,
+					      const string &file, int line ) ;
+
 } ;
 
 #endif // FONcUtils

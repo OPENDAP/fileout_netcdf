@@ -23,11 +23,15 @@ check_PROGRAMS = $(UNIT_TESTS)
 #
 
 UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
-	arrayT					\
-	structT00 structT01 structT02		\
-	attrT gridT namesT seqT
+	structT00 arrayT structT01 structT02	\
+	arrayT01 gridT seqT attrT namesT
 
-SRCS = ../FONcTransform.cc ../FONcTransmitter.cc ../FONcUtils.cc
+SRCS = ../FONcTransform.cc ../FONcTransmitter.cc ../FONcUtils.cc	\
+	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	\
+	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		\
+	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		\
+	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			\
+	../FONcAttributes.cc
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 simpleT00_LDADD = $(AM_LDADD)
@@ -40,6 +44,9 @@ simpleT02_LDADD = $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc $(SRCS)
 arrayT_LDADD = $(AM_LDADD)
+
+arrayT01_SOURCES = arrayT01.cc $(SRCS)
+arrayT01_LDADD = $(AM_LDADD)
 
 structT00_SOURCES = structT00.cc $(SRCS)
 structT00_LDADD = $(AM_LDADD)
