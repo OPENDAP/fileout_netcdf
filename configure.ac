@@ -47,15 +47,15 @@ AX_PATH_GENERIC([nc], [4.0.0], [],
 	LIBS="$LIBS $NC_LIBS"
 	LDFLAGS="$LDFLAGS $NC_LDFLAGS"
 	CPPFLAGS="$CPPFLAGS $NC_CPPFLAGS"
-	handler_netcdf4_found=1
+	netcdf4_found=1
     ],
     [
 	AC_MSG_WARN([Could not find netcdf 4; looking for the older library])
-	handler_netcdf_4_found=0
+	netcdf4_found=0
     ]
 )
 
-if test $handler_netcdf4_found -ne 1
+if test $netcdf4_found -ne 1
 then
     AC_CHECK_NETCDF(
        [
