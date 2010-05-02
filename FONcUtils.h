@@ -46,12 +46,11 @@ class FONcBaseType ;
 #define FONC_ATTRIBUTE_SEPARATOR "."
 #define FONC_ORIGINAL_NAME "fonc_original_name"
 
-/** @brief Transformation object that converts an OPeNDAP DataDDS to a
- * netcdf file
+/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
+ * object as a netcdf file
  *
- * This class transforms each variable of the DataDDS to a netcdf file. For
- * more information on the transformation please refer to the OpeNDAP
- * documents wiki.
+ * This class includes static functions to help with the conversion of
+ * an OPeNDAP DataDDS object into a netcdf file.
  */
 class FONcUtils
 {

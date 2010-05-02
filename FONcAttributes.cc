@@ -83,6 +83,19 @@ FONcAttributes::add_attributes( int ncid, int varid, BaseType *b )
     addattrs( ncid, varid, b, "" ) ;
 }
 
+/** @brief writes any parent BaseType attributes out for a BaseType
+ *
+ * This function is used to dump the attributes of any parent
+ * constructor classes for the variable. It starts with the outermost
+ * parent of the variable.
+ *
+ * @param ncid The id of the netcdf file being written to
+ * @param varid The netcdf variable id to associate the attributes to
+ * @param b The OPeNDAP variable containing the parent's attributes.
+ * @param emb_name The name of the embedded BaseType
+ * @throws BESInternalError if there is a problem writing the attributes for
+ * the variable.
+ */
 void
 FONcAttributes::add_attributes( int ncid, int varid, BaseType *b,
 				string &emb_name )

@@ -36,6 +36,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FONcStr that takes a DAP Str
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Str instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a Str
+ * @throws BESInternalError if the BaseType is not a Str
+ */
 FONcStr::FONcStr( BaseType *b )
     : FONcBaseType(), _str( 0 ), _dimid( 0 ), _data( 0 )
 {
@@ -48,6 +56,13 @@ FONcStr::FONcStr( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the str
+ *
+ * The DAP Str instance does not belong to the FONcByte instance, so it
+ * is not cleaned up. During definition, though, the data needed to be
+ * extracted to calculate the length dimension. It is kept so that we
+ * don't have to get the data twice. The string data is deleted here.
+ */
 FONcStr::~FONcStr()
 {
     if( _data ) delete _data ;
@@ -110,6 +125,15 @@ FONcStr::define( int ncid )
     }
 }
 
+/** @brief Write the str out to the netcdf file
+ *
+ * Once the str is defined, the value of the str can be written out
+ * as well using nc_put_vara_text
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value out
+ * to the netcdf file
+ */
 void
 FONcStr::write( int ncid )
 {
@@ -136,12 +160,20 @@ FONcStr::write( int ncid )
     BESDEBUG( "fonc", "FONcStr::done write for var " << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Str
+ *
+ * @returns The name of the DAP Str
+ */
 string
 FONcStr::name()
 {
     return _str->name() ;
 }
 
+/** @brief returns the netcdf type of the DAP Str
+ *
+ * @returns The nc_type of NC_CHAR
+ */
 nc_type
 FONcStr::type()
 {

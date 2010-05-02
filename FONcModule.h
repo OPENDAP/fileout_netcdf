@@ -43,9 +43,11 @@
  *
  * This is accomplished by adding a BESTransmitter called "netcdf". When the
  * BES sees the returnAs property of the get command it looks for a
- * transmitter with that name.
+ * transmitter with that name. The FONcTransmitter is used to transmit
+ * the DAP DataDDS object by first writing it out as a netcdf data file
+ * and then transmitting it back to the caller.
  *
- * @see BESTransmitter
+ * @see FONcTransmitter
  */
 class FONcModule : public BESAbstractModule
 {

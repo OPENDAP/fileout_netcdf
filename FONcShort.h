@@ -38,11 +38,11 @@ using namespace libdap ;
 
 #include "FONcBaseType.h"
 
-/** @brief A DAP Short with file out netcdf information included
+/** @brief A DAP Int16 and UInt16 with file out netcdf information included
  *
- * This class represents a DAP Short with additional information
+ * This class represents a DAP Int16 and UInt16 with additional information
  * needed to write it out to a netcdf file. Includes a reference to the
- * actual DAP Short being converted
+ * actual DAP Int16 or UInt16 being converted
  */
 class FONcShort : public FONcBaseType
 {

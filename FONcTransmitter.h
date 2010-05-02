@@ -39,7 +39,11 @@ class BESContainer ;
 /** @brief BESTransmitter class named "netcdf" that transmits an OPeNDAP
  * data object as a netcdf file
  *
- * @see BESTransmitter
+ * The FONcTransmitter transforms an OPeNDAP DataDDS object into a
+ * netcdf file and streams the new (temporary) netcdf file back to the
+ * client.
+ *
+ * @see BESBasicTransmitter
  */
 class FONcTransmitter : public BESBasicTransmitter
 {

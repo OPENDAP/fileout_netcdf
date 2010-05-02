@@ -1,6 +1,6 @@
 Summary: Return a NetCDF File for a DAP Data response
 Name: fileout_netcdf
-Version: 1.0.0
+Version: 1.0.1
 Release: 1
 License: LGPLv2+
 Group: System Environment/Daemons
@@ -49,6 +49,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
+* Sat May  1 2010 Patrick West <westp@rpi.edu> - 1.0.1-1
+- Update to 1.0.1
+
 * Tue Feb  2 2010 Patrick West <westp@rpi.edu> - 1.0.0-1
 - Update to 1.0.0
 

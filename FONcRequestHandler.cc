@@ -40,6 +40,14 @@
 #include <TheBESKeys.h>
 #include "config.h"
 
+/** @brief Constructor for FileOut NetCDF module
+ *
+ * This constructor adds functions to add to the build of a help request
+ * and a version request to the BES.
+ *
+ * @param name The name of the request handler being added to the list
+ * of request handlers
+ */
 FONcRequestHandler::FONcRequestHandler( const string &name )
     : BESRequestHandler( name )
 {
@@ -47,10 +55,23 @@ FONcRequestHandler::FONcRequestHandler( const string &name )
     add_handler( VERS_RESPONSE, FONcRequestHandler::build_version ) ;
 }
 
+/** @brief Any cleanup that needs to take place
+ */
 FONcRequestHandler::~FONcRequestHandler()
 {
 }
 
+/** @brief adds help information for FileOut NetCDF to a help request
+ *
+ * Adds information to a help request to the BES regarding a file out
+ * netcdf response. Included in this information is a link to a
+ * docs.opendap.org page that describes fileout netcdf.
+ *
+ * @param dhi The data interface containing information for the current
+ * request to the BES
+ * @throws BESInternalError if the response object is not an
+ * informational response object.
+ */
 bool
 FONcRequestHandler::build_help( BESDataHandlerInterface &dhi )
 {
@@ -75,6 +96,13 @@ FONcRequestHandler::build_help( BESDataHandlerInterface &dhi )
     return true ;
 }
 
+/** @brief add version information to a version response
+ *
+ * Adds the version of this module to the version response.
+ *
+ * @param dhi The data interface containing information for the current
+ * request to the BES
+ */
 bool
 FONcRequestHandler::build_version( BESDataHandlerInterface &dhi )
 {

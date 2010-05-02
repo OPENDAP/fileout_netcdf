@@ -38,11 +38,11 @@ using namespace libdap ;
 
 #include "FONcBaseType.h"
 
-/** @brief A DAP Float with file out netcdf information included
+/** @brief A DAP Float32 with file out netcdf information included
  *
- * This class represents a DAP Float with additional information
+ * This class represents a DAP Float32 with additional information
  * needed to write it out to a netcdf file. Includes a reference to the
- * actual DAP Float being converted
+ * actual DAP Float32 being converted
  */
 class FONcFloat : public FONcBaseType
 {

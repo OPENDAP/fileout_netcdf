@@ -40,11 +40,24 @@ using std::ostringstream ;
 
 int FONcDim::DimNameNum = 0 ;
 
+/** @brief Constructor for FOncDim that defines the dimension of an
+ * array
+ *
+ * @param name The name of the dimension
+ * @param size The size of the dimension
+ */
 FONcDim::FONcDim( const string &name, int size )
     : _name( name ), _size( size ), _dimid( 0 ), _defined( false ), _ref( 1 )
 {
 }
 
+/** @brief Decrement the reference count for this dimension
+ *
+ * Since dimensions can be shared, there might be more than one array
+ * pointing to it. For this reason, we use reference counting for the
+ * instance. if the reference count gets to zero, then the instance is
+ * deleted
+ */
 void
 FONcDim::decref()
 {
@@ -52,6 +65,18 @@ FONcDim::decref()
     if( !_ref ) delete this ;
 }
 
+/** @brief define the DAP dimension in the netcdf file
+ *
+ * If the dimension has not already been created by an array that shares
+ * this dimension, then define the dimension in the netcdf file.
+ *
+ * If the dimension name is empty, the create a default one using an
+ * incremented counter.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * dimension
+ */
 void
 FONcDim::define( int ncid )
 {

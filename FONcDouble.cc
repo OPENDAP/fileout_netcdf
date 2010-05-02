@@ -37,6 +37,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FOncDouble that takes a DAP Float64
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Float64 instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a float64
+ * @throws BESInternalError if the BaseType is not a Float64
+ */
 FONcDouble::FONcDouble( BaseType *b )
     : FONcBaseType(), _f( 0 )
 {
@@ -49,10 +57,24 @@ FONcDouble::FONcDouble( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the instance
+ *
+ * Since the DAP object is not owned by this instance, it is not deleted
+ */
 FONcDouble::~FONcDouble()
 {
 }
 
+/** @brief define the DAP Float64 in the netcdf file
+ *
+ * The parent class, FONcBaseType, actually defines the variable since
+ * it is a simple type. This method adds the attributes for the Float64
+ * and an attribute if the name had to be modified in any way.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * variable
+ */
 void
 FONcDouble::define( int ncid )
 {
@@ -68,6 +90,13 @@ FONcDouble::define( int ncid )
     }
 }
 
+/** @brief Write the float64 out to the netcdf file
+ *
+ * Once the double is defined, the value can be written out
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value
+ */
 void
 FONcDouble::write( int ncid )
 {
@@ -87,12 +116,20 @@ FONcDouble::write( int ncid )
     BESDEBUG( "fonc", "FONcDouble::done write for var " << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Float64
+ *
+ * @returns The name of the DAP Float64
+ */
 string
 FONcDouble::name()
 {
     return _f->name() ;
 }
 
+/** @brief returns the netcdf type of the DAP Float64
+ *
+ * @returns The nc_type of NC_DOUBLE
+ */
 nc_type
 FONcDouble::type()
 {

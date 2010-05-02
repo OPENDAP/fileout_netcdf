@@ -34,6 +34,13 @@
 
 #include <BESObj.h>
 
+/** @brief A class that represents the dimension of an array.
+ *
+ * This class represents a dimension of a DAP Array with additional
+ * information needed to write it out to a netcdf file. Since this
+ * dimension can be shared, it includes reference counting so that it
+ * can be pointed to by multiple arrays.
+ */
 class FONcDim : public BESObj
 {
 private:

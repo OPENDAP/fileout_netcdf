@@ -36,6 +36,13 @@
 
 #include "FONcArray.h"
 
+/** @brief A map of a DAP Grid with file out netcdf information included
+ *
+ * This class represents a map of a DAP Grid with additional information
+ * needed to write it out to a netcdf file. This map can be shared
+ * amongst many grids, so it includes reference counting for reference
+ * by the different FONcGrid instances.
+ */
 class FONcMap : public BESObj
 {
 private:
@@ -47,9 +54,7 @@ private:
     				FONcMap() : _arr( 0 ), _ingrid( false ),
 					    _defined( false ), _ref( 1 ) {}
 public:
-    				FONcMap( FONcArray *a, bool ingrid = false )
-				    : _arr( a ), _ingrid( ingrid ),
-				      _defined( false ), _ref( 1 ) {}
+    				FONcMap( FONcArray *a, bool ingrid = false ) ;
     virtual			~FONcMap() ;
 
     virtual void		incref() { _ref++ ; }

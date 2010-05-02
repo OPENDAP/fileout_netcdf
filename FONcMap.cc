@@ -34,16 +34,47 @@
 #include "FONcMap.h"
 #include "FONcUtils.h"
 
+/** @brief Constructor for FONcMap that takes an array as the map
+ *
+ * This constructor takes a FONCArray that could be or is a map for a
+ * DAP Grid.
+ *
+ * If ingrid is true, then the map was created within the context of a
+ * DAP Grid. Otherwise, it's an array that could be a map defined
+ * outside of a DAP Grid.
+ *
+ * @param a A FONcArray representing the grid map
+ * @param ingrid true if the FONcArray was created in the context of a
+ * grid, false otherwise
+ */
+FONcMap::FONcMap( FONcArray *a, bool ingrid )
+    : _arr( a ), _ingrid( ingrid ), _defined( false ), _ref( 1 )
+{
+}
+
+/** @brief Destructor that cleans up the map
+ *
+ * If the FONcArray was created within the context of the grid, then the
+ * FONcArray is owned by the map and can be deleted. Otherwise, it was
+ * created outside the context of a grid and will be cleaned up
+ * elsewhere.
+ */
 FONcMap::~FONcMap()
 {
     if( _ingrid )
     {
-	string name = _arr->name() ;
 	delete _arr ;
 	_arr = 0 ;
     }
 }
 
+/** @brief decrements the reference count for this map
+ *
+ * Since a map can be shared by different grids, reference counting is
+ * used to keep track of any object that has a reference to this
+ * instance. When the reference count goes to zero, then this instance
+ * is deleted.
+ */
 void
 FONcMap::decref()
 {
@@ -266,18 +297,28 @@ FONcMap::compare( Array *tomap )
     return isequal ;
 }
 
+/** @brief Add the name of the grid as a grid that uses this map
+ */
 void
 FONcMap::add_grid( const string &name )
 {
     _shared_by.push_back( name ) ;
 }
 
+/** @brief clear the embedded names for the FONcArray kept by this
+ * instance
+ */
 void
 FONcMap::clear_embedded()
 {
     _arr->clear_embedded() ;
 }
 
+/** @brief define the map in the netcdf file by calling define on the
+ * FONcArray
+ *
+ * @param ncid The id of the netcdf file
+ */
 void
 FONcMap::define( int ncid )
 {
@@ -288,6 +329,11 @@ FONcMap::define( int ncid )
     }
 }
 
+/** @brief writes out the vallues of the map to the netcdf file by
+ * calling write on the FONcArray
+ *
+ * @param ncid The id of the netcdf file
+ */
 void
 FONcMap::write( int ncid )
 {
@@ -296,7 +342,8 @@ FONcMap::write( int ncid )
 
 /** @brief dumps information about this object for debugging purposes
  *
- * Displays the pointer value of this instance plus instance data
+ * Displays the pointer value of this instance plus instance data,
+ * including the FONcArray instance kept by this map.
  *
  * @param strm C++ i/o stream to dump the information to
  */

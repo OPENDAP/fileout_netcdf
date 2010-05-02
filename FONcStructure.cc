@@ -36,6 +36,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FONcStructure that takes a DAP Structure
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Structure instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a Structure
+ * @throws BESInternalError if the BaseType is not a Structure
+ */
 FONcStructure::FONcStructure( BaseType *b )
     : FONcBaseType(), _s( 0 )
 {
@@ -48,6 +56,11 @@ FONcStructure::FONcStructure( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the structure
+ *
+ * Delete each of the FONcBaseType instances that is a part of this
+ * structure.
+ */
 FONcStructure::~FONcStructure()
 {
     bool done = false ;
@@ -69,6 +82,22 @@ FONcStructure::~FONcStructure()
     }
 }
 
+/** @brief Creates the FONc objects for each variable of the structure
+ *
+ * For each of the variables of the DAP Structure we convert to a
+ * similar FONc object. Because NetCDF does not support structures, we
+ * must flatten out the structures. To do this, we embed the name of the
+ * structure as part of the name of the children variables. For example,
+ * if the structure, called s1, contains an array called a1 and an int
+ * called i1, then two variables are created in the netcdf file called
+ * s1.a1 and s1.i1.
+ *
+ * It only converts the variables that are to be sent
+ *
+ * @param embed The parent names of this structure.
+ * @throws BESInternalError if there is a problem converting this
+ * structure
+ */
 void
 FONcStructure::convert( vector<string> embed )
 {
@@ -90,6 +119,14 @@ FONcStructure::convert( vector<string> embed )
     }
 }
 
+/** @brief Define the members of the structure in the netcdf file
+ *
+ * Since netcdf does not support structures, we define the members of
+ * the structure to include the name of the structure in their name.
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem defining the structure
+ */
 void
 FONcStructure::define( int ncid )
 {
@@ -113,6 +150,13 @@ FONcStructure::define( int ncid )
     }
 }
 
+/** @brief write the member variables of the structure to the netcdf
+ * file
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing out the
+ * members of the structure.
+ */
 void
 FONcStructure::write( int ncid )
 {
@@ -129,6 +173,10 @@ FONcStructure::write( int ncid )
 		      << _varname << endl ) ;
 }
 
+/** @brief Returns the name of the structure
+ *
+ * @returns The name of the structure
+ */
 string
 FONcStructure::name()
 {
@@ -137,7 +185,9 @@ FONcStructure::name()
 
 /** @brief dumps information about this object for debugging purposes
  *
- * Displays the pointer value of this instance plus instance data
+ * Displays the pointer value of this instance plus instance data,
+ * including the members of the structure by calling dump on those FONc
+ * objects.
  *
  * @param strm C++ i/o stream to dump the information to
  */

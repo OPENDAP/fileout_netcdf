@@ -137,7 +137,8 @@ FONcTransform::transform( )
 
     // Convert the DDS into an internal format to keep track of
     // varaibles, arrays, shared dimensions, grids, common maps,
-    // embedded structures
+    // embedded structures. It only grabs the variables that are to be
+    // sent.
     DDS::Vars_iter vi = _dds->var_begin() ;
     DDS::Vars_iter ve = _dds->var_end() ;
     for( ; vi != ve; vi++ )
@@ -165,9 +166,13 @@ FONcTransform::transform( )
 
     try
     {
+	// Here we will be defining the variables of the netcdf and
+	// adding attributes. To do this we must be in define mode.
 	nc_redef( _ncid ) ;
 
-	// Create the structure
+	// For each conerted FONc object, call define on it to define
+	// that object to the netcdf file. This also adds the attributes
+	// for the variables to the netcdf file
 	vector<FONcBaseType *>::iterator i = _fonc_vars.begin() ;
 	vector<FONcBaseType *>::iterator e = _fonc_vars.end() ;
 	for( ; i != e; i++ )
@@ -176,11 +181,14 @@ FONcTransform::transform( )
 	    fbt->define( _ncid ) ;
 	}
 
+	// Add any global attributes to the netcdf file
 	AttrTable &globals = _dds->get_attr_table() ;
 	BESDEBUG( "fonc", "Adding Global Attributes" << endl
 			  << globals << endl ) ;
 	FONcAttributes::addattrs( _ncid, NC_GLOBAL, globals, "", "" ) ;
 
+	// We are done defining the variables, dimensions, and
+	// attributes of the netcdf file. End the define mode.
 	nc_enddef( _ncid ) ;
 
 	// Write everything out
@@ -204,7 +212,9 @@ FONcTransform::transform( )
 /** @brief dumps information about this transformation object for debugging
  * purposes
  *
- * Displays the pointer value of this instance plus instance data
+ * Displays the pointer value of this instance plus instance data,
+ * including all of the FONc objects converted from DAP objects that are
+ * to be sent to the netcdf file.
  *
  * @param strm C++ i/o stream to dump the information to
  */

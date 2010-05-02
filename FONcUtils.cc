@@ -44,8 +44,14 @@
 
 #include <BESInternalError.h>
 
+/** @brief If a variable name, dimension name, or attribute name begins
+ * with a character that is not supported by netcdf, then use this
+ * prefix to prepend to the name.
+ */
 string FONcUtils::name_prefix = "" ;
 
+/** @brief Resets the FONc transformation for a new input and out file
+ */
 void
 FONcUtils::reset()
 {
@@ -157,6 +163,12 @@ FONcUtils::gen_name( const vector<string> &embed, const string &name,
     return FONcUtils::id2netcdf( new_name ) ;
 }
 
+/** @brief creates a FONc object for the given DAP object
+ *
+ * @param v The DAP object to convert
+ * @returns The FONc object created via the DAP object
+ * @throws BESInternalError if the DAP object is not an expected type
+ */
 FONcBaseType *
 FONcUtils::convert( BaseType *v )
 {

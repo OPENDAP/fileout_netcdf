@@ -36,9 +36,27 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief global list of maps that could be shared amongst the
+ * different grids
+ */
 vector<FONcMap *> FONcGrid::Maps ;
+
+/** @brief tells whether we are converting or defining a grid.
+ *
+ * This is used by FONcArray to tell if any single dimension arrays
+ * where the name of the array and the name of the dimension are the
+ * same. If they are, then that array is saved as a possible shared map
+ */
 bool FONcGrid::InGrid = false ;
 
+/** @brief Constructor for FONcGrid that takes a DAP Grid
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Grid instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a grid
+ * @throws BESInternalError if the BaseType is not a Grid
+ */
 FONcGrid::FONcGrid( BaseType *b )
     : FONcBaseType(), _grid( 0 ), _arr( 0 )
 {
@@ -51,6 +69,15 @@ FONcGrid::FONcGrid( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the grid
+ *
+ * The DAP Grid instance does not belong to the FONcGrid instance, so it
+ * is not deleted.
+ *
+ * Since maps can be shared by grids, FONcMap uses reference counting.
+ * So instead of deleting the FONcMap instance, its reference count is
+ * decremented.
+ */
 FONcGrid::~FONcGrid()
 {
     bool done = false ;
@@ -72,6 +99,21 @@ FONcGrid::~FONcGrid()
     }
 }
 
+/** @brief convert the DAP Grid to a set of embedded variables
+ *
+ * A DAP Grid contains one or more maps (arrays) and an array of values.
+ * The convert method creates a FONcMap for each of the grid's maps,
+ * and a FONcArray for the grid's array.
+ *
+ * A map can be shared by other grids if the name of the map is the
+ * same, the size of the map is the same, the type of the map is the
+ * same, and the values of the map are the same. If they are the same,
+ * then it references that shared map instead of creating a new one.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * Byte
+ */
 void
 FONcGrid::convert( vector<string> embed )
 {
@@ -140,6 +182,19 @@ FONcGrid::convert( vector<string> embed )
     FONcGrid::InGrid = false ;
 }
 
+/** @brief define the DAP Grid in the netcdf file
+ *
+ * Iterates through the maps for this grid and defines each of those, if
+ * they haven't already been defined by a grid that shares the map. Then
+ * it defines the grid's array in the netcdf file.
+ *
+ * Any attributes for the grid will be written out for each of the maps
+ * and the array.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * Byte
+ */
 void
 FONcGrid::define( int ncid )
 {
@@ -163,6 +218,15 @@ FONcGrid::define( int ncid )
     }
 }
 
+/** @brief Write the maps and array for the grid
+ *
+ * Once defined, the values of the maps and the values of the grid's
+ * array can be written out to the netcdf file.
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the grid out
+ * to the netcdf file
+ */
 void
 FONcGrid::write( int ncid )
 {
@@ -183,6 +247,10 @@ FONcGrid::write( int ncid )
 		      << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Grid
+ *
+ * @returns The name of the DAP Grid
+ */
 string
 FONcGrid::name()
 {
@@ -191,7 +259,9 @@ FONcGrid::name()
 
 /** @brief dumps information about this object for debugging purposes
  *
- * Displays the pointer value of this instance plus instance data
+ * Displays the pointer value of this instance plus instance data.
+ * Included is each FONcMap instance as well as the FONcArray
+ * representing the grid's array.
  *
  * @param strm C++ i/o stream to dump the information to
  */

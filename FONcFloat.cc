@@ -37,6 +37,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FONcFloat that takes a DAP Float32
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Float32 instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a float32
+ * @throws BESInternalError if the BaseType is not a Float32
+ */
 FONcFloat::FONcFloat( BaseType *b )
     : FONcBaseType(), _f( 0 )
 {
@@ -49,10 +57,25 @@ FONcFloat::FONcFloat( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up this instance
+ *
+ * The DAP Float32 instance does not belong to the FONcFloat instance, so it
+ * is not deleted up.
+ */
 FONcFloat::~FONcFloat()
 {
 }
 
+/** @brief define the DAP Float32 in the netcdf file
+ *
+ * The definition actually takes place in FONcBaseType. This function
+ * adds the attributes for the Float32 instance as well as an attribute if
+ * the name of the Float32 had to be modified.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * Float32
+ */
 void
 FONcFloat::define( int ncid )
 {
@@ -68,6 +91,15 @@ FONcFloat::define( int ncid )
     }
 }
 
+/** @brief Write the float out to the netcdf file
+ *
+ * Once the float is defined, the value of the float can be written out
+ * as well.
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value out
+ * to the netcdf file
+ */
 void
 FONcFloat::write( int ncid )
 {
@@ -88,12 +120,20 @@ FONcFloat::write( int ncid )
     BESDEBUG( "fonc", "FONcFloat::done write for var " << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Float32
+ *
+ * @returns The name of the DAP Float32
+ */
 string
 FONcFloat::name()
 {
     return _f->name() ;
 }
 
+/** @brief returns the netcdf type of the DAP Float32
+ *
+ * @returns The nc_type of NC_FLOAT
+ */
 nc_type
 FONcFloat::type()
 {

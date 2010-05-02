@@ -41,6 +41,14 @@
 
 vector<FONcDim *> FONcArray::Dimensions ;
 
+/** @brief Constructor for FONcArray that takes a DAP Array
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Array instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be an array
+ * @throws BESInternalError if the BaseType is not an Array
+ */
 FONcArray::FONcArray( BaseType *b )
     : FONcBaseType(), _a( 0 ), _array_type( NC_NAT ), _ndims( 0 ),
       _actual_ndims( 0 ), _nelements( 1 ), _dim_ids( 0 ), _dim_sizes( 0 ),
@@ -55,6 +63,16 @@ FONcArray::FONcArray( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the array
+ *
+ * The destrutor cleans up by removing the array dimensions from it's
+ * list. Since the dimensions can be shared by other arrays, FONcDim
+ * uses reference counting, so the instances aren't actually deleted
+ * here, but their reference count is decremented
+ *
+ * The DAP Array instance does not belong to the FONcArray instance, so
+ * it is not deleted.
+ */
 FONcArray::~FONcArray()
 {
     bool done = false ;
@@ -76,6 +94,20 @@ FONcArray::~FONcArray()
     }
 }
 
+/** @brief Converts the DAP Array to a FONcArray
+ *
+ * Does this by converting the name to a valid netcdf variable name,
+ * creating FONcDim instances for each of the dimensions of the array,
+ * or finding a shared dimension in the global list of dimensions.
+ *
+ * Also keeps track of any single dimensional arrays where the name of
+ * the array is the same as the dimension name, as these could be maps
+ * for grids that might be defined.
+ *
+ * @param embed A list of strings for each name of parent structures or
+ * grids
+ * @throws BESInternalError if there is a problem converting the Array
+ */
 void
 FONcArray::convert( vector<string> embed )
 {
@@ -127,6 +159,19 @@ FONcArray::convert( vector<string> embed )
                       << _varname << endl << *this << endl ) ;
 }
 
+/** @brief Find a possible shared dimension in the global list
+ *
+ * If a dimension has the same name and size as another, then it is
+ * considered a shared dimension. All dimensions for this DataDDS are
+ * stored in a global list.
+ *
+ * @param name Name of the dimension to find
+ * @param size Size of the dimension to find
+ * @returns either a new instance of FONcDim, or a shared FONcDim
+ * instance
+ * @throws BESInternalError if the name of a dimension is the same, but
+ * the size is different
+ */
 FONcDim *
 FONcArray::find_dim( const string &name, int size )
 {
@@ -161,6 +206,20 @@ FONcArray::find_dim( const string &name, int size )
     return ret_dim ;
 }
 
+/** @brief define the DAP Array in the netcdf file
+ *
+ * This includes creating the dimensions, if they haven't already been
+ * created, and then defining the array itself. Once the array is
+ * defined, all of the attributes are written out.
+ *
+ * If the Array is an array of strings, an additional dimension is
+ * created to represent the maximum length of the strings so that the
+ * array can be written out as text
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * dimensions or variable
+ */
 void
 FONcArray::define( int ncid )
 {
@@ -250,6 +309,15 @@ FONcArray::define( int ncid )
     }
 }
 
+/** @brief Write the array out to the netcdf file
+ *
+ * Once the array is defined, the values of the array can be written out
+ * as well.
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the values out
+ * to the netcdf file
+ */
 void
 FONcArray::write( int ncid )
 {
@@ -413,6 +481,10 @@ FONcArray::write( int ncid )
                       << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Array
+ *
+ * @returns The name of the DAP Array
+ */
 string
 FONcArray::name()
 {
@@ -421,7 +493,9 @@ FONcArray::name()
 
 /** @brief dumps information about this object for debugging purposes
  *
- * Displays the pointer value of this instance plus instance data
+ * Displays the pointer value of this instance plus instance data,
+ * including private data for this instance, and dumps the list of
+ * dimensions for this array.
  *
  * @param strm C++ i/o stream to dump the information to
  */

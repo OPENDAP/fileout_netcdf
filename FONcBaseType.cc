@@ -86,6 +86,8 @@ FONcBaseType::type()
     return NC_NAT ; // the constant ncdf uses to define simple type
 }
 
+/** @brief Clears the list of embedded variable names
+ */
 void
 FONcBaseType::clear_embedded()
 {

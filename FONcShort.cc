@@ -38,6 +38,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FOncShort that takes a DAP Int16 or UInt16
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Int16 or UInt16 instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a byte
+ * @throws BESInternalError if the BaseType is not a Int16 or UInt16
+ */
 FONcShort::FONcShort( BaseType *b )
     : FONcBaseType(), _bt( b )
 {
@@ -51,10 +59,25 @@ FONcShort::FONcShort( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the short
+ *
+ * The DAP Int16 or UInt16 instance does not belong to the FONcByte
+ * instance, so it is not deleted.
+ */
 FONcShort::~FONcShort()
 {
 }
 
+/** @brief define the DAP Int16 or UInt16 in the netcdf file
+ *
+ * The definition actually takes place in FONcBaseType. This function
+ * adds the attributes for the variable instance as well as an attribute if
+ * the name had to be modified.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * Byte
+ */
 void
 FONcShort::define( int ncid )
 {
@@ -70,6 +93,15 @@ FONcShort::define( int ncid )
     }
 }
 
+/** @brief Write the short out to the netcdf file
+ *
+ * Once the short is defined, the value of the short can be written out
+ * as well using nc_put_var1_short
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value out
+ * to the netcdf file
+ */
 void
 FONcShort::write( int ncid )
 {
@@ -89,12 +121,20 @@ FONcShort::write( int ncid )
     BESDEBUG( "fonc", "FONcShort::done write for var " << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Int16 or UInt16
+ *
+ * @returns The name of the DAP Int16 or UInt16
+ */
 string
 FONcShort::name()
 {
     return _bt->name() ;
 }
 
+/** @brief returns the netcdf type of the DAP object
+ *
+ * @returns The nc_type of NC_SHORT
+ */
 nc_type
 FONcShort::type()
 {

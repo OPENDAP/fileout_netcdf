@@ -34,6 +34,14 @@
 #include "FONcSequence.h"
 #include "FONcUtils.h"
 
+/** @brief Constructor for FONcSequence that takes a DAP Sequence
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Sequence instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a Sequence
+ * @throws BESInternalError if the BaseType is not a Sequence
+ */
 FONcSequence::FONcSequence( BaseType *b )
     : FONcBaseType(), _s( 0 )
 {
@@ -46,10 +54,24 @@ FONcSequence::FONcSequence( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the sequence
+ *
+ * The DAP Sequence instance does not belong to the FONcSequence
+ * instance, so it is not delete it.
+ */
 FONcSequence::~FONcSequence()
 {
 }
 
+/** @brief convert the Sequence to something that can be stored in a
+ * netcdf file
+ *
+ * Currently Sequences are not supported by FileOut NetCDF
+ *
+ * @param embed The list of parent names for this sequence
+ * @param throws BESInternalError if there is a problem converting the
+ * Byte
+ */
 void
 FONcSequence::convert( vector<string> embed )
 {
@@ -57,6 +79,16 @@ FONcSequence::convert( vector<string> embed )
     _varname = FONcUtils::gen_name( embed, _varname, _orig_varname ) ;
 }
 
+/** @brief define the DAP Sequence in the netcdf file
+ *
+ * Currently, Sequences are not supported by FileOut NetCDF. For now, a
+ * global attribute is added to the netcdf file stating that the
+ * sequence is not written to the file.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem writing out the
+ * attribute
+ */
 void
 FONcSequence::define( int ncid )
 {
@@ -76,6 +108,15 @@ FONcSequence::define( int ncid )
     }
 }
 
+/** @brief Write the sequence data out to the netcdf file
+ *
+ * Currently, Sequences are not supported by FileOut NetCDF. Nothing is
+ * done in this method.
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value out
+ * to the netcdf file
+ */
 void
 FONcSequence::write( int ncid )
 {

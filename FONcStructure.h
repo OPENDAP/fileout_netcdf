@@ -42,7 +42,8 @@ using namespace libdap ;
  *
  * This class represents a DAP Structure with additional information
  * needed to write it out to a netcdf file. Includes a reference to the
- * actual DAP Structure being converted
+ * actual DAP Structure being converted. Keeps the list of converted
+ * BaseTypes as FONcBaseType instances.
  */
 class FONcStructure : public FONcBaseType
 {

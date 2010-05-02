@@ -38,11 +38,11 @@ using namespace libdap ;
 
 #include "FONcBaseType.h"
 
-/** @brief A DAP Int with file out netcdf information included
+/** @brief A DAP Int32 and UInt32 with file out netcdf information included
  *
- * This class represents a DAP Int with additional information
+ * This class represents a DAP Int32 and UInt32 with additional information
  * needed to write it out to a netcdf file. Includes a reference to the
- * actual DAP Int being converted
+ * actual DAP Int32 or UInt32 being converted
  */
 class FONcInt : public FONcBaseType
 {

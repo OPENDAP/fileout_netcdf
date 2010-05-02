@@ -32,7 +32,8 @@ FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
 	FONcGrid.h FONcSequence.h FONcByte.h FONcBaseType.h		\
 	FONcDim.h FONcMap.h FONcAttributes.h
 
-EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec
+EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec	\
+	doxy.conf
 
 CLEANFILES = *~ fonc.conf
 
@@ -53,6 +54,13 @@ fonc.conf: fonc.conf.in config.status
 # in subdirs.
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
+
+# docs
+
+.PHONY: docs
+docs:
+	srcdir=$(srcdir) doxygen $(srcdir)/doxy.conf
+	(cd docs && tar -czf html.tar.gz html)
 
 C4_DIR=./cccc
 .PHONY: cccc

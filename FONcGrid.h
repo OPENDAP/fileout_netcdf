@@ -44,7 +44,15 @@ using namespace libdap ;
  *
  * This class represents a DAP Grid with additional information
  * needed to write it out to a netcdf file. Includes a reference to the
- * actual DAP Grid being converted
+ * actual DAP Grid being converted, the maps of the grid stored as
+ * FOncMap instances, and the array of the grid stored as a FONcArray.
+ *
+ * NetCDF does not have grid representation. For this reason, we flatten
+ * out the grid as different arrays (maps) as well as the grid's actual
+ * array.
+ *
+ * It is possible to share maps among grids, so a global map list is
+ * kept as well.
  */
 class FONcGrid : public FONcBaseType
 {

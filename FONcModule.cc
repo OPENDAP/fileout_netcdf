@@ -50,6 +50,16 @@ using std::endl ;
 
 #define RETURNAS_NETCDF "netcdf"
 
+/** @brief initialize the module by adding callbacks and registering
+ * objects with the framework
+ *
+ * Registers the request handler to add to a version or help request,
+ * and adds the File Out transmitter for a "returnAs netcdf" request.
+ * Also adds netcdf as a return for the dap service dods request and
+ * registers the debug context.
+ *
+ * @param modname The name of the module being loaded
+ */
 void
 FONcModule::initialize( const string &modname )
 {
@@ -75,6 +85,14 @@ FONcModule::initialize( const string &modname )
     BESDEBUG( "fonc", "Done Initializing ESG module " << modname << endl ) ;
 }
 
+/** @brief removes any registered callbacks or objects from the
+ * framework
+ *
+ * Any registered callbacks or objects, registered during
+ * initialization, are removed from the framework.
+ *
+ * @param modname The name of the module being removed
+ */
 void
 FONcModule::terminate( const string &modname )
 {
@@ -93,6 +111,12 @@ FONcModule::terminate( const string &modname )
     BESDEBUG( "fonc", "Done Cleaning ESG module " << modname << endl ) ;
 }
 
+/** @brief dumps information about this object for debugging purposes
+ *
+ * Displays the pointer value of this instance plus any instance data
+ *
+ * @param strm C++ i/o stream to dump the information to
+ */
 void
 FONcModule::dump( ostream &strm ) const
 {
@@ -100,6 +124,9 @@ FONcModule::dump( ostream &strm ) const
         << (void *) this << ")" << endl;
 }
 
+/** @brief A c function that adds this module to the list of modules to
+ * be dynamically loaded.
+ */
 extern "C"
 {
     BESAbstractModule *maker()

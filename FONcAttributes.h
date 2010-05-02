@@ -42,12 +42,14 @@ using namespace libdap ;
 
 class FONcBaseType ;
 
-/** @brief Transformation object that converts an OPeNDAP DataDDS to a
- * netcdf file
+/** @brief A class that provides static methods to help write out
+ * attributes for a given variable
  *
- * This class transforms each variable of the DataDDS to a netcdf file. For
- * more information on the transformation please refer to the OpeNDAP
- * documents wiki.
+ * Given a BaseType from a DataDDS, these functions can write out
+ * attributes for that BaseType as well as all parent classes of that
+ * BaseType. Since netcdf is a flattened data structure, any variables
+ * within a structure or grid will write out attributes for the
+ * structure or grid along with its own attributes.
  */
 class FONcAttributes
 {

@@ -36,6 +36,13 @@
 
 #include "BESRequestHandler.h"
 
+/** @brief A Request Handler for the Fileout NetCDF request
+ *
+ * This class is used to represent the Fileout NetCDF module, including
+ * functions to build the help and version responses. Data handlers are
+ * used to build a Dap DataDDS object, so those functions are not needed
+ * here.
+ */
 class FONcRequestHandler : public BESRequestHandler
 {
 public:

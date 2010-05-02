@@ -36,6 +36,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FONcByte that takes a DAP Byte
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Byte instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be a byte
+ * @throws BESInternalError if the BaseType is not a Byte
+ */
 FONcByte::FONcByte( BaseType *b )
     : FONcBaseType(), _b( 0 )
 {
@@ -48,10 +56,25 @@ FONcByte::FONcByte( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the byte
+ *
+ * The DAP Byte instance does not belong to the FONcByte instance, so it
+ * is not deleted.
+ */
 FONcByte::~FONcByte()
 {
 }
 
+/** @brief define the DAP Byte in the netcdf file
+ *
+ * The definition actually takes place in FONcBaseType. This function
+ * adds the attributes for the Byte instance as well as an attribute if
+ * the name of the Byte had to be modified.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * Byte
+ */
 void
 FONcByte::define( int ncid )
 {
@@ -67,6 +90,15 @@ FONcByte::define( int ncid )
     }
 }
 
+/** @brief Write the byte out to the netcdf file
+ *
+ * Once the byte is defined, the value of the byte can be written out
+ * as well.
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value out
+ * to the netcdf file
+ */
 void
 FONcByte::write( int ncid )
 {
@@ -85,12 +117,20 @@ FONcByte::write( int ncid )
     delete data ;
 }
 
+/** @brief returns the name of the DAP Byte
+ *
+ * @returns The name of the DAP Byte
+ */
 string
 FONcByte::name()
 {
     return _b->name() ;
 }
 
+/** @brief returns the netcdf type of the DAP Byte
+ *
+ * @returns The nc_type of NC_BYTE
+ */
 nc_type
 FONcByte::type()
 {

@@ -38,6 +38,14 @@
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
 
+/** @brief Constructor for FOncInt that takes a DAP Int32 or UInt32
+ *
+ * This constructor takes a DAP BaseType and makes sure that it is a DAP
+ * Int32 or UInt32 instance. If not, it throws an exception
+ *
+ * @param b A DAP BaseType that should be an int32 or uint32
+ * @throws BESInternalError if the BaseType is not an Int32 or UInt32
+ */
 FONcInt::FONcInt( BaseType *b )
     : FONcBaseType(), _bt( b )
 {
@@ -51,10 +59,25 @@ FONcInt::FONcInt( BaseType *b )
     }
 }
 
+/** @brief Destructor that cleans up the instance
+ *
+ * The DAP Int32 or UInt32 instance does not belong to the FONcByte
+ * instance, so it is not deleted.
+ */
 FONcInt::~FONcInt()
 {
 }
 
+/** @brief define the DAP Int32 or UInt32 in the netcdf file
+ *
+ * The definition actually takes place in FONcBaseType. This function
+ * adds the attributes for the instance as well as an attribute if
+ * the name of the variable had to be modified.
+ *
+ * @param ncid The id of the NetCDF file
+ * @param throws BESInternalError if there is a problem defining the
+ * Int32 or UInt32
+ */
 void
 FONcInt::define( int ncid )
 {
@@ -70,6 +93,13 @@ FONcInt::define( int ncid )
     }
 }
 
+/** @brief Write the int out to the netcdf file
+ *
+ * Once the int is defined, the value of the int can be written out
+ *
+ * @param ncid The id of the netcdf file
+ * @throws BESInternalError if there is a problem writing the value
+ */
 void
 FONcInt::write( int ncid )
 {
@@ -89,12 +119,20 @@ FONcInt::write( int ncid )
     BESDEBUG( "fonc", "FONcInt::done write for var " << _varname << endl ) ;
 }
 
+/** @brief returns the name of the DAP Int32 or UInt32
+ *
+ * @returns The name of the DAP Int32 or UInt32
+ */
 string
 FONcInt::name()
 {
     return _bt->name() ;
 }
 
+/** @brief returns the netcdf type of the DAP object
+ *
+ * @returns The nc_type of NC_INT
+ */
 nc_type
 FONcInt::type()
 {
