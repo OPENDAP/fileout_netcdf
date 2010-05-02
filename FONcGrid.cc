@@ -110,8 +110,8 @@ FONcGrid::~FONcGrid()
  * same, and the values of the map are the same. If they are the same,
  * then it references that shared map instead of creating a new one.
  *
- * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @param embed The list of parent names for this grid
+ * @throws BESInternalError if there is a problem defining the
  * Byte
  */
 void
@@ -192,7 +192,7 @@ FONcGrid::convert( vector<string> embed )
  * and the array.
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @throws BESInternalError if there is a problem defining the
  * Byte
  */
 void

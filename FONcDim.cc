@@ -74,7 +74,7 @@ FONcDim::decref()
  * incremented counter.
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @throws BESInternalError if there is a problem defining the
  * dimension
  */
 void

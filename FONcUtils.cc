@@ -125,7 +125,7 @@ FONcUtils::get_nc_type( BaseType *element )
     return x_type ;
 }
 
-/** @basic generate a new name for the embedded variable
+/** @brief generate a new name for the embedded variable
  *
  * This function takes the name of a variable as it exists in a data
  * file, and generates a new name given that netcdf does not have
@@ -138,7 +138,7 @@ FONcUtils::get_nc_type( BaseType *element )
  * @param embed A list of names for parent structures
  * @param name The name of the variable to use for the new name
  * @param original The variable name before calling id2netcdf
- * @return the newly generated name with embedded names preceeding it,
+ * @returns the newly generated name with embedded names preceeding it,
  * and converted using id2netcdf
  */
 string

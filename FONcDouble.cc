@@ -72,7 +72,7 @@ FONcDouble::~FONcDouble()
  * and an attribute if the name had to be modified in any way.
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @throws BESInternalError if there is a problem defining the
  * variable
  */
 void

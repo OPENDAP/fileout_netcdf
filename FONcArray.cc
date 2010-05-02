@@ -217,7 +217,7 @@ FONcArray::find_dim( const string &name, int size )
  * array can be written out as text
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @throws BESInternalError if there is a problem defining the
  * dimensions or variable
  */
 void

@@ -72,7 +72,7 @@ FONcByte::~FONcByte()
  * the name of the Byte had to be modified.
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @throws BESInternalError if there is a problem defining the
  * Byte
  */
 void

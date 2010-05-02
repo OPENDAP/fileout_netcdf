@@ -416,7 +416,7 @@ FONcAttributes::addattrs( int ncid, int varid, const string &var_name,
     }
 }
 
-/** @basic Adds an attribute for the variable if the variable name had
+/** @brief Adds an attribute for the variable if the variable name had
  * to be modified in any way
  *
  * When generating a new name for a variable, the original name might

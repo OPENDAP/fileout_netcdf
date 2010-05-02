@@ -75,7 +75,7 @@ FONcInt::~FONcInt()
  * the name of the variable had to be modified.
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem defining the
+ * @throws BESInternalError if there is a problem defining the
  * Int32 or UInt32
  */
 void

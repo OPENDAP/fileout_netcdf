@@ -74,7 +74,6 @@ FONcStr::~FONcStr()
  * this we define a dimension that specifies the length of the string.
  *
  * @param ncid Id of the NetCDF file
- * @param name Name of the variable to create
  * @throws BESInternalError if defining the variable fails
  */
 void

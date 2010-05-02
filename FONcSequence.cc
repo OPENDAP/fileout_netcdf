@@ -69,7 +69,7 @@ FONcSequence::~FONcSequence()
  * Currently Sequences are not supported by FileOut NetCDF
  *
  * @param embed The list of parent names for this sequence
- * @param throws BESInternalError if there is a problem converting the
+ * @throws BESInternalError if there is a problem converting the
  * Byte
  */
 void
@@ -86,7 +86,7 @@ FONcSequence::convert( vector<string> embed )
  * sequence is not written to the file.
  *
  * @param ncid The id of the NetCDF file
- * @param throws BESInternalError if there is a problem writing out the
+ * @throws BESInternalError if there is a problem writing out the
  * attribute
  */
 void

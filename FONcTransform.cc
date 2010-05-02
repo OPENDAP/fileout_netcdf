@@ -57,6 +57,8 @@ using std::istringstream ;
  *
  * @param dds DataDDS object that contains the data structure, attributes
  * and data
+ * @param dhi The data interface containing information about the current
+ * request
  * @param localfile netcdf to create and write the information to
  * @throws BESInternalError if dds provided is empty or not read, if the
  * file is not specified or failed to create the netcdf file
