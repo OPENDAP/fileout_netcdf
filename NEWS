@@ -1,4 +1,14 @@
 
+Version 1.0.1 (03 May 2010)
+
+This release includes a complete rewrite of the code, but with the same
+functionaility.
+
+A bug was fixed for shared dimensions. It was that a dimension could be
+shared if it had the same name, the same size, and belonged to an array
+of the same dimensionality. The last requirements was removed. A
+dimension can be shared if it has the same name and size as another now.
+
 Version 1.0.0 (02 February 2010)
 
 This release is a bug fix release, with memory leaks cleaned up, fortify
@@ -41,15 +51,7 @@ It's brand new. Still to do: Seqences. This contains no explicit support CF,
 although that's slated for a future version.
 
 TODO:
-- Need to be able to configure where the temporary netcdf file is stored and
-  generate a uniq name for the file as it is possible for multiple requests
-  of this type to be handled at the same time by different processes.
-- Add debug statements using BESDEBUG and the debug context of fonc
-- Change any error conditions from simply printing to cerr to throwing an
-  exception. Please refer to the different exception types.
-- Look into how attributes are written to the file. I believe that it
-  requires the container.attributes section of the define statement.
 - Create a testsuite that is stand alone, not requiring any other modules
   except the dap modules.
-- Need to be able to write out Grid data.
+- Need to be able to write out Sequence data.
 
