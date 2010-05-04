@@ -1,3 +1,223 @@
+2010-05-03  Patrick West <pwest@ucar.edu>
+
+	Updated the version number in the INSTALL file
+	M    INSTALL
+
+2010-05-03  Patrick West <pwest@ucar.edu>
+
+	Updated news file for 1.0.1 release
+	M    NEWS
+
+2010-05-01  Patrick West <pwest@ucar.edu>
+
+	Corrected doxygen comments.
+	M    FONcUtils.cc
+	M    FONcDim.cc
+	M    FONcTransform.cc
+	M    FONcArray.cc
+	M    FONcGrid.cc
+	M    FONcAttributes.cc
+	M    FONcInt.cc
+	M    FONcShort.cc
+	M    FONcByte.cc
+	M    FONcFloat.cc
+	M    FONcStr.cc
+	M    FONcSequence.cc
+	M    FONcDouble.cc
+
+2010-05-01  Patrick West <pwest@ucar.edu>
+
+	Doxygen comments added to code, docs target added to Makefile.
+	M    FONcAttributes.h
+	M    FONcRequestHandler.h
+	M    FONcInt.h
+	A    docs
+	M    FONcUtils.cc
+	M    FONcStructure.h
+	M    configure.ac
+	M    FONcDim.cc
+	M    FONcDim.h
+	M    FONcTransform.cc
+	M    FONcDouble.h
+	M    FONcMap.cc
+	M    FONcArray.cc
+	M    FONcMap.h
+	M    FONcModule.cc
+	M    FONcGrid.cc
+	M    FONcRequestHandler.cc
+	M    FONcAttributes.cc
+	M    FONcGrid.h
+	M    FONcModule.h
+	M    fileout_netcdf.spec
+	M    FONcInt.cc
+	M    FONcShort.cc
+	M    FONcStructure.cc
+	M    FONcShort.h
+	M    FONcUtils.h
+	A    main_page.doxygen
+	M    FONcByte.cc
+	M    FONcFloat.cc
+	M    FONcFloat.h
+	M    FONcSequence.cc
+	M    FONcStr.cc
+	M    FONcDouble.cc
+	M    FONcBaseType.cc
+	A    doxy.conf
+	M    FONcTransmitter.h
+	M    Makefile.am
+
+2010-04-30  Patrick West <pwest@ucar.edu>
+
+	Source header comments added
+	M    FONcDim.cc
+	M    FONcMap.cc
+	M    FONcArray.cc
+	M    FONcGrid.cc
+	M    FONcAttributes.cc
+	M    FONcInt.cc
+	M    FONcShort.cc
+	M    FONcStructure.cc
+	M    FONcByte.cc
+	M    FONcFloat.cc
+	M    FONcSequence.cc
+	M    FONcStr.cc
+	M    FONcDouble.cc
+	M    FONcBaseType.cc
+
+2010-04-30  Patrick West <pwest@ucar.edu>
+
+	Adding baseline for new test
+	A    baselines/fonc.array.01.baseline
+
+2010-04-30  Patrick West <pwest@ucar.edu>
+
+	First pass at re-write of fileout_netcdf. Fixes problem with shared
+	dimensions.
+	A    FONcAttributes.h
+	A    FONcInt.h
+	M    FONcUtils.cc
+	A    FONcStructure.h
+	A    FONcDim.cc
+	A    FONcSequence.h
+	A    FONcStr.h
+	A    FONcDim.h
+	M    FONcTransform.cc
+	A    FONcDouble.h
+	A    FONcMap.cc
+	M    FONcTransform.h
+	A    FONcBaseType.h
+	A    FONcArray.cc
+	A    FONcMap.h
+	A    FONcGrid.cc
+	M    unit-tests/fonc_handlerTest.at
+	A    unit-tests/arrayT01.cc
+	M    unit-tests/baselines/fonc.names.00.baseline
+	M    unit-tests/baselines/fonc.grid.00.baseline
+	M    unit-tests/Makefile.am
+	A    FONcAttributes.cc
+	A    FONcGrid.h
+	A    FONcInt.cc
+	A    FONcShort.cc
+	A    FONcStructure.cc
+	A    FONcShort.h
+	M    FONcUtils.h
+	A    FONcByte.cc
+	A    FONcByte.h
+	A    FONcFloat.cc
+	A    FONcFloat.h
+	A    FONcSequence.cc
+	A    FONcStr.cc
+	A    FONcDouble.cc
+	A    FONcBaseType.cc
+	M    Makefile.am
+	A    FONcArray.h
+
+2010-04-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed error in configure.ac when netcdf4 is not found.
+
+2010-04-29  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+	A    conf/ax_path_generic.m4
+	A    conf/ax_compare_version.m4
+
+2010-04-29  James Gallagher <jgallagher@opendap.org>
+
+	Added support fr netcdf 4.x builds using the new snazzy
+	AX_PATH_GENERIC autoconf macro.
+
+2010-04-22  Patrick West <pwest@ucar.edu>
+
+	Fixed issue with dap-config --version with b at end (for beta)
+	M    conf/libdap.m4
+
+2010-04-19  James Gallagher <jgallagher@opendap.org>
+
+	Updated the INSTALL files so that they no longer talk about
+	dap-server or the 'three server programs'. Added a note about
+	sometimes needing to recompile netcdf, hdf4/5 using -fPIC.
+
+2010-04-15  James Gallagher <jgallagher@opendap.org>
+
+	Added a dist-hook target that removes .svn dirs from the dist tar.
+
+	M    dap-server/Makefile.am
+	M    fileout_netcdf/Makefile.am
+	M    freeform_handler/Makefile.am
+	M    hdf4_handler/Makefile.am
+	M    hdf5_handler/Makefile.am
+	M    ncml_module/Makefile.am
+	M    netcdf_handler/Makefile.am
+
+2010-04-15  James Gallagher <jgallagher@opendap.org>
+
+	Added Requires: lines to the .spec files for all the modules we
+	build rpms for.
+
+2010-04-02  Patrick West <pwest@ucar.edu>
+
+	Removed commented out code. It's already in subversion, so no need to
+	keep the commented out code. Added comments for the current version of
+	creating the dimensions, which is not a valid way of doing it. Wanting
+	to keep track. Currently, a dimension is a shared dimension if it has
+	the same name and size, and is part of arrays of the same dimensionality
+	all of the same size.
+	M    FONcTransform.cc
+
+2010-03-29  Patrick West <pwest@ucar.edu>
+
+	+= used for BES.modules.
+	M    fonc.conf.in
+
+2010-02-06  Patrick West <pwest@ucar.edu>
+
+	spec file is a duplicate. distcheck works and rpm builds.
+	M    fileout_netcdf.spec
+	D    fileout_handler.spec
+	M    configure.ac
+
+2010-02-03  Patrick West <pwest@ucar.edu>
+
+	Type in module name
+	M    Makefile.am
+
+2010-02-03  rduncan
+
+	fixed make target .spec/1.0
+
+2010-02-03  Patrick West <pwest@ucar.edu>
+
+	1.0.0 release changes
+	M    fileout_netcdf.spec
+	M    README
+	M    INSTALL
+	M    NEWS
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2010-02-01  rduncan
 
 	Release 1/01/2010
