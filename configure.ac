@@ -34,7 +34,7 @@ AC_CHECK_FUNCS([strchr])
 AC_SYS_LARGEFILE
 
 dnl Checks for specific libraries
-AC_CHECK_LIBDAP([3.10.0],
+AC_CHECK_LIBDAP([3.10.2],
  [
   LIBS="$LIBS $DAP_SERVER_LIBS"
   CPPFLAGS="$CPPFLAGS $DAP_CFLAGS"
@@ -72,7 +72,7 @@ then
     )
 fi
 
-AC_CHECK_BES([3.8.0],
+AC_CHECK_BES([3.8.3],
 [
 ],
 [ AC_MSG_ERROR([Cannot find bes])
