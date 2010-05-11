@@ -1,4 +1,4 @@
-// FONcUtils.h
+// FONcShort.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,44 +29,37 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcUtils_h_
-#define FONcUtils_h_ 1
-
-#include <netcdf.h>
-
-#include <string>
-using std::string ;
+#ifndef FONcShort_h_
+#define FONcShort_h_ 1
 
 #include <BaseType.h>
+
 using namespace libdap ;
 
-class FONcBaseType ;
+#include "FONcBaseType.h"
 
-#define FONC_EMBEDDED_SEPARATOR "."
-#define FONC_ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
-/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
- * object as a netcdf file
+/** @brief A DAP Int16 and UInt16 with file out netcdf information included
  *
- * This class includes static functions to help with the conversion of
- * an OPeNDAP DataDDS object into a netcdf file.
+ * This class represents a DAP Int16 and UInt16 with additional information
+ * needed to write it out to a netcdf file. Includes a reference to the
+ * actual DAP Int16 or UInt16 being converted
  */
-class FONcUtils
+class FONcShort : public FONcBaseType
 {
+private:
+    BaseType *			_bt ;
 public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
+    				FONcShort( BaseType *b ) ;
+    virtual			~FONcShort() ;
 
+    virtual void		define( int ncid ) ;
+    virtual void		write( int ncid ) ;
+
+    virtual string 		name() ;
+    virtual nc_type		type() ;
+
+    virtual void		dump( ostream &strm ) const ;
 } ;
 
-#endif // FONcUtils
+#endif // FONcShort_h_
 

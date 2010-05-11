@@ -1,5 +1,5 @@
 
-# Automake file for fileout_netfonc
+# Automake file for fileout_netcdf
 #
 # 11/11/2008 pcw
 #
@@ -21,12 +21,19 @@ libfonc_module_la_LDFLAGS = -avoid-version -module
 libfonc_module_la_LIBADD = $(BES_DAP_LIBS)
 
 FONC_SRC = FONcTransform.cc FONcTransmitter.cc FONcRequestHandler.cc	\
-	FONcModule.cc FONcUtils.cc
+	FONcModule.cc FONcUtils.cc FONcStr.cc FONcShort.cc FONcInt.cc	\
+	FONcFloat.cc FONcDouble.cc FONcStructure.cc FONcArray.cc	\
+	FONcGrid.cc FONcSequence.cc FONcByte.cc FONcBaseType.cc		\
+	FONcDim.cc FONcMap.cc FONcAttributes.cc
 
 FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
-	FONcModule.h FONcUtils.h
+	FONcModule.h FONcUtils.h FONcStr.h FONcShort.h FONcInt.h	\
+	FONcFloat.h FONcDouble.h FONcStructure.h FONcArray.h		\
+	FONcGrid.h FONcSequence.h FONcByte.h FONcBaseType.h		\
+	FONcDim.h FONcMap.h FONcAttributes.h
 
-EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netfonc.spec
+EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec	\
+	doxy.conf
 
 CLEANFILES = *~ fonc.conf
 
@@ -42,6 +49,18 @@ uninstall-local:
 
 fonc.conf: fonc.conf.in config.status
 	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > fonc.conf
+
+# Not nearly as clean as it could be, but this removes .svn directories
+# in subdirs.
+dist-hook:
+	rm -rf `find $(distdir) -name .svn`
+
+# docs
+
+.PHONY: docs
+docs:
+	srcdir=$(srcdir) doxygen $(srcdir)/doxy.conf
+	(cd docs && tar -czf html.tar.gz html)
 
 C4_DIR=./cccc
 .PHONY: cccc
@@ -67,10 +86,10 @@ fortifyclean:
 # Build linux RPMs
 
 srpm: dist
-	rpmbuild -ts --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb --clean @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
 ###########################################################################
 

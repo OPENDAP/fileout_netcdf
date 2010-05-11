@@ -1,4 +1,4 @@
-// FONcUtils.h
+// FONcGrid.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,44 +29,52 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcUtils_h_
-#define FONcUtils_h_ 1
+#ifndef FONcGrid_h_
+#define FONcGrid_h_ 1
 
-#include <netcdf.h>
+#include <Grid.h>
 
-#include <string>
-using std::string ;
-
-#include <BaseType.h>
 using namespace libdap ;
 
-class FONcBaseType ;
+#include "FONcBaseType.h"
+#include "FONcMap.h"
+#include "FONcArray.h"
 
-#define FONC_EMBEDDED_SEPARATOR "."
-#define FONC_ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
-/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
- * object as a netcdf file
+/** @brief A DAP Grid with file out netcdf information included
  *
- * This class includes static functions to help with the conversion of
- * an OPeNDAP DataDDS object into a netcdf file.
+ * This class represents a DAP Grid with additional information
+ * needed to write it out to a netcdf file. Includes a reference to the
+ * actual DAP Grid being converted, the maps of the grid stored as
+ * FOncMap instances, and the array of the grid stored as a FONcArray.
+ *
+ * NetCDF does not have grid representation. For this reason, we flatten
+ * out the grid as different arrays (maps) as well as the grid's actual
+ * array.
+ *
+ * It is possible to share maps among grids, so a global map list is
+ * kept as well.
  */
-class FONcUtils
+class FONcGrid : public FONcBaseType
 {
+private:
+    Grid *			_grid ;
+    FONcArray *			_arr ;
+    vector<FONcMap *>		_maps ;
 public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
+    				FONcGrid( BaseType *b ) ;
+    virtual			~FONcGrid() ;
 
+    virtual void		convert( vector<string> embed ) ;
+    virtual void		define( int ncid ) ;
+    virtual void		write( int ncid ) ;
+
+    virtual string 		name() ;
+
+    virtual void		dump( ostream &strm ) const ;
+
+    static vector<FONcMap *>	Maps ;
+    static bool			InGrid ;
 } ;
 
-#endif // FONcUtils
+#endif // FONcGrid_h_
 

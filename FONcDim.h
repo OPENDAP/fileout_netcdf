@@ -1,4 +1,4 @@
-// FONcUtils.h
+// FONcDim.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,44 +29,43 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcUtils_h_
-#define FONcUtils_h_ 1
+#ifndef FONcDim_h_
+#define FONcDim_h_ 1
 
-#include <netcdf.h>
+#include <BESObj.h>
 
-#include <string>
-using std::string ;
-
-#include <BaseType.h>
-using namespace libdap ;
-
-class FONcBaseType ;
-
-#define FONC_EMBEDDED_SEPARATOR "."
-#define FONC_ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
-/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
- * object as a netcdf file
+/** @brief A class that represents the dimension of an array.
  *
- * This class includes static functions to help with the conversion of
- * an OPeNDAP DataDDS object into a netcdf file.
+ * This class represents a dimension of a DAP Array with additional
+ * information needed to write it out to a netcdf file. Since this
+ * dimension can be shared, it includes reference counting so that it
+ * can be pointed to by multiple arrays.
  */
-class FONcUtils
+class FONcDim : public BESObj
 {
+private:
+    string			_name ;
+    int				_size ;
+    int				_dimid ;
+    bool			_defined ;
+    int				_ref ;
 public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
+    				FONcDim( const string &name, int size ) ;
+    virtual			~FONcDim() {}
+    virtual void		incref() { _ref++ ; }
+    virtual void		decref() ;
 
+    virtual void		define( int ncid ) ;
+
+    virtual string		name() { return _name ; }
+    virtual int			size() { return _size ; }
+    virtual int			dimid() { return _dimid ; }
+    virtual bool		defined() { return _defined ; }
+
+    virtual void		dump( ostream &strm ) const ;
+
+    static int			DimNameNum ;
 } ;
 
-#endif // FONcUtils
+#endif // FONcDim_h_
 

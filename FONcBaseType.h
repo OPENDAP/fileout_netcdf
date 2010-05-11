@@ -1,4 +1,4 @@
-// FONcUtils.h
+// FONcBaseType.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,44 +29,47 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcUtils_h_
-#define FONcUtils_h_ 1
+#ifndef FONcBaseType_h_
+#define FONcBaseType_h_ 1
 
 #include <netcdf.h>
 
-#include <string>
-using std::string ;
-
+#include <BESObj.h>
 #include <BaseType.h>
+
 using namespace libdap ;
 
-class FONcBaseType ;
-
-#define FONC_EMBEDDED_SEPARATOR "."
-#define FONC_ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
-/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
- * object as a netcdf file
+/** @brief A DAP BaseType with file out netcdf information included
  *
- * This class includes static functions to help with the conversion of
- * an OPeNDAP DataDDS object into a netcdf file.
+ * This class represents a DAP BaseType with additional information
+ * needed to write it out to a netcdf file. Includes a reference to the
+ * actual DAP BaseType being converted
  */
-class FONcUtils
+class FONcBaseType : public BESObj
 {
-public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
+protected:
+    int				_varid ;
+    string			_varname ;
+    string			_orig_varname ;
+    vector<string>		_embed ;
+    bool			_defined ;
 
+    				FONcBaseType()
+				    : _varid( 0 ), _defined( false ) {}
+public:
+    virtual			~FONcBaseType() {}
+
+    virtual void		convert( vector<string> embed ) ;
+    virtual void		define( int ncid ) ;
+    virtual void		write( int ncid ) {}
+
+    virtual string 		name() = 0 ;
+    virtual nc_type		type() ;
+    virtual void		clear_embedded() ;
+    virtual int			varid() { return _varid ; }
+
+    virtual void		dump( ostream &strm ) const = 0 ;
 } ;
 
-#endif // FONcUtils
+#endif // FONcBaseType_h_
 

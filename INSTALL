@@ -1,5 +1,5 @@
 
-Version 0.9.3 (09 June 2009)
+Version 1.0.1 (04 May 2010)
 
 ---------------------------------------------------------------------------
 
@@ -22,12 +22,15 @@ BUILDING THE SOFTWARE
 2) Type `make' to build the handler
 
 3) Install the server component in $prefix by running `make install.'
+   This will also add the new fonc.conf file to the $prefix/etc/bes/modules
+   directory. The BES configuration file bes.conf will automatically
+   load any module configuration files in that directory. The fonc.conf
+   file contains fileout_netcdf specific configurations for use with the
+   BES Framework. This includes some parameters that used to be in the
+   bes.conf file, such as the TypeMatch parameter for finding your
+   files.
 
-4) Type 'make bes-conf' to run the bes-fonc-data.sh script which inserts the
-   handler in the bes.conf file and adds test data to 
-   $prefix/share/hyrax/data.
-
-5) For many installations, you must arrange for your operating system to find
+4) For some installations, you must arrange for your operating system to find
    the shared libraries installed by default in $prefix/lib. Do this by
    either setting an environment variable such as LD_LIBRARY_PATH or by
    editing /etc/ld.so.conf. Different operating systems handle this in
@@ -43,18 +46,23 @@ Building from Our SVN Repository
 
 REQUIREMENTS
 
-  o You need the libdap library version 3.9.x to build and install this
+  o You need the libdap library version 3.10.x to build and install this
     software. If you're using Linux, this means either building from source
     or using the libdap and libdap-devel RPM packages.
 
-  o If you're planning on using this with the OPeNDAP 4 Data Server (Hyrax),
-    you'll need version 3.7.x of the BES software. Make sure to build that 
-    first.
+  o You will need the OPeNDAP Back-End Server (BES) libraries version
+    3.10.x to build and install this software. If you're using Linux,
+    this means either building from source or using the bes and bes-devel
+    RPM packages.
 
   o You also need a recent copy of netCDF. We've tested this server with
     netcdf version 3.6.2, although any recent version should work fine. If the
     configure script cannot find your copy of libnetcdf, use the
     --with-netcdf options to tell it where to look (see configure --help).
+
+  o If the build will fails because of problems linking with the netcdf
+    library, you may need to build the library from source and force the 
+    compiler/linker to use the option '-fPIC' (poisition Independet Code).
 
 NOTES
 
@@ -78,12 +86,20 @@ NOTES
 
   o DEBUGGING AIDS
 
+    - The OPeNDAP BES framework includes the BESDebug class that helps
+      developers add debugging to their code. To enable debugging,
+      simply pass on the command line the BES debug option:
+      besctl start -d "<filename>,<context>" where filename is
+      the name of the file to dump debugging to, and <context> is a
+      comma separated list of debugging context. For this module, the
+      context is fonc.
+
     - The OPeNDAP libdap library includes the following debugging aids that
       may be of help to you in developing new applications.
 
     - DBG: simple program instrumentation -- see the file debug.h distributed
       with libdap (which is installed in the libdap header directory; use
-      'config-libdap --cflags' and look at the value if -I).
+      'dap-config --cflags' and look at the value if -I).
 
     - DBG2: more elaborate program instrumentation -- by convention this is
       used for output that is half a page or more, while DEBUG is used for

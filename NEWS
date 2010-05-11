@@ -1,4 +1,34 @@
 
+Version 1.0.1 (04 May 2010)
+
+This release includes a complete rewrite of the code, but with the same
+functionaility.
+
+A bug was fixed for shared dimensions. It was that a dimension could be
+shared if it had the same name, the same size, and belonged to an array
+of the same dimensionality. The last requirements was removed. A
+dimension can be shared if it has the same name and size as another now.
+
+Version 1.0.0 (02 February 2010)
+
+This release is a bug fix release, with memory leaks cleaned up, fortify
+security issues resolved, and shared dimensions cleaned up.
+
+From the TODO list below:
+1.  FONc.Tempdir=/tmp parameter added to the fileout_netcdf configuration. And the filename used for the temporary file is randomly generated.
+2. debug statements added using the BESDebug method, using the context
+fonc. For debugging fileout_netcdf, use -d "bes.dbg,fonc"
+3. Correct exceptions generated and returned to the client as with any
+of the other modules.
+4. Writing of attributes is done as part of creating the variables,
+instead of a separate pass, as was done before.
+5. bes-testsuite created to use besstandalone application for running
+and testing fileout_netcdf capabilities. Also added unit tests.
+
+Still left TODO:
+1. Handling of sequence data
+2. Further cleanup of shared dimensions.
+
 Version 0.9.3 (09 June 2009)
 
 Fix for ticket 1300 - some Grids from HDF4 files were not represented
@@ -19,3 +49,9 @@ Version 0.9.0
 
 It's brand new. Still to do: Seqences. This contains no explicit support CF,
 although that's slated for a future version.
+
+TODO:
+- Create a testsuite that is stand alone, not requiring any other modules
+  except the dap modules.
+- Need to be able to write out Sequence data.
+

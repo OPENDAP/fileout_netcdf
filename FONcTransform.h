@@ -50,6 +50,8 @@ using namespace::libdap ;
 #include <BESObj.h>
 #include <BESDataHandlerInterface.h>
 
+class FONcBaseType ;
+
 /** @brief Transformation object that converts an OPeNDAP DataDDS to a
  * netcdf file
  *
@@ -63,118 +65,14 @@ private:
     int				_ncid ;
     DDS				*_dds ;
     string			_localfile ;
-    string			_name_prefix ;
-    vector<BaseType *>		_embedded ;
-    bool			_embedded_set ;
-    string			_embedded_name ;
-    bool			_doing_grids ;
-    unsigned int		_dim_name_num ;
+    vector<FONcBaseType *>	_fonc_vars ;
 
-    // private class representing a grid map, or possible grid map
-    class FONcMap
-    {
-    private:
-	FONcMap() : map( 0 ), dimid( 0 ) {}
-    public:
-	Array *map ;
-	string embedded_name ;
-	vector<string> shared_by_grids ;
-	int dimid ;
-	bool written ;
-
-	FONcMap( const string &gridname,
-		 const string &ename,
-		 Array *a )
-	    : map( a ), embedded_name( ename), dimid( 0 ), written( false )
-	{
-	    shared_by_grids.push_back( gridname ) ;
-	}
-	FONcMap( Array *a, int id )
-	    : map( a ), dimid( id ), written( true ) { }
-
-	bool compare( Array *tomap ) ;
-    } ;
-
-    vector<FONcMap *> _maps ;
-
-    // private class that represents a Grid object
-    class FONcGrid
-    {
-    private:
-	FONcGrid() : grid( 0 ) {}
-    public:
-	FONcGrid( const string &ename, Grid *g )
-	    : grid( g ), embedded_name( ename ) {}
-	Grid *grid ;
-	string embedded_name ;
-	vector<FONcMap *> maps ;
-    } ;
-
-    vector<FONcGrid *>		_grids ;
-
-    class FONcDimSet
-    {
-    private:
-	FONcDimSet() : numdims( 0 ) {}
-    public:
-	FONcDimSet( int ndims ) ;
-	int numdims ;
-	vector<string> dimnames ;
-	vector<string> ncdimnames ;
-	vector<int> dimsizes ;
-	vector<int> dimnums ;
-	void add_dimension( Array *a, Array::Dim_iter di ) ;
-	bool check_dims( FONcDimSet *set, int dims[],
-			 int dim_sizes[], int ndims, int &nelements ) ;
-	int add_dims( int ncid, int dims[], int dim_sizes[],
-		      int ndims, int &nelements, unsigned int &dim_name_num,
-		      const string &name_prefix ) ;
-    } ;
-
-    vector<FONcDimSet *> _dims ;
-
-    nc_type			get_nc_type( BaseType *element ) ;
-    void			write_structure( BaseType* b ) ;
-    void			write_array( BaseType* b, int dimids[] = NULL );
-    int				write_array( Array *a, nc_type array_type,
-					     int nelements,
-					     int ndims, int dims[],
-					     int dim_sizes[] ) ;
-    void			write_var( BaseType* b ) ;
-    void			write_str( BaseType* b ) ;
-    void			add_attributes( int varid, BaseType *b ) ;
-    void			addattrs( int varid, BaseType *b,
-					  const string &var_name ) ;
-    void			addattrs( int varid, AttrTable &attrs,
-					  const string &var_name,
-					  const string &prepend_attr ) ;
-    void			addattrs( int varid, const string &var_name,
-					  AttrTable &attrs,
-					  AttrTable::Attr_iter &attr,
-					  const string &prepend_attr ) ;
-
-    void			add_embedded( BaseType *b ) ;
-    void			remove_embedded( BaseType *b ) ;
-    string			embedded_name( const string &name ) ;
-    void			set_embedded( const string &ename ) ;
-    void			unset_embedded( ) ;
-
-    void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
-
-    void			write_grid( BaseType* b ) ;
-    void			write_grids() ;
-
-    void			write_sequence( BaseType *b ) ;
-
-    void			add_original_attr( BaseType *b,
-						   const string &orig ) ;
 public:
     				FONcTransform( DDS *dds,
 					       BESDataHandlerInterface &dhi,
 					       const string &localfile ) ;
     virtual			~FONcTransform() ;
-    virtual int			transform( ) ;
+    virtual void		transform( ) ;
 
     virtual void		dump( ostream &strm ) const ;
 } ;

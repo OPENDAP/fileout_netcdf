@@ -1,4 +1,4 @@
-// FONcUtils.h
+// FONcAttributes.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,8 +29,8 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcUtils_h_
-#define FONcUtils_h_ 1
+#ifndef FONcAttributes_h_
+#define FONcAttributes_h_ 1
 
 #include <netcdf.h>
 
@@ -42,31 +42,38 @@ using namespace libdap ;
 
 class FONcBaseType ;
 
-#define FONC_EMBEDDED_SEPARATOR "."
-#define FONC_ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
-/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
- * object as a netcdf file
+/** @brief A class that provides static methods to help write out
+ * attributes for a given variable
  *
- * This class includes static functions to help with the conversion of
- * an OPeNDAP DataDDS object into a netcdf file.
+ * Given a BaseType from a DataDDS, these functions can write out
+ * attributes for that BaseType as well as all parent classes of that
+ * BaseType. Since netcdf is a flattened data structure, any variables
+ * within a structure or grid will write out attributes for the
+ * structure or grid along with its own attributes.
  */
-class FONcUtils
+class FONcAttributes
 {
+private:
+    static void			add_attributes( int ncid, int varid,
+						BaseType *b,
+						string &emb_name ) ;
+    static void			addattrs( int ncid, int varid, BaseType *b,
+					  const string &var_name ) ;
+    static void			addattrs( int ncid, int varid,
+					  const string &var_name,
+					  AttrTable &attrs,
+					  AttrTable::Attr_iter &attr,
+					  const string &prepend_attr ) ;
 public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
-
+    static void			add_attributes( int ncid, int varid,
+						BaseType *b ) ;
+    static void			addattrs( int ncid, int varid, AttrTable &attrs,
+					  const string &var_name,
+					  const string &prepend_attr ) ;
+    static void			add_original_name( int ncid, int varid,
+						   const string &var_name,
+						   const string &orig ) ;
 } ;
 
-#endif // FONcUtils
+#endif // FONcAttributes
 

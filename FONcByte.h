@@ -1,4 +1,5 @@
-// FONcUtils.h
+
+// FONcByte.h
 
 // This file is part of BES Netcdf File Out Module
 
@@ -29,44 +30,37 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#ifndef FONcUtils_h_
-#define FONcUtils_h_ 1
+#ifndef FONcByte_h_
+#define FONcByte_h_ 1
 
-#include <netcdf.h>
+#include <Byte.h>
 
-#include <string>
-using std::string ;
-
-#include <BaseType.h>
 using namespace libdap ;
 
-class FONcBaseType ;
+#include "FONcBaseType.h"
 
-#define FONC_EMBEDDED_SEPARATOR "."
-#define FONC_ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
-/** @brief Utilities used to help in the return of an OPeNDAP DataDDS
- * object as a netcdf file
+/** @brief A class representing the DAP Byte class for file out netcdf
  *
- * This class includes static functions to help with the conversion of
- * an OPeNDAP DataDDS object into a netcdf file.
+ * This class represents a DAP Byte with additional information
+ * needed to write it out to a netcdf file. Includes a reference to the
+ * actual DAP Byte being converted
  */
-class FONcUtils
+class FONcByte : public FONcBaseType
 {
+private:
+    Byte *			_b ;
 public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
+    				FONcByte( BaseType *b ) ;
+    virtual			~FONcByte() ;
 
+    virtual void		define( int ncid ) ;
+    virtual void		write( int ncid ) ;
+
+    virtual string 		name() ;
+    virtual nc_type		type() ;
+
+    virtual void		dump( ostream &strm ) const ;
 } ;
 
-#endif // FONcUtils
+#endif // FONcByte_h_
 
