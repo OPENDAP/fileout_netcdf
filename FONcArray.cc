@@ -141,7 +141,7 @@ FONcArray::convert( vector<string> embed )
 	// See if this dimension has already been defined. If it has the
 	// same name and same size as another dimension, then it is a
 	// shared dimension. Create it only once and share the FONcDim
-	FONcDim *use_dim = find_dim( _a->dimension_name( di ), size ) ;
+	FONcDim *use_dim = find_dim( embed, _a->dimension_name( di ), size ) ;
 	_dims.push_back( use_dim ) ;
 	dimnum++ ;
     }
@@ -173,14 +173,16 @@ FONcArray::convert( vector<string> embed )
  * the size is different
  */
 FONcDim *
-FONcArray::find_dim( const string &name, int size )
+FONcArray::find_dim( vector<string> &embed, const string &name, int size )
 {
+    string oname ;
+    string ename = FONcUtils::gen_name( embed, name, oname ) ;
     FONcDim *ret_dim = 0 ;
     vector<FONcDim *>::iterator i = FONcArray::Dimensions.begin() ;
     vector<FONcDim *>::iterator e = FONcArray::Dimensions.end() ;
     for( ; i != e && !ret_dim; i++ )
     {
-	if( (*i)->name() == name )
+	if( !((*i)->name().empty()) && ( (*i)->name() == name ) )
 	{
 	    if( (*i)->size() == size )
 	    {
@@ -188,6 +190,11 @@ FONcArray::find_dim( const string &name, int size )
 	    }
 	    else
 	    {
+		if( embed.size() > 0 )
+		{
+		    vector<string> tmp ;
+		    return find_dim( tmp, ename, size ) ;
+		}
 		string err = (string)"fileout_netcdf:dimension found "
 			     + "with the same name, but different size" ;
 		throw BESInternalError( err, __FILE__, __LINE__ ) ;

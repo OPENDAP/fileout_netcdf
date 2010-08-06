@@ -19,6 +19,14 @@ AT_CHECK([ncdump $2 || true], [], [stdout], [stderr])
 AT_CHECK([diff -b -B $abs_srcdir/$3 stdout || diff -b -B $abs_srcdir/$3 stderr], [], [ignore],[],[])
 AT_CLEANUP])
 
+m4_define([AT_FONC_RTEST],   
+[AT_SETUP([FONC $1])
+AT_KEYWORDS([fonc])
+AT_CHECK([$abs_builddir/$1 $2 || true], [], [ignore], [ignore])
+AT_CHECK([ncdump $3 || true], [], [stdout], [stderr])
+AT_CHECK([diff -b -B $abs_srcdir/$4 stdout || diff -b -B $abs_srcdir/$4 stderr], [], [ignore],[],[])
+AT_CLEANUP])
+
 AT_FONC_TEST([simpleT00], [simpleT00.nc], [baselines/fonc.simple.00.baseline])
 AT_FONC_TEST([simpleT01], [simpleT01.nc], [baselines/fonc.simple.01.baseline])
 AT_FONC_TEST([simpleT02], [simpleT02.nc], [baselines/fonc.simple.02.baseline])
@@ -31,4 +39,6 @@ AT_FONC_TEST([gridT], [gridT.nc], [baselines/fonc.grid.00.baseline])
 AT_FONC_TEST([seqT], [seqT.nc], [baselines/fonc.seq.00.baseline])
 AT_FONC_TEST([attrT], [attrT.nc], [baselines/fonc.attr.00.baseline])
 AT_FONC_TEST([namesT], [namesT.nc], [baselines/fonc.names.00.baseline])
-
+AT_FONC_RTEST([readT], [cedar.dods], [cedar.dods.nc], [data/cedar.dump])
+AT_FONC_RTEST([readT], [fits.dods], [fits.dods.nc], [data/fits.dump])
+AT_FONC_RTEST([readT], [nc.dods], [nc.dods.nc], [data/nc.dump])

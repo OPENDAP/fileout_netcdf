@@ -14,7 +14,7 @@ DISTCLEANFILES = test_config.h
 
 CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
-EXTRA_DIST = baselines test_config.h.in bes.conf fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
+EXTRA_DIST = data baselines test_config.h.in bes.conf fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
 
 check_PROGRAMS = $(UNIT_TESTS)
 
@@ -24,7 +24,7 @@ check_PROGRAMS = $(UNIT_TESTS)
 
 UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 	structT00 arrayT structT01 structT02	\
-	arrayT01 gridT seqT attrT namesT
+	arrayT01 gridT seqT attrT namesT readT
 
 SRCS = ../FONcTransform.cc ../FONcTransmitter.cc ../FONcUtils.cc	\
 	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	\
@@ -68,6 +68,9 @@ namesT_LDADD = $(AM_LDADD)
 
 seqT_SOURCES = seqT.cc $(SRCS)
 seqT_LDADD = $(AM_LDADD)
+
+readT_SOURCES = readT.cc $(SRCS)
+readT_LDADD = $(AM_LDADD) $(DAP_CLIENT_LIBS)
 
 ############## Autotest follows #####################
 

@@ -58,7 +58,7 @@ private:
     int *			_dim_sizes ;
     string *			_str_data ;
 
-    FONcDim *			find_dim( const string &name, int size ) ;
+    FONcDim *			find_dim( vector<string> &embed, const string &name, int size ) ;
 public:
     				FONcArray( BaseType *b ) ;
     virtual			~FONcArray() ;
