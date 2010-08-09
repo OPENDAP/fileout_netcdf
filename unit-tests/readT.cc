@@ -31,6 +31,7 @@ set_read( DDS *dds )
     {
         BaseType *v = *i;
 	v->set_read_p( true ) ;
+	v->set_send_p( true ) ;
     }
 }
 
@@ -100,7 +101,7 @@ main( int argc, char **argv )
 
 	url->read_data_no_mime( *dds, r ) ;
 
-	if( debug ) print_data( dds, true ) ;
+	if( debug ) print_data( dds, false ) ;
     }
     catch (Error & e)
     {
@@ -112,6 +113,7 @@ main( int argc, char **argv )
     if( r ) delete r ;
     if( url ) delete url ;
 
+    dds->tag_nested_sequences();
     set_read( dds ) ;
 
     try
