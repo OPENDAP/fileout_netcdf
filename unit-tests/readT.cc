@@ -2,17 +2,19 @@
 #include <fstream>
 
 using std::cout ;
+using std::cerr ;
 using std::endl ;
 using std::ofstream ;
 
 #include <Connect.h>
 #include <DataDDS.h>
-#include <BaseTypeFactory.h>
 #include <Response.h>
 #include <Sequence.h>
 #include <Error.h>
 #include <DataDDS.h>
 #include <DDS.h>
+#include <Structure.h>
+#include <Sequence.h>
 
 using namespace libdap ;
 
@@ -23,6 +25,66 @@ using namespace libdap ;
 
 #include "test_config.h"
 #include "FONcTransmitter.h"
+#include "ReadTypeFactory.h"
+
+void set_sequence_read( Sequence *s ) ;
+
+void
+set_structure_read( Structure *s )
+{
+    s->set_read_p( true ) ;
+    s->set_send_p( true ) ;
+    Constructor::Vars_iter i = s->var_begin();
+    Constructor::Vars_iter e = s->var_end();
+    for( ; i != e; i++ )
+    {
+	BaseType *v = *i ;
+	if( v->type() == dods_sequence_c )
+	{
+	    Sequence *new_s = dynamic_cast<Sequence *>(v) ;
+	    set_sequence_read( new_s ) ;
+	}
+	else if( v->type() == dods_structure_c )
+	{
+	    Structure *new_s = dynamic_cast<Structure *>(v) ;
+	    set_structure_read( new_s ) ;
+	}
+	else
+	{
+	    v->set_read_p( true ) ;
+	    v->set_send_p( true ) ;
+	}
+    }
+}
+
+void
+set_sequence_read( Sequence *s )
+{
+    s->set_read_p( true ) ;
+    s->set_send_p( true ) ;
+    s->reset_row_number() ;
+    Constructor::Vars_iter i = s->var_begin();
+    Constructor::Vars_iter e = s->var_end();
+    for( ; i != e; i++ )
+    {
+	BaseType *v = *i ;
+	if( v->type() == dods_sequence_c )
+	{
+	    Sequence *new_s = dynamic_cast<Sequence *>(v) ;
+	    set_sequence_read( new_s ) ;
+	}
+	else if( v->type() == dods_structure_c )
+	{
+	    Structure *new_s = dynamic_cast<Structure *>(v) ;
+	    set_structure_read( new_s ) ;
+	}
+	else
+	{
+	    v->set_read_p( true ) ;
+	    v->set_send_p( true ) ;
+	}
+    }
+}
 
 static void
 set_read( DDS *dds )
@@ -30,8 +92,21 @@ set_read( DDS *dds )
     for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++)
     {
         BaseType *v = *i;
-	v->set_read_p( true ) ;
-	v->set_send_p( true ) ;
+	if( v->type() == dods_sequence_c )
+	{
+	    Sequence *s = dynamic_cast<Sequence *>(v) ;
+	    set_sequence_read( s ) ;
+	}
+	else if( v->type() == dods_structure_c )
+	{
+	    Structure *s = dynamic_cast<Structure *>(v) ;
+	    set_structure_read( s ) ;
+	}
+	else
+	{
+	    v->set_read_p( true ) ;
+	    v->set_send_p( true ) ;
+	}
     }
 }
 
@@ -86,7 +161,7 @@ main( int argc, char **argv )
 
     Connect *url = 0 ;
     Response *r = 0 ;
-    BaseTypeFactory factory ;
+    ReadTypeFactory factory ;
     DataDDS *dds = new DataDDS( &factory ) ;
     try
     {
@@ -113,8 +188,10 @@ main( int argc, char **argv )
     if( r ) delete r ;
     if( url ) delete url ;
 
-    dds->tag_nested_sequences();
+    dds->tag_nested_sequences() ;
+    if( debug ) dds->print( cerr ) ;
     set_read( dds ) ;
+    if( debug ) cerr << *dds << endl ;
 
     try
     {

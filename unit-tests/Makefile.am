@@ -69,7 +69,7 @@ namesT_LDADD = $(AM_LDADD)
 seqT_SOURCES = seqT.cc $(SRCS)
 seqT_LDADD = $(AM_LDADD)
 
-readT_SOURCES = readT.cc $(SRCS)
+readT_SOURCES = readT.cc $(SRCS) ReadTypeFactory.cc ReadTypeFactory.h ReadSequence.cc ReadSequence.h
 readT_LDADD = $(AM_LDADD) $(DAP_CLIENT_LIBS)
 
 ############## Autotest follows #####################
