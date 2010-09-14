@@ -1,19 +1,19 @@
 Summary: Return a NetCDF File for a DAP Data response
 Name: fileout_netcdf
-Version: 1.0.1
+Version: 1.1.0
 Release: 1
 License: LGPLv2+
 Group: System Environment/Daemons
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/%{name}-%{version}.tar.gz
-Requires: libdap >= 3.10.2 
+Requires: libdap >= 3.11.0
 Requires: netcdf >= 3.6
-Requires: bes >= 3.8.3
+Requires: bes >= 3.9.0
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.10.2 
+BuildRequires:   libdap-devel >= 3.11.0
 BuildRequires:   netcdf-devel >= 3.6
-BuildRequires:   bes-devel >= 3.8.3
+BuildRequires:   bes-devel >= 3.9.0
 
 %description
 This is the fileout netCDF response handler for Hyrax - the OPeNDAP data

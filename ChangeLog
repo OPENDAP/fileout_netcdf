@@ -1,3 +1,127 @@
+2010-09-14  James Gallagher <jgallagher@opendap.org>
+
+	This code now uses the new method in ConstraintEvaluator that enables multiple functions to be called.
+
+2010-08-13  Patrick West <pwest@ucar.edu>
+
+	Test type and type factor. Had to implement sequence because intern_data
+	was not working.
+	A    unit-tests/ReadSequence.cc
+	A    unit-tests/ReadTypeFactory.cc
+	A    unit-tests/ReadSequence.h
+	A    unit-tests/ReadTypeFactory.h
+
+2010-08-09  Patrick West <pwest@ucar.edu>
+
+	Fixed problem with Sequence test in readT. Added hdf4 test with
+	sequences.
+	M    unit-tests/readT.cc
+	M    unit-tests/fonc_handlerTest.at
+	M    unit-tests/Makefile.am
+	A    unit-tests/data/hdf4.dump
+	A    unit-tests/data/hdf4.dods
+
+2010-08-09  Patrick West <pwest@ucar.edu>
+
+	Added simple constraint test for readT. hdf4 and airs tests are still
+	having problems, will add those later.
+	M    unit-tests/readT.cc
+	M    unit-tests/fonc_handlerTest.at
+	A    unit-tests/data/constraint.dump
+	AM   unit-tests/data/constraint.dods
+
+2010-08-06  Patrick West <pwest@ucar.edu>
+
+	Fixed problem where dimensions with same name in different structures
+	with different sizes. Added unit test to be able to specify a .dods
+	DataDDS file and return it as netcdf and compare it to the ncdump.
+	M    FONcArray.cc
+	A    unit-tests/readT.cc
+	M    unit-tests/fonc_handlerTest.at
+	M    unit-tests/Makefile.am
+	A    unit-tests/data
+	A    unit-tests/data/cedar.dump
+	A    unit-tests/data/nc.dump
+	A    unit-tests/data/cedar.dods
+	AM   unit-tests/data/nc.dods
+	A    unit-tests/data/fits.dump
+	A    unit-tests/data/fits.dods
+	M    FONcArray.h
+
+2010-07-15  Patrick West <pwest@ucar.edu>
+
+	Added include of dependent dap.conf
+
+2010-05-24  Patrick West <pwest@ucar.edu>
+
+	For netcdf 4, NC_CFLAGS is set, not NC_CPPFLAGS.
+	M    configure.ac
+
+2010-05-11  Patrick West <pwest@ucar.edu>
+
+	Merge of release branch 1.0 to the trunk
+	_M   .
+	A  + FONcAttributes.h
+	M    FONcRequestHandler.h
+	A  + conf/ax_path_generic.m4
+	A  + conf/ax_compare_version.m4
+	M    conf/libdap.m4
+	A  + FONcInt.h
+	A  + docs
+	M    FONcUtils.cc
+	A  + FONcStructure.h
+	A  + FONcDim.cc
+	M    configure.ac
+	A  + FONcStr.h
+	A  + FONcSequence.h
+	MM   FONcTransform.cc
+	A  + FONcDim.h
+	A  + FONcDouble.h
+	M    INSTALL
+	A  + FONcMap.cc
+	MM   FONcTransform.h
+	A  + FONcArray.cc
+	A  + FONcBaseType.h
+	A  + FONcMap.h
+	M    NEWS
+	A  + FONcGrid.cc
+	M    unit-tests/fonc_handlerTest.at
+	A  + unit-tests/arrayT01.cc
+	A  + unit-tests/baselines/fonc.array.01.baseline
+	M    unit-tests/baselines/fonc.names.00.baseline
+	M    unit-tests/baselines/fonc.grid.00.baseline
+	M    unit-tests/Makefile.am
+	M    FONcModule.cc
+	A  + FONcAttributes.cc
+	M    FONcRequestHandler.cc
+	M    FONcModule.h
+	A  + FONcGrid.h
+	M    fileout_netcdf.spec
+	A  + FONcInt.cc
+	M    ChangeLog
+	A  + FONcShort.cc
+	A  + FONcStructure.cc
+	A  + FONcShort.h
+	M    FONcUtils.h
+	A  + main_page.doxygen
+	M    README
+	D    fileout_handler.spec
+	A  + FONcByte.cc
+	A  + FONcByte.h
+	A  + FONcFloat.cc
+	A  + FONcFloat.h
+	A  + FONcStr.cc
+	A  + FONcSequence.cc
+	A  + FONcDouble.cc
+	A  + FONcBaseType.cc
+	A  + doxy.conf
+	M    FONcTransmitter.h
+	M    Makefile.am
+	A  + FONcArray.h
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2010-05-03  Patrick West <pwest@ucar.edu>
 
 	Updated the version number in the INSTALL file

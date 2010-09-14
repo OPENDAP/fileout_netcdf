@@ -1,5 +1,5 @@
 
-Version 1.0.1 (04 May 2010)
+Version 1.1.0 (14 Spet 2010)
 
 ---------------------------------------------------------------------------
 
@@ -46,12 +46,12 @@ Building from Our SVN Repository
 
 REQUIREMENTS
 
-  o You need the libdap library version 3.10.x to build and install this
+  o You need the libdap library version 3.11.x to build and install this
     software. If you're using Linux, this means either building from source
     or using the libdap and libdap-devel RPM packages.
 
   o You will need the OPeNDAP Back-End Server (BES) libraries version
-    3.10.x to build and install this software. If you're using Linux,
+    3.9.x to build and install this software. If you're using Linux,
     this means either building from source or using the bes and bes-devel
     RPM packages.
 
