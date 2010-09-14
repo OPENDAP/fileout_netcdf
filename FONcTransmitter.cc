@@ -175,6 +175,12 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     try
     {
 	// Handle *functional* constraint expressions specially
+	if (bdds->get_ce().function_clauses())
+	{
+	    BESDEBUG( "fonc", "processing a functional constraint clause(s)." << endl );
+	    dds = bdds->get_ce().eval_function_clauses(*dds);
+	}
+#if 0
 	if( bdds->get_ce().functional_expression() )
 	{
 	    // This returns a new BaseType, not a pointer to one in the DataDDS
@@ -192,6 +198,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	    functional_constraint = true;
 	    dds->add_var( var ) ;
 	}
+#endif
 	else
 	{
 	    // Iterate through the variables in the DataDDS and read
