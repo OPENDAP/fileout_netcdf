@@ -72,7 +72,7 @@ then
     )
 fi
 
-AC_CHECK_BES([3.8.3],
+AC_CHECK_BES([3.9.0],
 [
 ],
 [ AC_MSG_ERROR([Cannot find bes])
