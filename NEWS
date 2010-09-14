@@ -1,4 +1,12 @@
 
+Version 1.1.0 (14 Spet 2010)
+
+Added support for Sequences.
+
+Support for HDF4 files (and others) where arrays with the same base
+names appear in seveal places. The code now handles DAP's lexical
+scoping correctly.
+
 Version 1.0.1 (04 May 2010)
 
 This release includes a complete rewrite of the code, but with the same

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(fileout_netcdf, 1.0.1, opendap-tech@opendap.org)
+AC_INIT(fileout_netcdf, 1.1.0, opendap-tech@opendap.org)
 AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([conf])
 
@@ -34,7 +34,7 @@ AC_CHECK_FUNCS([strchr])
 AC_SYS_LARGEFILE
 
 dnl Checks for specific libraries
-AC_CHECK_LIBDAP([3.10.2],
+AC_CHECK_LIBDAP([3.11.0],
  [
   LIBS="$LIBS $DAP_SERVER_LIBS"
   CPPFLAGS="$CPPFLAGS $DAP_CFLAGS"
