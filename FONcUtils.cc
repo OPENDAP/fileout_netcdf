@@ -76,7 +76,7 @@ FONcUtils::id2netcdf( string in )
     string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_.@" ;
     // string of allowed first characters in netcdf naming
     // convention
-    string first = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ;
+    string first = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_" ;
 
     string::size_type i = 0;
 
