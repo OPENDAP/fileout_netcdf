@@ -7,8 +7,8 @@ variables:
 		i_dim:fonc_original_name = "i dim" ;
 	float j_dim(j_dim) ;
 		j_dim:fonc_original_name = "j!dim" ;
-	short nc__order_name__with_chars_(i_dim, j_dim) ;
-		nc__order_name__with_chars_:fonc_original_name = "/order name/#with^chars&" ;
+	short _order_name__with_chars_(i_dim, j_dim) ;
+		_order_name__with_chars_:fonc_original_name = "/order name/#with^chars&" ;
 	int my_struct.ui_32_ ;
 		my_struct.ui_32_:fonc_original_name = "my&struct.ui(32)" ;
 	float my_struct.f_32_ ;
@@ -19,7 +19,7 @@ data:
 
  j_dim = 3.3, 6.6, 9.9 ;
 
- nc__order_name__with_chars_ =
+ _order_name__with_chars_ =
   4, 8, 12,
   5, 10, 15 ;
 
