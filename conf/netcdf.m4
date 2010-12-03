@@ -41,6 +41,8 @@ AC_DEFUN([AC_CHECK_NETCDF],
     AS_IF([test "z$NC_PATH_INC" = "z"],[NC_PATH_INC="$NC_PATH/include"])
   ])
 
+  AC_SUBST([NC_PATH])
+
   ac_netcdf_ok='no'
   NC_LIBS=
   NC_LDFLAGS=
