@@ -1,6 +1,6 @@
 // FONcModule.h
 
-// This file is part of BES ESG Module.
+// This file is part of BES Fileout NetCDF Module.
 
 // Copyright (c) 2004,2005 University Corporation for Atmospheric Research
 // Author: Patrick West <pwest@ucar.org>

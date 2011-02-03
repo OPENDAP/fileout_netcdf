@@ -1,6 +1,6 @@
 // FONcModule.cc
 
-// This file is part of BES ESG Module.
+// This file is part of BES filout NetCDF Module.
 
 // Copyright (c) 2004,2005 University Corporation for Atmospheric Research
 // Author: Patrick West <pwest@ucar.edu> and Jose Garcia <jgarcia@ucar.edu>
@@ -63,7 +63,7 @@ using std::endl ;
 void
 FONcModule::initialize( const string &modname )
 {
-    BESDEBUG( "fonc", "Initializing ESG module " << modname << endl ) ;
+    BESDEBUG( "fonc", "Initializing module " << modname << endl ) ;
 
     BESDEBUG( "fonc", "    adding " << modname << " request handler" << endl ) ;
     BESRequestHandler *handler = new FONcRequestHandler( modname ) ;
@@ -82,7 +82,7 @@ FONcModule::initialize( const string &modname )
     BESDEBUG( "fonc", "    adding fonc debug context" << endl ) ;
     BESDebug::Register( "fonc" ) ;
 
-    BESDEBUG( "fonc", "Done Initializing ESG module " << modname << endl ) ;
+    BESDEBUG( "fonc", "Done Initializing module " << modname << endl ) ;
 }
 
 /** @brief removes any registered callbacks or objects from the
@@ -96,7 +96,7 @@ FONcModule::initialize( const string &modname )
 void
 FONcModule::terminate( const string &modname )
 {
-    BESDEBUG( "fonc", "Cleaning ESG module " << modname << endl ) ;
+    BESDEBUG( "fonc", "Cleaning module " << modname << endl ) ;
 
     BESDEBUG( "fonc", "    removing " << RETURNAS_NETCDF << " transmitter"
 		     << endl ) ;
@@ -108,7 +108,7 @@ FONcModule::terminate( const string &modname )
 	BESRequestHandlerList::TheList()->remove_handler( modname ) ;
     if( rh ) delete rh ;
 
-    BESDEBUG( "fonc", "Done Cleaning ESG module " << modname << endl ) ;
+    BESDEBUG( "fonc", "Done Cleaning module " << modname << endl ) ;
 }
 
 /** @brief dumps information about this object for debugging purposes
