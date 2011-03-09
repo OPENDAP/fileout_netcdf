@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleGetInfoString</key>
-	<string>3.6.0, OPeNDAP</string>
+	<string>0.0.0, OPeNDAP</string>
 	<key>CFBundleIdentifier</key>
-	<string>opendap.bes</string>
+	<string>opendap.fileout_netcdf</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.6.0</string>
+	<string>0.0.0</string>
 	<key>IFMajorVersion</key>
 	<integer>3</integer>
 	<key>IFMinorVersion</key>
@@ -21,7 +21,7 @@
 	<key>IFPkgFlagBackgroundScaling</key>
 	<string>none</string>
 	<key>IFPkgFlagDefaultLocation</key>
-	<string>/usr</string>
+	<string>_PREFIX_</string>
 	<key>IFPkgFlagFollowLinks</key>
 	<true/>
 	<key>IFPkgFlagInstallFat</key>
