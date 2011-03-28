@@ -277,7 +277,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	delete[] temp_full;
 	if (functional_constraint)
 	    delete dds;
-	throw e ;
+	throw;
     }
     catch( ... )
     {
@@ -314,7 +314,7 @@ void
 FONcTransmitter::return_temp_stream( const string &filename,
 				     ostream &strm )
 {
-    int bytes = 0 ;
+    //  int bytes = 0 ;    // Not used; jhrg 3/16/11
     ifstream os ;
     os.open( filename.c_str(), ios::binary|ios::in ) ;
     if( !os )
@@ -343,7 +343,7 @@ FONcTransmitter::return_temp_stream( const string &filename,
 	    strm << flush ;
 	}
 	strm.write( block, nbytes ) ;
-	bytes += nbytes ;
+	//bytes += nbytes ;
     }
     else
     {
@@ -361,7 +361,7 @@ FONcTransmitter::return_temp_stream( const string &filename,
 	nbytes = os.gcount() ;
 	strm.write( block, nbytes ) ;
 	//write( fileno( stdout ),(void*)block, nbytes ) ;
-	bytes += nbytes ;
+	//bytes += nbytes ;
     }
     os.close();
 }

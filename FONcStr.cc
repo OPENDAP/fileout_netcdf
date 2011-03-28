@@ -85,8 +85,8 @@ FONcStr::define( int ncid )
 			  << _varname << endl ) ;
 
 	int var_dims[1] ;		// variable shape
-	size_t var_start[1] ;	// variable start
-	size_t var_count[1] ;	// variable count
+	// size_t var_start[1] ;	// variable start     // Not used; jhrg 3/16/11
+	// size_t var_count[1] ;	// variable count     // Not used; jhrg 3/16/11
 
 	_varname = FONcUtils::gen_name( _embed, _varname, _orig_varname ) ;
 	_data = new string ;

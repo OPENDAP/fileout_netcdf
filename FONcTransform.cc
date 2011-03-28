@@ -205,7 +205,7 @@ FONcTransform::transform( )
     catch( BESError &e )
     {
 	nc_close( _ncid ) ;
-	throw e ;
+	throw;
     }
 
     nc_close( _ncid ) ;

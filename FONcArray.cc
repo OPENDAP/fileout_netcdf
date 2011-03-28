@@ -333,7 +333,7 @@ FONcArray::write( int ncid )
     ncopts = NC_VERBOSE ;
     int stax = NC_NOERR ;
 
-    int varid = 0 ;
+    // int varid = 0 ;     // Not used; jhrg 3/16/11
     if( _array_type != NC_CHAR )
     {
 	// create array to hold data hyperslab
