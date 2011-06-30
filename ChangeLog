@@ -1,3 +1,68 @@
+2011-04-20  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.7 releaseHyrax 1.7 release
+
+2011-03-28  James Gallagher <jgallagher@opendap.org>
+
+	1.7RC1
+
+2011-03-17  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	fileout_netcdf: Added automated version numbers to OSX Package builds
+
+2011-03-08  James Gallagher <jgallagher@opendap.org>
+
+	Merge for hyrax	1.7 from the hyrax_1.6.2_release branch	of shrew to the	trunk
+
+	_M   .
+	M    conf/netcdf.m4
+	_M   FONcTransform.cc
+	_M   FONcTransform.h
+	D    OSX_Resources/InstallationCheck
+	A  + OSX_Resources/InstallationCheck.proto
+	D    OSX_Resources/Info.plist
+	A  + OSX_Resources/Info.plist.proto
+	M    Makefile.am
+
+2011-02-14  Patrick West <pwest@ucar.edu>
+
+	Variables can start with an underscore
+	M    FONcUtils.cc
+	M    unit-tests/baselines/fonc.names.00.baseline
+
+2011-02-02  Patrick West <pwest@ucar.edu>
+
+	Removed references to ESG module. Changed to FONc.
+	M    FONcModule.cc
+	M    FONcModule.h
+
+2010-10-29  mjohnson
+
+	MERGE of Hyrax 1.6.2 Shrew Release Branch.
+
+2010-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Bumped BES to 3.9.0 to handle issues with the conf files
+
+	M    configure.ac
+	M    INSTALL
+	M    fileout_netcdf.spec
+
+2010-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 1.1.0 (hyrax 1.6.2)
+
+	M    configure.ac
+	M    INSTALL
+	M    NEWS
+	M    fileout_netcdf.spec
+	M    ChangeLog
+	M    README
+
+2010-09-14  James Gallagher <jgallagher@opendap.org>
+
+	This code now uses the new method in ConstraintEvaluator that enables multiple functions to be called.
+
 2010-09-14  James Gallagher <jgallagher@opendap.org>
 
 	This code now uses the new method in ConstraintEvaluator that enables multiple functions to be called.

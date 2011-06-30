@@ -1,6 +1,6 @@
 Summary: Return a NetCDF File for a DAP Data response
 Name: fileout_netcdf
-Version: 1.1.0
+Version: 1.1.1
 Release: 1
 License: LGPLv2+
 Group: System Environment/Daemons
@@ -18,7 +18,7 @@ BuildRequires:   bes-devel >= 3.9.0
 %description
 This is the fileout netCDF response handler for Hyrax - the OPeNDAP data
 server. With this handler a server can easily be configured to return
-data packaged in a netCDF 3.6.3 file.
+data packaged in a netCDF 3 file.
 
 %prep
 %setup -q
