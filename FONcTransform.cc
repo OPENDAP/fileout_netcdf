@@ -138,7 +138,7 @@ FONcTransform::transform( )
     FONcUtils::reset() ;
 
     // Convert the DDS into an internal format to keep track of
-    // varaibles, arrays, shared dimensions, grids, common maps,
+    // variables, arrays, shared dimensions, grids, common maps,
     // embedded structures. It only grabs the variables that are to be
     // sent.
     DDS::Vars_iter vi = _dds->var_begin() ;

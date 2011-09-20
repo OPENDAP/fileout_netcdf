@@ -49,7 +49,7 @@ using std::istringstream ;
  * then we write out all of the attributes for the outermost structure, the
  * inner structure, and the variable of the structure. For example, if there
  * is a structure Alpha with attribute a1, that contains a structure Point
- * with attribute s2, which containts two variables x, with attribute a3,
+ * with attribute s2, which contains two variables x, with attribute a3,
  * and y, with attribute a4, then variable Alpha.Point.x will contain
  * attributes Alpha.a1, Alpha.Point.s2, and a3 and Alpha.Point.y will
  * contain attributes Alpha.a1, Alpha.Point.s2, and a4.
@@ -136,7 +136,10 @@ FONcAttributes::addattrs( int ncid, int varid, BaseType *b,
  * @param varid The netcdf variable id
  * @param attrs The OPenDAP AttrTable containing the attributes
  * @param var_name any variable name to prepend to the attribute name
- * @param prepend_attr Any name to prepend to the name of the attribute
+ * @param prepend_attr Any name to prepend to the name of the attribute.
+ * As far as I know, this is no longer used; when standard attributes are prefixed
+ * client programs will (often) fail to recognize the standard attributes (since the
+ * names are no longer really standard).
  * @throws BESInternalError if there are any problems writing out the
  * attributes for the data object.
  */
@@ -169,7 +172,7 @@ FONcAttributes::addattrs( int ncid, int varid, AttrTable &attrs,
  * @param attrs the AttrTable that contains the attribute to be written
  * @param attr the iterator into the AttrTable for the attribute to be written
  * @param prepend_attr any attribute name to prepend to the name of this
- * attribute
+ * attribute. Use of this parameter is deprecated.
  * @throws BESInternalError if there is a problem writing this attribute
  */
 void
