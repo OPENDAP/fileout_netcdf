@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 
-using std::cout ;
-using std::cerr ;
-using std::endl ;
-using std::ofstream ;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::ofstream;
 
 #include <Connect.h>
 #include <DataDDS.h>
@@ -16,7 +16,7 @@ using std::ofstream ;
 #include <Structure.h>
 #include <Sequence.h>
 
-using namespace libdap ;
+using namespace libdap;
 
 #include <BESDataDDSResponse.h>
 #include <BESDataHandlerInterface.h>
@@ -27,98 +27,78 @@ using namespace libdap ;
 #include "FONcTransmitter.h"
 #include "ReadTypeFactory.h"
 
-void set_sequence_read( Sequence *s ) ;
+void set_sequence_read(Sequence *s);
 
-void
-set_structure_read( Structure *s )
-{
-    s->set_read_p( true ) ;
-    s->set_send_p( true ) ;
+void set_structure_read(Structure *s) {
+    s->set_read_p(true);
+    s->set_send_p(true);
     Constructor::Vars_iter i = s->var_begin();
     Constructor::Vars_iter e = s->var_end();
-    for( ; i != e; i++ )
-    {
-	BaseType *v = *i ;
-	if( v->type() == dods_sequence_c )
-	{
-	    Sequence *new_s = dynamic_cast<Sequence *>(v) ;
-	    set_sequence_read( new_s ) ;
-	}
-	else if( v->type() == dods_structure_c )
-	{
-	    Structure *new_s = dynamic_cast<Structure *>(v) ;
-	    set_structure_read( new_s ) ;
-	}
-	else
-	{
-	    v->set_read_p( true ) ;
-	    v->set_send_p( true ) ;
-	}
-    }
-}
-
-void
-set_sequence_read( Sequence *s )
-{
-    s->set_read_p( true ) ;
-    s->set_send_p( true ) ;
-    s->reset_row_number() ;
-    Constructor::Vars_iter i = s->var_begin();
-    Constructor::Vars_iter e = s->var_end();
-    for( ; i != e; i++ )
-    {
-	BaseType *v = *i ;
-	if( v->type() == dods_sequence_c )
-	{
-	    Sequence *new_s = dynamic_cast<Sequence *>(v) ;
-	    set_sequence_read( new_s ) ;
-	}
-	else if( v->type() == dods_structure_c )
-	{
-	    Structure *new_s = dynamic_cast<Structure *>(v) ;
-	    set_structure_read( new_s ) ;
-	}
-	else
-	{
-	    v->set_read_p( true ) ;
-	    v->set_send_p( true ) ;
-	}
-    }
-}
-
-static void
-set_read( DDS *dds )
-{
-    for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++)
-    {
+    for (; i != e; i++) {
         BaseType *v = *i;
-	if( v->type() == dods_sequence_c )
-	{
-	    Sequence *s = dynamic_cast<Sequence *>(v) ;
-	    set_sequence_read( s ) ;
-	}
-	else if( v->type() == dods_structure_c )
-	{
-	    Structure *s = dynamic_cast<Structure *>(v) ;
-	    set_structure_read( s ) ;
-	}
-	else
-	{
-	    v->set_read_p( true ) ;
-	    v->set_send_p( true ) ;
-	}
+        if (v->type() == dods_sequence_c) {
+            Sequence *new_s = dynamic_cast<Sequence *> (v);
+            set_sequence_read(new_s);
+        }
+        else if (v->type() == dods_structure_c) {
+            Structure *new_s = dynamic_cast<Structure *> (v);
+            set_structure_read(new_s);
+        }
+        else {
+            v->set_read_p(true);
+            v->set_send_p(true);
+        }
     }
 }
 
-static void
-print_data( DDS *dds, bool print_rows )
-{
+void set_sequence_read(Sequence *s) {
+    s->set_read_p(true);
+    s->set_send_p(true);
+    s->reset_row_number();
+    Constructor::Vars_iter i = s->var_begin();
+    Constructor::Vars_iter e = s->var_end();
+    for (; i != e; i++) {
+        BaseType *v = *i;
+        if (v->type() == dods_sequence_c) {
+            Sequence *new_s = dynamic_cast<Sequence *> (v);
+            set_sequence_read(new_s);
+        }
+        else if (v->type() == dods_structure_c) {
+            Structure *new_s = dynamic_cast<Structure *> (v);
+            set_structure_read(new_s);
+        }
+        else {
+            v->set_read_p(true);
+            v->set_send_p(true);
+        }
+    }
+}
+
+static void set_read(DDS *dds) {
+    for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
+        BaseType *v = *i;
+        if (v->type() == dods_sequence_c) {
+            Sequence *s = dynamic_cast<Sequence *> (v);
+            set_sequence_read(s);
+        }
+        else if (v->type() == dods_structure_c) {
+            Structure *s = dynamic_cast<Structure *> (v);
+            set_structure_read(s);
+        }
+        else {
+            v->set_read_p(true);
+            v->set_send_p(true);
+        }
+    }
+}
+
+static void print_data(DDS *dds, bool print_rows) {
     cout << "The data:" << endl;
 
     for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
         BaseType *v = *i;
         if (print_rows && (*i)->type() == dods_sequence_c)
-            dynamic_cast < Sequence * >(*i)->print_val_by_rows(cout);
+            dynamic_cast<Sequence *> (*i)->print_val_by_rows(cout);
         else
             v->print_val(cout);
     }
@@ -126,100 +106,94 @@ print_data( DDS *dds, bool print_rows )
     cout << endl << flush;
 }
 
-int
-main( int argc, char **argv )
-{
-    bool debug = false ;
-    string file ;
-    if( argc > 1 )
-    {
-	for( int i = 0; i < argc; i++ )
-	{
-	    string arg = argv[i] ;
-	    if( arg == "debug" )
-	    {
-		debug = true ;
-	    }
-	    else
-	    {
-		file = arg ;
-	    }
-	}
+int main(int argc, char **argv) {
+    bool debug = false;
+    string file;
+    if (argc > 1) {
+        for (int i = 0; i < argc; i++) {
+            string arg = argv[i];
+            if (arg == "debug") {
+                debug = true;
+            }
+            else {
+                file = arg;
+            }
+        }
     }
-    if( file.empty() )
-    {
-	cout << "Must specify a file to load" << endl ;
-	return 1 ;
+    if (file.empty()) {
+        cout << "Must specify a file to load" << endl;
+        return 1;
     }
 
-    string bes_conf = (string)"BES_CONF=" + TEST_SRC_DIR + "/bes.conf" ;
-    putenv( (char *)bes_conf.c_str() ) ;
-    if( debug ) BESDebug::SetUp( "cerr,fonc" ) ;
+    string bes_conf = (string) "BES_CONF=" + TEST_SRC_DIR + "/bes.conf";
+    putenv((char *) bes_conf.c_str());
+    if (debug)
+        BESDebug::SetUp("cerr,fonc");
 
-    string fpath = (string)TEST_SRC_DIR + "/data/" + file ;
-    string opath = file + ".nc" ;
+    string fpath = (string) TEST_SRC_DIR + "/data/" + file;
+    string opath = file + ".nc";
 
-    Connect *url = 0 ;
-    Response *r = 0 ;
-    ReadTypeFactory factory ;
-    DataDDS *dds = new DataDDS( &factory ) ;
-    try
-    {
-	url = new Connect( fpath ) ;
-	r = new Response(fopen( fpath.c_str(), "r"), 0);
+    Connect *url = 0;
+    Response *r = 0;
+    ReadTypeFactory factory;
+    DataDDS *dds = new DataDDS(&factory);
+    try {
+        url = new Connect(fpath);
+        r = new Response(fopen(fpath.c_str(), "r"), 0);
 
-	if (!r->get_stream())
-	{
-	    cout << "Failed to create stream for " << fpath << endl ;
-	    return 1 ;
-	}
+        if (!r->get_stream()) {
+            cout << "Failed to create stream for " << fpath << endl;
+            return 1;
+        }
 
-	url->read_data_no_mime( *dds, r ) ;
+        url->read_data_no_mime(*dds, r);
 
-	if( debug ) print_data( dds, false ) ;
+        if (debug)
+            print_data(dds, false);
+    } catch (Error & e) {
+        cout << e.get_error_message() << endl;
+        if (r)
+            delete r;
+        if (url)
+            delete url;
+        return 1;
     }
-    catch (Error & e)
-    {
-	cout << e.get_error_message() << endl;
-	if( r ) delete r ;
-	if( url ) delete url ;
-	return 1 ;
-    }
-    if( r ) delete r ;
-    if( url ) delete url ;
+    if (r)
+        delete r;
+    if (url)
+        delete url;
 
-    dds->tag_nested_sequences() ;
-    if( debug ) dds->print( cerr ) ;
-    set_read( dds ) ;
-    if( debug ) cerr << *dds << endl ;
+    dds->tag_nested_sequences();
+    if (debug)
+        dds->print(cerr);
+    set_read(dds);
+    if (debug)
+        cerr << *dds << endl;
 
-    try
-    {
-	// transform the DataDDS into a netcdf file. The dhi only needs the
-	// output stream and the post constraint. Test no constraints and
-	// then some different constraints (1 var, 2 var)
+    try {
+        // transform the DataDDS into a netcdf file. The dhi only needs the
+        // output stream and the post constraint. Test no constraints and
+        // then some different constraints (1 var, 2 var)
 
-	// The resulting netcdf file is streamed back. Write this file to a
-	// test file locally
-	BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
-	BESDataHandlerInterface dhi ;
-	ofstream fstrm( opath.c_str(), ios::out|ios::trunc ) ;
-	dhi.set_output_stream( &fstrm ) ;
-	dhi.data[POST_CONSTRAINT] = "" ;
-	FONcTransmitter ft ;
-	FONcTransmitter::send_data( obj, dhi ) ;
-	fstrm.close() ;
+        // The resulting netcdf file is streamed back. Write this file to a
+        // test file locally
+        BESResponseObject *obj = new BESDataDDSResponse(dds);
+        BESDataHandlerInterface dhi;
+        ofstream fstrm(opath.c_str(), ios::out | ios::trunc);
+        dhi.set_output_stream(&fstrm);
+        dhi.data[POST_CONSTRAINT] = "";
+        FONcTransmitter ft;
+        FONcTransmitter::send_data(obj, dhi);
+        fstrm.close();
 
-	// deleting the response object deletes the DataDDS
-	// FIXME: This causes an illegal free, why?
-	// delete obj ;
-    }
-    catch( BESError &e )
-    {
-	cout << e.get_message() << endl ;
-	return 1 ;
+        // deleting the response object deletes the DataDDS
+        // FIXME: This causes an illegal free, why?
+        // delete obj ;
+    } catch (BESError &e) {
+        cout << e.get_message() << endl;
+        return 1;
     }
 
-    return 0 ;
+    return 0;
 }
 
