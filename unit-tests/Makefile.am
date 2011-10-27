@@ -18,13 +18,25 @@ EXTRA_DIST = data baselines test_config.h.in bes.conf fonc_handlerTest.at $(TEST
 
 check_PROGRAMS = $(UNIT_TESTS)
 
+TESTS = $(UNIT_TESTS) $(TESTSUITE)
+
+# Why not use AUTOTEST_PATH? Because it is relative to '.'
+# Also note that the AC_CONFIG_TESTDIR(unit-tests, [dir]) adds 'dir' to AUTOTEST_PATH,
+# so that won't work either. This case is odd because we need to run an executable that 
+# is not part of this code and which may not be on PATH (because we're building the handler
+# with a special version of netcdf).
+TESTS_ENVIRONMENT = PATH="@NC_BIN_PATH@:$$PATH"
+
 ############################################################################
 # Unit Tests
 #
 
 UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 	structT00 arrayT structT01 structT02	\
-	arrayT01 gridT seqT attrT namesT readT
+	arrayT01 gridT seqT attrT namesT 
+
+# Add readT when the handler can process sequences.	
+#	readT
 
 SRCS = ../FONcTransform.cc ../FONcTransmitter.cc ../FONcUtils.cc	\
 	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	\
@@ -79,8 +91,8 @@ DIRS_EXTRA = bes-testsuite nc besstandalone.netcdf common_tests.exp bes.conf.in
  
 TESTSUITE = $(srcdir)/fonc_handlerTest
 
-check-local: $(UNIT_TESTS) atconfig atlocal $(TESTSUITE)
-	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+#check-local: $(UNIT_TESTS) atconfig atlocal $(TESTSUITE)
+#	$(TESTSUITE) $(TESTSUITEFLAGS)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean

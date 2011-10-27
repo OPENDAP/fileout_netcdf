@@ -13,8 +13,6 @@ AM_INIT_AUTOMAKE(1.10)
 # which can make running unit tests with valgrind far more pleasant. 
 AM_DISABLE_STATIC
 
-AC_CONFIG_TESTDIR(unit-tests, [/usr/local/netcdf/bin])
-
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
 PACKAGE_SUBMINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
@@ -58,11 +56,12 @@ AC_CHECK_LIBDAP([3.11.0],
  ],
  [ AC_MSG_ERROR([Cannot find libdap])
 ])
-  
+ 
+# This does not work with the --prefix option. Don't know why... 
 AX_PATH_GENERIC([nc], [4.0.0], [],
     [
 	LIBS="$LIBS $NC_LIBS"
-	LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+    LDFLAGS="$LDFLAGS $NC_LDFLAGS"
 	CPPFLAGS="$CPPFLAGS $NC_CFLAGS"
 	netcdf4_found=1
     ],
@@ -95,7 +94,12 @@ AC_CHECK_BES([3.9.0],
 [ AC_MSG_ERROR([Cannot find bes])
 ])
 
+AC_MSG_NOTICE([NC_LDFLAGS is $NC_LDFLAGS])
+NC_BIN=`echo $NC_LDFLAGS | sed 's@^-L\(.*\)/lib@\1/bin@g'`
+AC_MSG_NOTICE([NC_BIN is $NC_BIN])
+AC_SUBST(NC_BIN_PATH, $NC_BIN)
+
 AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/test_config.h unit-tests/atlocal])
+AC_CONFIG_TESTDIR(unit-tests)
 
 AC_OUTPUT
-
