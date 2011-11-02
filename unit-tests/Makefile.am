@@ -16,7 +16,7 @@ CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
 EXTRA_DIST = data baselines test_config.h.in bes.conf fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
 
-check_PROGRAMS = $(UNIT_TESTS)
+check_PROGRAMS = $(UNIT_TESTS) readT
 
 TESTS = $(UNIT_TESTS) $(TESTSUITE)
 
@@ -33,7 +33,7 @@ TESTS_ENVIRONMENT = PATH="@NC_BIN_PATH@:$$PATH"
 
 UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 	structT00 arrayT structT01 structT02	\
-	arrayT01 gridT seqT attrT namesT 
+	arrayT01 gridT seqT attrT namesT
 
 # Add readT when the handler can process sequences.	
 #	readT
