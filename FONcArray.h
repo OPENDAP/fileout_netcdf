@@ -48,17 +48,30 @@ using namespace libdap ;
 class FONcArray : public FONcBaseType
 {
 private:
+    // The array being converted
     Array *			_a ;
+    // The type of data stored in the array
     nc_type			_array_type ;
+    // The number of dimensions to be stored in netcdf (if string, 2)
     int				_ndims ;
+    // The actual number of dimensions of this array (if string, 1)
     int				_actual_ndims ;
+    // The number of elements that will be stored in netcdf
     int				_nelements ;
+    // The FONcDim dimensions to be used for this variable
     vector<FONcDim *>		_dims ;
+    // The netcdf dimension ids for this array
     int *			_dim_ids ;
+    // The netcdf dimension sizes to be written
     int *			_dim_sizes ;
+    // If string data, we need to do some comparison, so instead of
+    // reading it more than once, read it once and save here
     string *			_str_data ;
+    // If the array is already a map in a grid, then we don't want to
+    // define it or write it.
+    bool			_dont_use_it ;
 
-    FONcDim *			find_dim( vector<string> &embed, const string &name, int size ) ;
+    FONcDim *			find_dim( vector<string> &embed, const string &name, int size, bool ignore_size = false ) ;
 public:
     				FONcArray( BaseType *b ) ;
     virtual			~FONcArray() ;

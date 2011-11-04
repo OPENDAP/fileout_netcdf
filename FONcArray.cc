@@ -52,7 +52,7 @@ vector<FONcDim *> FONcArray::Dimensions ;
 FONcArray::FONcArray( BaseType *b )
     : FONcBaseType(), _a( 0 ), _array_type( NC_NAT ), _ndims( 0 ),
       _actual_ndims( 0 ), _nelements( 1 ), _dim_ids( 0 ), _dim_sizes( 0 ),
-      _str_data( 0 )
+      _str_data( 0 ), _dont_use_it( false )
 {
     _a = dynamic_cast<Array *>(b) ;
     if( !_a )
@@ -146,13 +146,54 @@ FONcArray::convert( vector<string> embed )
 	dimnum++ ;
     }
 
+    // if this array is a string array, then add the length dimension
+    if( _array_type == NC_CHAR )
+    {
+	// get the data from the dap array
+	int array_length = _a->length() ;
+	_str_data = new string[array_length] ;
+	_a->buf2val( (void**)&_str_data ) ;
+
+	// determine the max length of the strings
+	int max_length = 0 ;
+	for( int i = 0; i < array_length; i++ )
+	{
+	    if( _str_data[i].length() > max_length )
+	    {
+		max_length = _str_data[i].length() ;
+	    }
+	}
+	max_length++ ;
+	vector<string> empty_embed ;
+	string lendim_name = _varname + "_len" ;
+
+	FONcDim *use_dim = find_dim( empty_embed, lendim_name, max_length, true ) ;
+	if( use_dim->size() < max_length )
+	{
+	    use_dim->update_size( max_length ) ;
+	}
+
+	_dim_sizes[_ndims-1] = use_dim->size() ;
+	_dim_ids[_ndims-1] = use_dim->dimid() ;
+	_dims.push_back( use_dim ) ;
+    }
+
     // If this array has a single dimension, and the name of the array
     // and the name of that dimension are the same, then this array
     // might be used as a map for a grid defined elsewhere.
     if( !FONcGrid::InGrid && _actual_ndims == 1 &&
         _a->name() == _a->dimension_name( _a->dim_begin() ) )
     {
-	FONcGrid::Maps.push_back( new FONcMap( this ) ) ;
+	// is it already in there?
+	FONcMap *map = FONcGrid::InMaps( _a ) ;
+	if( !map )
+	{
+	    FONcGrid::Maps.push_back( new FONcMap( this ) ) ;
+	}
+	else
+	{
+	    _dont_use_it = true ;
+	}
     }
 
     BESDEBUG( "fonc", "FONcArray::convert - done converting array "
@@ -173,7 +214,8 @@ FONcArray::convert( vector<string> embed )
  * the size is different
  */
 FONcDim *
-FONcArray::find_dim( vector<string> &embed, const string &name, int size )
+FONcArray::find_dim( vector<string> &embed, const string &name,
+		     int size, bool ignore_size )
 {
     string oname ;
     string ename = FONcUtils::gen_name( embed, name, oname ) ;
@@ -184,7 +226,11 @@ FONcArray::find_dim( vector<string> &embed, const string &name, int size )
     {
 	if( !((*i)->name().empty()) && ( (*i)->name() == name ) )
 	{
-	    if( (*i)->size() == size )
+	    if( ignore_size )
+	    {
+		ret_dim = (*i) ;
+	    }
+	    else if( (*i)->size() == size )
 	    {
 		ret_dim = (*i) ;
 	    }
@@ -230,11 +276,11 @@ FONcArray::find_dim( vector<string> &embed, const string &name, int size )
 void
 FONcArray::define( int ncid )
 {
-    if( !_defined )
-    {
-	BESDEBUG( "fonc", "FONcArray::define - defining array "
-			  << _varname << endl ) ;
+    BESDEBUG( "fonc", "FONcArray::define - defining array "
+		      << _varname << endl ) ;
 
+    if( !_defined && !_dont_use_it )
+    {
 	vector<FONcDim *>::iterator i = _dims.begin() ;
 	vector<FONcDim *>::iterator e = _dims.end() ;
 	int dimnum = 0 ;
@@ -246,63 +292,14 @@ FONcArray::define( int ncid )
 	    dimnum++ ;
 	}
 
-	if( _array_type != NC_CHAR )
-	{
-	    int stax = nc_def_var( ncid, _varname.c_str(), _array_type,
-				   _ndims, _dim_ids, &_varid ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = (string)"fileout.netcdf - "
-			     + "Failed to define variable "
-			     + _varname ;
-		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	    }
-	}
-	else
-	{
-	    // special case for string data. We need to add another dimension
-	    // for the length of the string.
-
-	    // get the data from the dap array
-	    int array_length = _a->length() ;
-	    _str_data = new string[array_length] ;
-	    _a->buf2val( (void**)&_str_data ) ;
-
-	    // determine the max length of the strings
-	    int max_length = 0 ;
-	    for( int i = 0; i < array_length; i++ )
-	    {
-		if( _str_data[i].length() > max_length )
-		{
-		    max_length = _str_data[i].length() ;
-		}
-	    }
-	    max_length++ ;
-	    _dim_sizes[_ndims-1] = max_length ;
-
-	    // create the string dimension with the max length
-	    string lendim_name = _varname + "_len" ;
-	    int this_dimension = 0 ;
-	    int stax = nc_def_dim( ncid, lendim_name.c_str(),
-				   max_length, &this_dimension ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = (string)"fileout.netcdf - "
-			     + "Failed to define string dimension "
-			     + lendim_name ;
-		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	    }
-	    _dim_ids[_ndims-1] = this_dimension ;
-
-	    stax = nc_def_var( ncid, _varname.c_str(), _array_type,
+	int stax = nc_def_var( ncid, _varname.c_str(), _array_type,
 			       _ndims, _dim_ids, &_varid ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = (string)"fileout.netcdf - "
-			     + "Failed to define array variable "
-			     + _varname ;
-		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	    }
+	if( stax != NC_NOERR )
+	{
+	    string err = (string)"fileout.netcdf - "
+			 + "Failed to define variable "
+			 + _varname ;
+	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
 
 	FONcAttributes::add_attributes( ncid, _varid, _a ) ;
@@ -310,10 +307,23 @@ FONcArray::define( int ncid )
 					   _varname, _orig_varname ) ;
 
 	_defined = true ;
-
-	BESDEBUG( "fonc", "FONcArray::define - done defining array "
-			  << _varname << endl ) ;
     }
+    else
+    {
+	if( _defined )
+	{
+	    BESDEBUG( "fonc", "    variable " << _varname
+			      << " is already defined" << endl ) ;
+	}
+	if( _dont_use_it )
+	{
+	    BESDEBUG( "fonc", "    variable " << _varname
+			      << " is not being used" << endl ) ;
+	}
+    }
+
+    BESDEBUG( "fonc", "FONcArray::define - done defining array "
+		      << _varname << endl ) ;
 }
 
 /** @brief Write the array out to the netcdf file
@@ -330,158 +340,165 @@ FONcArray::write( int ncid )
 {
     BESDEBUG( "fonc", "FONcArray::write for var " << _varname << endl ) ;
 
-    ncopts = NC_VERBOSE ;
-    int stax = NC_NOERR ;
-
-    // int varid = 0 ;     // Not used; jhrg 3/16/11
-    if( _array_type != NC_CHAR )
+    if( !_dont_use_it )
     {
-	// create array to hold data hyperslab
-	switch( _array_type )
+	ncopts = NC_VERBOSE ;
+	int stax = NC_NOERR ;
+
+	if( _array_type != NC_CHAR )
 	{
-	    case NC_BYTE:
-		{
-		    unsigned char *data = new unsigned char[_nelements] ;
-		    _a->buf2val( (void**)&data ) ;
-		    stax = nc_put_var_uchar( ncid, _varid, data ) ;
-		    if( stax != NC_NOERR )
+	    // create array to hold data hyperslab
+	    switch( _array_type )
+	    {
+		case NC_BYTE:
 		    {
-			string err = (string)"fileout.netcdf - "
-				     + "Failed to create array of bytes for "
-				     + _varname ;
-			FONcUtils::handle_error( stax, err,
-						 __FILE__, __LINE__ ) ;
+			unsigned char *data = new unsigned char[_nelements] ;
+			_a->buf2val( (void**)&data ) ;
+			stax = nc_put_var_uchar( ncid, _varid, data ) ;
+			if( stax != NC_NOERR )
+			{
+			    string err = (string)"fileout.netcdf - "
+					+ "Failed to create array of bytes for "
+					+ _varname ;
+			    FONcUtils::handle_error( stax, err,
+						     __FILE__, __LINE__ ) ;
+			}
+			delete [] data ;
 		    }
-		    delete [] data ;
-		}
-		break ;
-	    case NC_SHORT:
-		{
-		    short *data = new short [_nelements] ;
-		    _a->buf2val( (void**)&data ) ;
-		    int stax = nc_put_var_short( ncid, _varid, data ) ;
-		    if( stax != NC_NOERR )
+		    break ;
+		case NC_SHORT:
 		    {
-			string err = (string)"fileout.netcdf - "
-				     + "Failed to create array of shorts for "
-				     + _varname ;
-			FONcUtils::handle_error( stax, err,
-						 __FILE__, __LINE__ ) ;
+			short *data = new short [_nelements] ;
+			_a->buf2val( (void**)&data ) ;
+			int stax = nc_put_var_short( ncid, _varid, data ) ;
+			if( stax != NC_NOERR )
+			{
+			    string err = (string)"fileout.netcdf - "
+				    + "Failed to create array of shorts for "
+				    + _varname ;
+			    FONcUtils::handle_error( stax, err,
+						     __FILE__, __LINE__ ) ;
+			}
+			delete [] data ;
 		    }
-		    delete [] data ;
-		}
-		break ;
-	    case NC_INT:
-		{
-		    int *data = new int[_nelements] ;
-		    _a->buf2val( (void**)&data ) ;
-		    int stax = nc_put_var_int( ncid, _varid, data ) ;
-		    if( stax != NC_NOERR )
+		    break ;
+		case NC_INT:
 		    {
-			string err = (string)"fileout.netcdf - "
-				     + "Failed to create array of ints for "
-				     + _varname ;
-			FONcUtils::handle_error( stax, err,
-						 __FILE__, __LINE__ ) ;
+			int *data = new int[_nelements] ;
+			_a->buf2val( (void**)&data ) ;
+			int stax = nc_put_var_int( ncid, _varid, data ) ;
+			if( stax != NC_NOERR )
+			{
+			    string err = (string)"fileout.netcdf - "
+					 + "Failed to create array of ints for "
+					 + _varname ;
+			    FONcUtils::handle_error( stax, err,
+						     __FILE__, __LINE__ ) ;
+			}
+			delete [] data ;
 		    }
-		    delete [] data ;
-		}
-		break ;
-	    case NC_FLOAT:
-		{
-		    float *data = new float[_nelements] ;
-		    _a->buf2val( (void**)&data ) ;
-		    int stax = nc_put_var_float( ncid, _varid, data ) ;
-		    ncopts = NC_VERBOSE ;
-		    if( stax != NC_NOERR )
+		    break ;
+		case NC_FLOAT:
 		    {
-			string err = (string)"fileout.netcdf - "
-				     + "Failed to create array of floats for "
-				     + _varname ;
-			FONcUtils::handle_error( stax, err,
-						 __FILE__, __LINE__ ) ;
+			float *data = new float[_nelements] ;
+			_a->buf2val( (void**)&data ) ;
+			int stax = nc_put_var_float( ncid, _varid, data ) ;
+			ncopts = NC_VERBOSE ;
+			if( stax != NC_NOERR )
+			{
+			    string err = (string)"fileout.netcdf - "
+				    + "Failed to create array of floats for "
+				    + _varname ;
+			    FONcUtils::handle_error( stax, err,
+						     __FILE__, __LINE__ ) ;
+			}
+			delete [] data ;
 		    }
-		    delete [] data ;
-		}
-		break ;
-	    case NC_DOUBLE:
-		{
-		    double *data = new double[_nelements] ;
-		    _a->buf2val( (void**)&data ) ;
-		    int stax = nc_put_var_double( ncid, _varid, data ) ;
-		    if( stax != NC_NOERR )
+		    break ;
+		case NC_DOUBLE:
 		    {
-			string err = (string)"fileout.netcdf - "
-				     + "Failed to create array of doubles for "
-				     + _varname ;
-			FONcUtils::handle_error( stax, err,
-						 __FILE__, __LINE__ ) ;
+			double *data = new double[_nelements] ;
+			_a->buf2val( (void**)&data ) ;
+			int stax = nc_put_var_double( ncid, _varid, data ) ;
+			if( stax != NC_NOERR )
+			{
+			    string err = (string)"fileout.netcdf - "
+				    + "Failed to create array of doubles for "
+				    + _varname ;
+			    FONcUtils::handle_error( stax, err,
+						     __FILE__, __LINE__ ) ;
+			}
+			delete [] data ;
 		    }
-		    delete [] data ;
+		    break ;
+		default:
+		    string err = (string)"Failed to transform array of unknown "
+				 + "type in file out netcdf" ;
+		    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+	    } ;
+	}
+	else
+	{
+	    // special case for string data. Could have put this in the
+	    // switch, but it's pretty big
+	    size_t var_count[_ndims] ;
+	    size_t var_start[_ndims] ;
+	    int dim = 0 ;
+	    for( dim = 0; dim < _ndims; dim++ )
+	    {
+		// the count for each of the dimensions will always be 1 except
+		// for the string length dimension
+		var_count[dim] = 1 ;
+
+		// the start for each of the dimensions will start at 0. We will
+		// bump this up in the while loop below
+		var_start[dim] = 0 ;
+	    }
+
+	    for( int element = 0; element < _nelements; element++ )
+	    {
+		var_count[_ndims-1] = _str_data[element].size() + 1 ;
+		var_start[_ndims-1] = 0 ;
+
+		// write out the string
+		int stax = nc_put_vara_text( ncid, _varid, var_start, var_count,
+					     _str_data[element].c_str() ) ;
+		if( stax != NC_NOERR )
+		{
+		    string err = (string)"fileout.netcdf - "
+				 + "Failed to create array of strings for "
+				 + _varname ;
+		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
 		}
-		break ;
-	    default:
-		string err = (string)"Failed to transform array of unknown "
-			     + "type in file out netcdf" ;
-		throw BESInternalError( err, __FILE__, __LINE__ ) ;
-	} ;
+
+		// bump up the start.
+		if( element+1 < _nelements )
+		{
+		    bool done = false ;
+		    dim = _ndims-2 ;
+		    while( !done )
+		    {
+			var_start[dim] = var_start[dim] + 1 ;
+			if( var_start[dim] == _dim_sizes[dim] )
+			{
+			    var_start[dim] = 0 ;
+			    dim-- ;
+			}
+			else
+			{
+			    done = true ;
+			}
+		    }
+		}
+	    }
+	    delete [] _str_data ;
+	    _str_data = 0 ;
+	}
     }
     else
     {
-	// special case for string data. Could have put this in the
-	// switch, but it's pretty big
-	size_t var_count[_ndims] ;
-	size_t var_start[_ndims] ;
-	int dim = 0 ;
-	for( dim = 0; dim < _ndims; dim++ )
-	{
-	    // the count for each of the dimensions will always be 1 except
-	    // for the string length dimension
-	    var_count[dim] = 1 ;
-
-	    // the start for each of the dimensions will start at 0. We will
-	    // bump this up in the while loop below
-	    var_start[dim] = 0 ;
-	}
-
-	for( int element = 0; element < _nelements; element++ )
-	{
-	    var_count[_ndims-1] = _str_data[element].size() + 1 ;
-	    var_start[_ndims-1] = 0 ;
-
-	    // write out the string
-	    int stax = nc_put_vara_text( ncid, _varid, var_start, var_count, 
-				         _str_data[element].c_str() ) ;
-	    if( stax != NC_NOERR )
-	    {
-		string err = (string)"fileout.netcdf - "
-			     + "Failed to create array of strings for "
-			     + _varname ;
-		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	    }
-
-	    // bump up the start.
-	    if( element+1 < _nelements )
-	    {
-		bool done = false ;
-		dim = _ndims-2 ;
-		while( !done )
-		{
-		    var_start[dim] = var_start[dim] + 1 ;
-		    if( var_start[dim] == _dim_sizes[dim] )
-		    {
-			var_start[dim] = 0 ;
-			dim-- ;
-		    }
-		    else
-		    {
-			done = true ;
-		    }
-		}
-	    }
-	}
-	delete [] _str_data ;
-	_str_data = 0 ;
+	BESDEBUG( "fonc", "FONcTransform::    not using variable "
+			  << _varname << endl ) ;
     }
 
     BESDEBUG( "fonc", "FONcTransform::write_array done for "

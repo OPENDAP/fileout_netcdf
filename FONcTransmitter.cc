@@ -129,6 +129,13 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     }
 
     DataDDS *dds = bdds->get_dds() ;
+    if( !dds )
+    {
+	string err = (string)"No DataDDS has been created for transmit" ;
+	BESInternalError pe( err, __FILE__, __LINE__ ) ;
+	throw pe ;
+    }
+
     ostream &strm = dhi.get_output_stream() ;
     if( !strm )
     {
