@@ -14,7 +14,7 @@ DISTCLEANFILES = test_config.h
 
 CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
-EXTRA_DIST = data baselines test_config.h.in bes.conf fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
+EXTRA_DIST = data baselines test_config.h.in bes.conf.in fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
 
 check_PROGRAMS = $(UNIT_TESTS)
 
@@ -75,7 +75,7 @@ readT_LDADD = $(AM_LDADD) $(DAP_CLIENT_LIBS)
 ############## Autotest follows #####################
 
 AUTOM4TE = autom4te
-DIRS_EXTRA = bes-testsuite nc besstandalone.netcdf common_tests.exp bes.conf.in
+DIRS_EXTRA = bes-testsuite nc besstandalone.netcdf common_tests.exp
  
 TESTSUITE = $(srcdir)/fonc_handlerTest
 

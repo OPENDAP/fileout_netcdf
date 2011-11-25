@@ -99,7 +99,7 @@ NC_BIN=`echo $NC_LDFLAGS | sed 's@^-L\(.*\)/lib@\1/bin@g'`
 AC_MSG_NOTICE([NC_BIN is $NC_BIN])
 AC_SUBST(NC_BIN_PATH, $NC_BIN)
 
-AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/test_config.h unit-tests/atlocal])
+AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/bes.conf unit-tests/test_config.h unit-tests/atlocal])
 AC_CONFIG_TESTDIR(unit-tests)
 
 AC_OUTPUT

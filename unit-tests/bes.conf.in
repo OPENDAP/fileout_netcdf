@@ -1,4 +1,4 @@
-FONc.Tempdir=/tmp
+FONc.Tempdir=@abs_builddir@
 
 # Where we log the stuff...
 BES.LogName=./bes.log
