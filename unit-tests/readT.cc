@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    string bes_conf = (string) "BES_CONF=" + TEST_SRC_DIR + "/bes.conf";
+    string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
     putenv((char *) bes_conf.c_str());
     if (debug)
         BESDebug::SetUp("cerr,fonc");
