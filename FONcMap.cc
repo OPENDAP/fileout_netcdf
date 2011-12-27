@@ -84,7 +84,7 @@ FONcMap::decref()
 
 /** @brief a method to compare two grid maps, or possible grid maps.
  *
- * All arrays are saved as an FONcMap if the array has only one dimension
+ * All arrays are saved as a FONcMap if the array has only one dimension
  * and the name of the array and the name of the dimension are the same. The
  * maps are the same if their names are the same, they have the same number
  * of dimensions (arrays of strings written out have 2 dimensions, one for
@@ -289,6 +289,9 @@ FONcMap::compare( Array *tomap )
 		    }
 		}
 		break ;
+	    default:    // Elide unknown types; this is the current behavior
+	                // but I made it explicit. jhrg 12.27.2011
+	        break;
 	}
     }
 

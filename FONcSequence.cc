@@ -118,7 +118,7 @@ FONcSequence::define( int ncid )
  * to the netcdf file
  */
 void
-FONcSequence::write( int ncid )
+FONcSequence::write( int /*ncid*/ )
 {
 }
 

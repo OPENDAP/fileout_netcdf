@@ -63,7 +63,7 @@ private:
     // The netcdf dimension ids for this array
     int *			_dim_ids ;
     // The netcdf dimension sizes to be written
-    int *			_dim_sizes ;
+    size_t *			_dim_sizes ; // changed int to size_t. jhrg 12.27.2011
     // If string data, we need to do some comparison, so instead of
     // reading it more than once, read it once and save here
     string *			_str_data ;

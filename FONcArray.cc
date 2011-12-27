@@ -127,7 +127,7 @@ FONcArray::convert( vector<string> embed )
     }
 
     _dim_ids = new int[_ndims] ;
-    _dim_sizes = new int[_ndims] ;
+    _dim_sizes = new size_t[_ndims] ;
 
     Array::Dim_iter di = _a->dim_begin() ;
     Array::Dim_iter de = _a->dim_end() ;
@@ -155,7 +155,7 @@ FONcArray::convert( vector<string> embed )
 	_a->buf2val( (void**)&_str_data ) ;
 
 	// determine the max length of the strings
-	int max_length = 0 ;
+	size_t max_length = 0 ;
 	for( int i = 0; i < array_length; i++ )
 	{
 	    if( _str_data[i].length() > max_length )
@@ -168,7 +168,8 @@ FONcArray::convert( vector<string> embed )
 	string lendim_name = _varname + "_len" ;
 
 	FONcDim *use_dim = find_dim( empty_embed, lendim_name, max_length, true ) ;
-	if( use_dim->size() < max_length )
+	// Added static_cast to supress warning. 12.27.2011 jhrg
+	if( use_dim->size() < static_cast<int>(max_length) )
 	{
 	    use_dim->update_size( max_length ) ;
 	}

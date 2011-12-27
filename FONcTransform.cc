@@ -124,7 +124,7 @@ FONcTransform::~FONcTransform()
     }
 }
 
-/** @brief Transforms each of the varaibles of the DataDDS to the NetCDF
+/** @brief Transforms each of the variables of the DataDDS to the NetCDF
  * file
  *
  * For each variable in the DataDDS write out that variable and its
