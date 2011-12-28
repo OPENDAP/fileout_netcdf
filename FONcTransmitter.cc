@@ -175,10 +175,18 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     // now we need to read the data
     BESDEBUG( "fonc", "FONcTransmitter::send_data - reading data into DataDDS"
 		      << endl ) ;
-    // This is used to record whetehr this is a functional CE or not. If so,
+
+    // I removed the functional_constraint bool and the (dead) code that used it.
+    // This kind of temporary object should use auto_ptr<>, but in this case it
+    // seems like it's not a supported feature of the handler. 12.27.2011 jhrg
+
+#define FUNCTIONAL_CE_SUPPORTED 0
+#if FUNCTIONAL_CE_SUPPORTED
+    // This is used to record whether this is a functional CE or not. If so,
     // the code allocates a new DDS object to hold the BaseType returned by
     // the function and we need to delete that DDS before exiting this code.
     bool functional_constraint = false;
+#endif
     try
     {
 	// Handle *functional* constraint expressions specially
@@ -187,7 +195,7 @@ FONcTransmitter::send_data( BESResponseObject *obj,
 	    BESDEBUG( "fonc", "processing a functional constraint clause(s)." << endl );
 	    dds = bdds->get_ce().eval_function_clauses(*dds);
 	}
-#if 0
+#if FUNCTIONAL_CE_SUPPORTED
 	if( bdds->get_ce().functional_expression() )
 	{
 	    // This returns a new BaseType, not a pointer to one in the DataDDS
@@ -229,16 +237,20 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     }
     catch( Error &e )
     {
+#if FUNCTIONAL_CE_SUPPORTED
         if (functional_constraint)
             delete dds;
+#endif
 	string em = e.get_error_message() ;
 	string err = "Failed to read data: " + em ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
     catch( ... )
     {
-        if (functional_constraint)
+#if FUNCTIONAL_CE_SUPPORTED
+            if (functional_constraint)
             delete dds;
+#endif
 	string err = "Failed to read data: Unknown exception caught" ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
     }
@@ -256,8 +268,10 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     if( fd == -1 )
     {
         delete [] temp_full;
+#if FUNCTIONAL_CE_SUPPORTED
         if (functional_constraint)
             delete dds;
+#endif
         string err = string("Failed to open the temporary file: ")
 		     + temp_file_name ;
         throw BESInternalError( err, __FILE__, __LINE__ ) ;
@@ -282,8 +296,10 @@ FONcTransmitter::send_data( BESResponseObject *obj,
         close(fd);
 	(void)unlink( temp_full ) ;
 	delete[] temp_full;
+#if FUNCTIONAL_CE_SUPPORTED
 	if (functional_constraint)
 	    delete dds;
+#endif
 	throw;
     }
     catch( ... )
@@ -291,8 +307,10 @@ FONcTransmitter::send_data( BESResponseObject *obj,
         close(fd);
 	(void)unlink( temp_full ) ;
 	delete[] temp_full;
+#if FUNCTIONAL_CE_SUPPORTED
         if (functional_constraint)
             delete dds;
+#endif
 	string err = (string)"File out netcdf, "
 		     + "was not able to transform to netcdf, unknown error" ;
 	throw BESInternalError( err, __FILE__, __LINE__ ) ;
@@ -301,8 +319,10 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     close(fd);
     (void)unlink( temp_full ) ;
     delete[] temp_full;
+#if FUNCTIONAL_CE_SUPPORTED
     if (functional_constraint)
         delete dds;
+#endif
     BESDEBUG( "fonc",
 	      "FONcTransmitter::send_data - done transmitting to netcdf"
 	      << endl ) ;
