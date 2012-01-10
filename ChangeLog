@@ -1,3 +1,116 @@
+2011-12-28  James Gallagher <jgallagher@opendap.org>
+
+	Cleaned up a warning where a bool was (not) used because the code
+	to process functional CEs was never used.
+
+2011-12-27  James Gallagher <jgallagher@opendap.org>
+
+	Fixed some spelling in comments and removed various warnings (compiler).
+
+2011-12-02  James Gallagher <jgallagher@opendap.org>
+
+	Changed the compiled path TEST_SRC_DIR to TEST_BUILD_DIR so that the
+	distcheck will work.
+
+	M    unit-tests/attrT.cc
+	M    unit-tests/readT.cc
+	M    unit-tests/arrayT.cc
+	M    unit-tests/arrayT01.cc
+	M    unit-tests/structT00.cc
+	M    unit-tests/structT01.cc
+	M    unit-tests/gridT.cc
+	M    unit-tests/structT02.cc
+	M    unit-tests/test_config.h.in
+	M    unit-tests/seqT.cc
+	M    unit-tests/simpleT00.cc
+	M    unit-tests/simpleT01.cc
+	M    unit-tests/simpleT02.cc
+	M    unit-tests/namesT.cc
+	M    OSX_Resources/ReadMe.txt
+
+2011-12-02  James Gallagher <jgallagher@opendap.org>
+
+	Hacked the tests so that one test - #18 with readT - is not run. This
+	test is failing on Linux hosts with the netcdf 3.6.2 RPM version of
+	netcdf but only due to a formatting difference between ncdump in that
+	version and more recent versions of ncdump used to build the
+	baselines.
+
+	M    unit-tests/fonc_handlerTest.at
+
+2011-11-25  Patrick West <pwest@ucar.edu>
+
+	bes.conf.in was removed from unit-tests, which makes it difficult to run the
+	tests.
+	M    configure.ac
+	D    unit-tests/bes.conf
+	A    unit-tests/bes.conf.in
+	M    unit-tests/Makefile.am
+
+2011-11-04  Patrick West <pwest@ucar.edu>
+
+	The agg.dods and agg.dump test uses an ncml original request and the
+	dods object generated from that request is put into .dods file. The
+	.dump file is the expected baseline of doing an ncdump on the result.
+	M    FONcDim.h
+	M    FONcTransmitter.cc
+	M    FONcArray.cc
+	M    FONcGrid.cc
+	M    unit-tests/fonc_handlerTest.at
+	A    unit-tests/data/agg.dump
+	AM   unit-tests/data/agg.dods
+	M    FONcGrid.h
+	M    FONcArray.h
+
+2011-11-03  Patrick West <pwest@ucar.edu>
+
+	Fixed the make check and distcheck targets. Now setting path to include
+	nc_bin_path set in configure.ac.
+	M    unit-tests/Makefile.am
+
+2011-11-02  Patrick West <pwest@ucar.edu>
+
+	.at uses readT to run 5 tests. We either need to remove it from the .at
+	file, or add it back to Makefile.am. But then TESTS was added for some
+	readon, running the *T files individually instead of as part of the test
+	scripts. readT takes a file to use to test.
+	M    unit-tests/Makefile.am
+
+2011-10-26  James Gallagher <jgallagher@opendap.org>
+
+	Updates for the new DDX tests... nearly done
+
+2011-10-26  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the tests so they work when the netcdf bin directory is not
+	on PATH. This is quite tricky since the usual AUTOTEST_PATH hacks don't
+	work - AUTOTEST_PATH is relative to '.'
+
+	M    configure.ac
+	M    unit-tests/Makefile.am
+
+2011-10-23  James Gallagher <jgallagher@opendap.org>
+
+	Modified configure so that this code builds only the so version of the library by default.
+
+2011-09-21  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.8
+
+2011-09-20  James Gallagher <jgallagher@opendap.org>
+
+	Spelling in comments.
+
+	M    FONcTransform.cc
+	M    FONcAttributes.cc
+
+2011-06-30  Patrick West <pwest@ucar.edu>
+
+	Merge hyrax 1.7 branch to trunk
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2011-04-20  James Gallagher <jgallagher@opendap.org>
 
 	Hyrax 1.7 releaseHyrax 1.7 release

@@ -1,6 +1,6 @@
 Summary: Return a NetCDF File for a DAP Data response
 Name: fileout_netcdf
-Version: 1.1.1
+Version: 1.1.2
 Release: 1
 License: LGPLv2+
 Group: System Environment/Daemons
