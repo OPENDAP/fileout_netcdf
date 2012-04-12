@@ -1,6 +1,6 @@
 
 
-Updated for version 1.1.1
+Updated for version 1.1.2
 
 See the INSTALL file for build and installation instructions.
 
