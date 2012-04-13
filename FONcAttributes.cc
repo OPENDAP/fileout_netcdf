@@ -390,6 +390,7 @@ FONcAttributes::addattrs( int ncid, int varid, const string &var_name,
 	    break ;
 	case Attr_string:
 	case Attr_url:
+	case Attr_other_xml:    // Added. jhrg 12.27.2011
 	    {
 		// string
 		string val = attrs.get_attr( attr, 0 ) ;

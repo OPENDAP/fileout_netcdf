@@ -2,12 +2,16 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(fileout_netcdf, 1.1.1, opendap-tech@opendap.org)
+AC_INIT(fileout_netcdf, 1.1.2, opendap-tech@opendap.org)
 AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([conf])
 
 AM_INIT_AUTOMAKE(1.10)
-AC_CONFIG_TESTDIR(unit-tests, [/usr/local/netcdf/bin])
+
+# The handler is a shared object library, so we don't normally need
+# the static lib. Override this default by specifying `--enable-static',
+# which can make running unit tests with valgrind far more pleasant. 
+AM_DISABLE_STATIC
 
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
@@ -52,11 +56,12 @@ AC_CHECK_LIBDAP([3.11.0],
  ],
  [ AC_MSG_ERROR([Cannot find libdap])
 ])
-  
+ 
+# This does not work with the --prefix option. Don't know why... 
 AX_PATH_GENERIC([nc], [4.0.0], [],
     [
 	LIBS="$LIBS $NC_LIBS"
-	LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+    LDFLAGS="$LDFLAGS $NC_LDFLAGS"
 	CPPFLAGS="$CPPFLAGS $NC_CFLAGS"
 	netcdf4_found=1
     ],
@@ -89,7 +94,12 @@ AC_CHECK_BES([3.9.0],
 [ AC_MSG_ERROR([Cannot find bes])
 ])
 
-AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/test_config.h unit-tests/atlocal])
+AC_MSG_NOTICE([NC_LDFLAGS is $NC_LDFLAGS])
+NC_BIN=`echo $NC_LDFLAGS | sed 's@^-L\(.*\)/lib@\1/bin@g'`
+AC_MSG_NOTICE([NC_BIN is $NC_BIN])
+AC_SUBST(NC_BIN_PATH, $NC_BIN)
+
+AC_CONFIG_FILES([Makefile unit-tests/Makefile unit-tests/bes.conf unit-tests/test_config.h unit-tests/atlocal])
+AC_CONFIG_TESTDIR(unit-tests)
 
 AC_OUTPUT
-

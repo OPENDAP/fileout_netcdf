@@ -61,7 +61,7 @@ public:
 
     virtual void		convert( vector<string> embed ) ;
     virtual void		define( int ncid ) ;
-    virtual void		write( int ncid ) {}
+    virtual void		write( int /*ncid*/ ) {}
 
     virtual string 		name() = 0 ;
     virtual nc_type		type() ;

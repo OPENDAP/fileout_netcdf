@@ -1,6 +1,6 @@
 
 
-Updated for version 1.1.0 (14 Sept 2010)
+Updated for version 1.1.1
 
 See the INSTALL file for build and installation instructions.
 

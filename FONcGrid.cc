@@ -139,24 +139,13 @@ FONcGrid::convert( vector<string> embed )
 
 	vector<string> map_embed ;
 
-	vector<FONcMap *>::iterator vi = FONcGrid::Maps.begin() ;
-	vector<FONcMap *>::iterator ve = FONcGrid::Maps.end() ;
-	FONcMap *map_found = 0 ;
-	bool done = false ;
-	for( ; vi != ve && !done; vi++ )
-	{
-	    map_found = (*vi) ;
-	    if( !map_found )
-	    {
-		throw BESInternalError("map_found is null.", __FILE__, __LINE__);
-	    }
-	    done = map_found->compare( map ) ;
-	}
-	// if we didn't find a match then done is still false. Add the
+	FONcMap *map_found = FONcGrid::InMaps( map ) ;
+
+	// if we didn't find a match then found is still false. Add the
 	// map to the vector of maps. If they are the same then create a
 	// new FONcMap, add the grid name to the shared list and add the
 	// FONcMap to the FONcGrid.
-	if( !done )
+	if( !map_found )
 	{
 	    FONcArray *fa = new FONcArray( map ) ;
 	    fa->convert( map_embed ) ;
@@ -306,5 +295,28 @@ FONcGrid::dump( ostream &strm ) const
 	strm << " not set" << endl ;
     }
     BESIndent::UnIndent() ;
+}
+
+FONcMap *
+FONcGrid::InMaps( Array *array )
+{
+    bool found = false ;
+    vector<FONcMap *>::iterator vi = FONcGrid::Maps.begin() ;
+    vector<FONcMap *>::iterator ve = FONcGrid::Maps.end() ;
+    FONcMap *map_found = 0 ;
+    for( ; vi != ve && !found; vi++ )
+    {
+	map_found = (*vi) ;
+	if( !map_found )
+	{
+	    throw BESInternalError( "map_found is null.", __FILE__, __LINE__ ) ;
+	}
+	found = map_found->compare( array ) ;
+    }
+    if( !found )
+    {
+	map_found = 0 ;
+    }
+    return map_found ;
 }
 

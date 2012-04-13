@@ -59,6 +59,7 @@ public:
 
     virtual string		name() { return _name ; }
     virtual int			size() { return _size ; }
+    virtual void		update_size( int newsize ) { _size = newsize ; }
     virtual int			dimid() { return _dimid ; }
     virtual bool		defined() { return _defined ; }
 

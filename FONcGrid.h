@@ -73,6 +73,7 @@ public:
     virtual void		dump( ostream &strm ) const ;
 
     static vector<FONcMap *>	Maps ;
+    static FONcMap *		InMaps( Array *array ) ;
     static bool			InGrid ;
 } ;
 
