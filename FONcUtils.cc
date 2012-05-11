@@ -96,6 +96,13 @@ FONcUtils::id2netcdf( string in )
 
 /** @brief translate the OPeNDAP data type to a netcdf data type
  *
+ * @todo This code should use floating point variables to represent
+ * unsigned types ("To be completely safe with unknown readers,
+ * widen the data type, or use floating point.
+ * [http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html]).
+ * That's sort of a drastic solution, but netcdf4 supports unsigned types.
+ * jhrg 5/10/12
+ *
  * @param element The OPeNDAP element to translate
  * @return the netcdf data type
  */

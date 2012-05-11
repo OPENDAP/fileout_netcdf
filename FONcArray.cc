@@ -29,6 +29,8 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include <util.h>
+
 #include <BESInternalError.h>
 #include <BESDebug.h>
 
@@ -303,6 +305,13 @@ FONcArray::define( int ncid )
 	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
 
+    BESDEBUG("fonc", "_varid: " << _varid << ", _array_type: " << _array_type << endl);
+    BESDEBUG("fonc", "_ndims: " << _ndims << endl);
+    if (BESDebug::IsSet("fonc")) {
+        for (int i = 0; i < _ndims; ++i)
+            BESDEBUG("fonc", "Dim: " << i << ", id: " << _dim_ids[i] << endl);
+    }
+
 	FONcAttributes::add_attributes( ncid, _varid, _a ) ;
 	FONcAttributes::add_original_name( ncid, _varid,
 					   _varname, _orig_varname ) ;
@@ -339,7 +348,7 @@ FONcArray::define( int ncid )
 void
 FONcArray::write( int ncid )
 {
-    BESDEBUG( "fonc", "FONcArray::write for var " << _varname << endl ) ;
+    BESDEBUG( "fonc", "FONcArray::write for var " << _varname  << ", _array_type: " << _array_type << endl ) ;
 
     if( !_dont_use_it )
     {
@@ -369,14 +378,18 @@ FONcArray::write( int ncid )
 		    break ;
 		case NC_SHORT:
 		    {
+		        BESDEBUG("fonc", "Processing a NC_SHORT: " << name() << ", ncid: " << ncid << endl);
+
 			short *data = new short [_nelements] ;
+			BESDEBUG("fonc", "nelements: " << _nelements << ", _a's type: " << _a->var()->type_name() << ", _varid: " << _varid << endl);
 			_a->buf2val( (void**)&data ) ;
 			int stax = nc_put_var_short( ncid, _varid, data ) ;
 			if( stax != NC_NOERR )
 			{
 			    string err = (string)"fileout.netcdf - "
 				    + "Failed to create array of shorts for "
-				    + _varname ;
+				    + _varname
+				    + " (error code: " + long_to_string(stax) + ")";
 			    FONcUtils::handle_error( stax, err,
 						     __FILE__, __LINE__ ) ;
 			}
