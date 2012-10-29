@@ -1,3 +1,7 @@
+2012-10-29  Muqun Yang <myang6@hdfgroup.org>
+        Changing mapping of UINT16 from NC_SHORT to NC_INT for variables since that will 
+        cause overflow. This also makes it consistent for the mapping of attributes.
+
 2011-12-28  James Gallagher <jgallagher@opendap.org>
 
 	Cleaned up a warning where a bool was (not) used because the code
