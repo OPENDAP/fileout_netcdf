@@ -191,7 +191,17 @@ FONcTransform::transform( )
 
 	// We are done defining the variables, dimensions, and
 	// attributes of the netcdf file. End the define mode.
-	nc_enddef( _ncid ) ;
+        int stax =nc_enddef( _ncid ) ;
+
+        // Check error for nc_enddef. Handling of HDF failures
+        // can be detected here rather than later.  KY 2012-10-25
+        if (stax != NC_NOERR)
+        {
+            string err = (string)"File out netcdf, "
+                     + "unable to end the define mode " + _localfile ;
+            FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+        }
+
 
 	// Write everything out
 	i = _fonc_vars.begin() ;

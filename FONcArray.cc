@@ -386,7 +386,20 @@ FONcArray::write( int ncid )
 		case NC_INT:
 		    {
 			int *data = new int[_nelements] ;
-			_a->buf2val( (void**)&data ) ;
+
+                        // Since UInt16 also maps to NC_INT, we need to obtain the data correctly
+                        // KY 2012-10-25
+                        string var_type = _a->var()->type_name();
+                        if (var_type == "UInt16") {
+                            unsigned short *orig_data = new unsigned short[_nelements];
+                            _a->buf2val( (void**)&orig_data ) ;
+                            for (int d_i= 0; d_i <_nelements; d_i++)
+                                data[d_i] = orig_data[d_i];
+                            delete []orig_data;
+                        }
+                        else
+                            _a->buf2val( (void**)&data ) ;
+
 			int stax = nc_put_var_int( ncid, _varid, data ) ;
 			if( stax != NC_NOERR )
 			{

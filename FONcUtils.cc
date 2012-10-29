@@ -111,8 +111,13 @@ FONcUtils::get_nc_type( BaseType *element )
 	x_type = NC_CHAR ;
     else if( var_type == "Int16" )
 	x_type = NC_SHORT ;
+    // The attribute of UInt16 maps to NC_INT, so we need to map UInt16
+    // to NC_INT for the variable so that end_def won't complain about
+    // the inconsistent datatype between fillvalue and the variable. KY 2012-10-25
+    //else if( var_type == "UInt16" )
+    //  x_type = NC_SHORT ;
     else if( var_type == "UInt16" )
-	x_type = NC_SHORT ;
+	x_type = NC_INT ;
     else if( var_type == "Int32" )
 	x_type = NC_INT ;
     else if( var_type == "UInt32" )
