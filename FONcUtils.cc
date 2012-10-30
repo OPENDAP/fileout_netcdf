@@ -96,13 +96,6 @@ FONcUtils::id2netcdf( string in )
 
 /** @brief translate the OPeNDAP data type to a netcdf data type
  *
- * @todo This code should use floating point variables to represent
- * unsigned types ("To be completely safe with unknown readers,
- * widen the data type, or use floating point.
- * [http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html]).
- * That's sort of a drastic solution, but netcdf4 supports unsigned types.
- * jhrg 5/10/12
- *
  * @param element The OPeNDAP element to translate
  * @return the netcdf data type
  */
@@ -118,8 +111,13 @@ FONcUtils::get_nc_type( BaseType *element )
 	x_type = NC_CHAR ;
     else if( var_type == "Int16" )
 	x_type = NC_SHORT ;
+    // The attribute of UInt16 maps to NC_INT, so we need to map UInt16
+    // to NC_INT for the variable so that end_def won't complain about
+    // the inconsistent datatype between fillvalue and the variable. KY 2012-10-25
+    //else if( var_type == "UInt16" )
+    //  x_type = NC_SHORT ;
     else if( var_type == "UInt16" )
-	x_type = NC_SHORT ;
+	x_type = NC_INT ;
     else if( var_type == "Int32" )
 	x_type = NC_INT ;
     else if( var_type == "UInt32" )

@@ -29,8 +29,6 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-#include <util.h>
-
 #include <BESInternalError.h>
 #include <BESDebug.h>
 
@@ -305,13 +303,6 @@ FONcArray::define( int ncid )
 	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
 	}
 
-    BESDEBUG("fonc", "_varid: " << _varid << ", _array_type: " << _array_type << endl);
-    BESDEBUG("fonc", "_ndims: " << _ndims << endl);
-    if (BESDebug::IsSet("fonc")) {
-        for (int i = 0; i < _ndims; ++i)
-            BESDEBUG("fonc", "Dim: " << i << ", id: " << _dim_ids[i] << endl);
-    }
-
 	FONcAttributes::add_attributes( ncid, _varid, _a ) ;
 	FONcAttributes::add_original_name( ncid, _varid,
 					   _varname, _orig_varname ) ;
@@ -348,7 +339,7 @@ FONcArray::define( int ncid )
 void
 FONcArray::write( int ncid )
 {
-    BESDEBUG( "fonc", "FONcArray::write for var " << _varname  << ", _array_type: " << _array_type << endl ) ;
+    BESDEBUG( "fonc", "FONcArray::write for var " << _varname << endl ) ;
 
     if( !_dont_use_it )
     {
@@ -378,18 +369,14 @@ FONcArray::write( int ncid )
 		    break ;
 		case NC_SHORT:
 		    {
-		        BESDEBUG("fonc", "Processing a NC_SHORT: " << name() << ", ncid: " << ncid << endl);
-
 			short *data = new short [_nelements] ;
-			BESDEBUG("fonc", "nelements: " << _nelements << ", _a's type: " << _a->var()->type_name() << ", _varid: " << _varid << endl);
 			_a->buf2val( (void**)&data ) ;
 			int stax = nc_put_var_short( ncid, _varid, data ) ;
 			if( stax != NC_NOERR )
 			{
 			    string err = (string)"fileout.netcdf - "
 				    + "Failed to create array of shorts for "
-				    + _varname
-				    + " (error code: " + long_to_string(stax) + ")";
+				    + _varname ;
 			    FONcUtils::handle_error( stax, err,
 						     __FILE__, __LINE__ ) ;
 			}
@@ -399,7 +386,20 @@ FONcArray::write( int ncid )
 		case NC_INT:
 		    {
 			int *data = new int[_nelements] ;
-			_a->buf2val( (void**)&data ) ;
+
+                        // Since UInt16 also maps to NC_INT, we need to obtain the data correctly
+                        // KY 2012-10-25
+                        string var_type = _a->var()->type_name();
+                        if (var_type == "UInt16") {
+                            unsigned short *orig_data = new unsigned short[_nelements];
+                            _a->buf2val( (void**)&orig_data ) ;
+                            for (int d_i= 0; d_i <_nelements; d_i++)
+                                data[d_i] = orig_data[d_i];
+                            delete []orig_data;
+                        }
+                        else
+                            _a->buf2val( (void**)&data ) ;
+
 			int stax = nc_put_var_int( ncid, _varid, data ) ;
 			if( stax != NC_NOERR )
 			{

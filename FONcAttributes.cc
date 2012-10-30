@@ -203,9 +203,9 @@ FONcAttributes::addattrs( int ncid, int varid, const string &var_name,
     }
     new_name = FONcUtils::id2netcdf( new_name ) ;
     if( varid == NC_GLOBAL )
-	BESDEBUG( "fonc_details", "Adding global attributes " << new_name << endl ) ;
+	BESDEBUG( "fonc", "Adding global attributes " << new_name << endl ) ;
     else
-	BESDEBUG( "fonc_details", "Adding attributes " << new_name << endl ) ;
+	BESDEBUG( "fonc", "Adding attributes " << new_name << endl ) ;
 
     int stax = NC_NOERR ;
     unsigned int attri = 0 ;

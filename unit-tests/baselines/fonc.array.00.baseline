@@ -22,7 +22,7 @@ variables:
 	byte byte_array(byte_dim1, byte_dim2) ;
 	short i16_array(i16_dim1, i16_dim2) ;
 	int i32_array(i32_dim1, i32_dim2) ;
-	short ui16_array(ui16_dim1, ui16_dim2) ;
+	int ui16_array(ui16_dim1, ui16_dim2) ;
 	int ui32_array(ui32_dim1, ui32_dim2) ;
 	float f32_array(f32_dim1) ;
 	double f64_array(f64_dim1, f64_dim2, f64_dim3) ;

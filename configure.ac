@@ -58,37 +58,35 @@ AC_CHECK_LIBDAP([3.11.0],
 ])
  
 # This does not work with the --prefix option. Don't know why... 
-dnl AX_PATH_GENERIC([nc], [4.0.0], [],
-dnl     [
-dnl 	LIBS="$LIBS $NC_LIBS"
-dnl     LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-dnl 	CPPFLAGS="$CPPFLAGS $NC_CFLAGS"
-dnl 	netcdf4_found=1
-dnl     ],
-dnl     [
-dnl 	AC_MSG_WARN([Could not find netcdf 4; looking for the older library])
-dnl 	netcdf4_found=0
-dnl     ]
-dnl )
-
-dnl if test $netcdf4_found -ne 1
-dnl then
-
-AC_CHECK_NETCDF(
-   [
-       LIBS="$LIBS $NC_LIBS"
-       LDFLAGS="$LDFLAGS $NC_LDFLAGS"
-       CPPFLAGS="$CPPFLAGS $NC_CPPFLAGS"
-   ],
-   [
-       echo "*** Use --with-netcdf for the root netcdf directory."
-       echo "*** Otherwise use --with-netcdf-include switch for includes directory"
-       echo "*** and --with-netcdf-libdir switch for libraries directory."
-       AC_MSG_ERROR([netcdf library and netcdf headers are required.])
-   ],[3]
+AX_PATH_GENERIC([nc], [4.0.0], [],
+    [
+	LIBS="$LIBS $NC_LIBS"
+    LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+	CPPFLAGS="$CPPFLAGS $NC_CFLAGS"
+	netcdf4_found=1
+    ],
+    [
+	AC_MSG_WARN([Could not find netcdf 4; looking for the older library])
+	netcdf4_found=0
+    ]
 )
 
-dnl fi
+if test $netcdf4_found -ne 1
+then
+    AC_CHECK_NETCDF(
+       [
+	   LIBS="$LIBS $NC_LIBS"
+	   LDFLAGS="$LDFLAGS $NC_LDFLAGS"
+	   CPPFLAGS="$CPPFLAGS $NC_CPPFLAGS"
+       ],
+       [
+	   echo "*** Use --with-netcdf for the root netcdf directory."
+	   echo "*** Otherwise use --with-netcdf-include switch for includes directory"
+	   echo "*** and --with-netcdf-libdir switch for libraries directory."
+	   AC_MSG_ERROR([netcdf library and netcdf headers are required.])
+       ],[3]
+    )
+fi
 
 AC_CHECK_BES([3.9.0],
 [
