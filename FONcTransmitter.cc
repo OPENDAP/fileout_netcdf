@@ -51,7 +51,7 @@
 #include <BaseType.h>
 #include <escaping.h>
 
-using namespace::libdap ;
+using namespace ::libdap;
 
 #include "FONcTransmitter.h"
 #include "FONcTransform.h"
@@ -65,7 +65,7 @@ using namespace::libdap ;
 
 #define FONC_TEMP_DIR "/tmp"
 
-string FONcTransmitter::temp_dir ;
+string FONcTransmitter::temp_dir;
 
 /** @brief Construct the FONcTransmitter, adding it with name netcdf to be
  * able to transmit a data response
@@ -78,28 +78,23 @@ string FONcTransmitter::temp_dir ;
  * FONc.Tempdir. If this variable is not found or is not set then it
  * defaults to the macro definition FONC_TEMP_DIR.
  */
-FONcTransmitter::FONcTransmitter()
-    : BESBasicTransmitter()
+FONcTransmitter::FONcTransmitter() :
+        BESBasicTransmitter()
 {
-    add_method( DATA_SERVICE, FONcTransmitter::send_data ) ;
+    add_method(DATA_SERVICE, FONcTransmitter::send_data);
 
-    if( FONcTransmitter::temp_dir.empty() )
-    {
-	// Where is the temp directory for creating these files
-	bool found = false ;
-	string key = "FONc.Tempdir" ;
-	TheBESKeys::TheKeys()->get_value( key,
-					  FONcTransmitter::temp_dir, found ) ;
-	if( !found || FONcTransmitter::temp_dir.empty() )
-	{
-	    FONcTransmitter::temp_dir = FONC_TEMP_DIR ;
-	}
-	string::size_type len = FONcTransmitter::temp_dir.length() ;
-	if( FONcTransmitter::temp_dir[len - 1] == '/' )
-	{
-	    FONcTransmitter::temp_dir =
-		FONcTransmitter::temp_dir.substr( 0, len- 1 ) ;
-	}
+    if (FONcTransmitter::temp_dir.empty()) {
+        // Where is the temp directory for creating these files
+        bool found = false;
+        string key = "FONc.Tempdir";
+        TheBESKeys::TheKeys()->get_value(key, FONcTransmitter::temp_dir, found);
+        if (!found || FONcTransmitter::temp_dir.empty()) {
+            FONcTransmitter::temp_dir = FONC_TEMP_DIR;
+        }
+        string::size_type len = FONcTransmitter::temp_dir.length();
+        if (FONcTransmitter::temp_dir[len - 1] == '/') {
+            FONcTransmitter::temp_dir = FONcTransmitter::temp_dir.substr(0, len - 1);
+        }
     }
 }
 
@@ -118,63 +113,52 @@ FONcTransmitter::FONcTransmitter()
  * there are any problems reading the data, writing to a netcdf file, or
  * streaming the netcdf file
  */
-void
-FONcTransmitter::send_data( BESResponseObject *obj,
-			    BESDataHandlerInterface &dhi )
+void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface &dhi)
 {
-    BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj) ;
-    if( !bdds )
-    {
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
+    BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj);
+    if (!bdds) {
+        throw BESInternalError("cast error", __FILE__, __LINE__);
     }
 
-    DataDDS *dds = bdds->get_dds() ;
-    if( !dds )
-    {
-	string err = (string)"No DataDDS has been created for transmit" ;
-	BESInternalError pe( err, __FILE__, __LINE__ ) ;
-	throw pe ;
+    DataDDS *dds = bdds->get_dds();
+    if (!dds) {
+        string err = (string) "No DataDDS has been created for transmit";
+        BESInternalError pe(err, __FILE__, __LINE__);
+        throw pe;
     }
 
-    ostream &strm = dhi.get_output_stream() ;
-    if( !strm )
-    {
-	string err = (string)"Output stream is not set, can not return as" ;
-	BESInternalError pe( err, __FILE__, __LINE__ ) ;
-	throw pe ;
+    ostream &strm = dhi.get_output_stream();
+    if (!strm) {
+        string err = (string) "Output stream is not set, can not return as";
+        BESInternalError pe(err, __FILE__, __LINE__);
+        throw pe;
     }
 
-    BESDEBUG( "fonc",
-	      "FONcTransmitter::send_data - parsing the constraint" << endl ) ;
+    BESDEBUG("fonc", "FONcTransmitter::send_data - parsing the constraint" << endl);
 
     // ticket 1248 jhrg 2/23/09
     string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
-    try
-    {
-	bdds->get_ce().parse_constraint( ce, *dds);
+    try {
+        bdds->get_ce().parse_constraint(ce, *dds);
     }
-    catch( Error &e )
-    {
-	string em = e.get_error_message() ;
-	string err = "Failed to parse the constraint expression: " + em ;
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    catch (Error &e) {
+        string em = e.get_error_message();
+        string err = "Failed to parse the constraint expression: " + em;
+        throw BESInternalError(err, __FILE__, __LINE__);
     }
-    catch( ... )
-    {
-	string err = (string)"Failed to parse the constraint expression: "
-	             + "Unknown exception caught" ;
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    catch (...) {
+        string err = (string) "Failed to parse the constraint expression: " + "Unknown exception caught";
+        throw BESInternalError(err, __FILE__, __LINE__);
     }
 
     // The dataset_name is no longer used in the constraint evaluator, so no
     // need to get here. Plus, just getting the first containers dataset
     // name would not have worked with multiple containers.
     // pwest Jan 4, 2009
-    string dataset_name = "" ;
+    string dataset_name = "";
 
     // now we need to read the data
-    BESDEBUG( "fonc", "FONcTransmitter::send_data - reading data into DataDDS"
-		      << endl ) ;
+    BESDEBUG("fonc", "FONcTransmitter::send_data - reading data into DataDDS" << endl);
 
     // I removed the functional_constraint bool and the (dead) code that used it.
     // This kind of temporary object should use auto_ptr<>, but in this case it
@@ -187,72 +171,66 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     // the function and we need to delete that DDS before exiting this code.
     bool functional_constraint = false;
 #endif
-    try
-    {
-	// Handle *functional* constraint expressions specially
-	if (bdds->get_ce().function_clauses())
-	{
-	    BESDEBUG( "fonc", "processing a functional constraint clause(s)." << endl );
-	    dds = bdds->get_ce().eval_function_clauses(*dds);
-	}
+    try {
+        // Handle *functional* constraint expressions specially
+        if (bdds->get_ce().function_clauses()) {
+            BESDEBUG("fonc", "processing a functional constraint clause(s)." << endl);
+            dds = bdds->get_ce().eval_function_clauses(*dds);
+        }
 #if FUNCTIONAL_CE_SUPPORTED
-	if( bdds->get_ce().functional_expression() )
-	{
-	    // This returns a new BaseType, not a pointer to one in the DataDDS
-	    // So once the data has been read using this var create a new
-	    // DataDDS and add this new var to the it.
-	    BaseType *var = bdds->get_ce().eval_function( *dds, dataset_name ) ;
-	    if (!var)
-		throw Error(unknown_error, "Error calling the CE function.");
+        if( bdds->get_ce().functional_expression() )
+        {
+            // This returns a new BaseType, not a pointer to one in the DataDDS
+            // So once the data has been read using this var create a new
+            // DataDDS and add this new var to the it.
+            BaseType *var = bdds->get_ce().eval_function( *dds, dataset_name );
+            if (!var)
+            throw Error(unknown_error, "Error calling the CE function.");
 
-	    var->read( ) ;
+            var->read( );
 
-	    dds = new DataDDS( NULL, "virtual" ) ;
-	    // Set 'functional_constraint' here so that below we know that if
-	    // it's true we must delete 'dds'.
-	    functional_constraint = true;
-	    dds->add_var( var ) ;
-	}
+            dds = new DataDDS( NULL, "virtual" );
+            // Set 'functional_constraint' here so that below we know that if
+            // it's true we must delete 'dds'.
+            functional_constraint = true;
+            dds->add_var( var );
+        }
 #endif
-	else
-	{
-	    // Iterate through the variables in the DataDDS and read
-	    // in the data if the variable has the send flag set.
+        else
+        {
+            // Iterate through the variables in the DataDDS and read
+            // in the data if the variable has the send flag set.
 
             // Note the special case for Sequence. The
-	    // transfer_data() method uses the same logic as
-	    // serialize() to read values but transfers them to the
-	    // d_values field instead of writing them to a XDR sink
-	    // pointer. jhrg 9/13/06
-	    for( DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++ )
-	    {
-		if( (*i)->send_p() )
-		{
-		    // FIXME: we don't have sequences in netcdf so let's not
-		    // worry about that right now.
+            // transfer_data() method uses the same logic as
+            // serialize() to read values but transfers them to the
+            // d_values field instead of writing them to a XDR sink
+            // pointer. jhrg 9/13/06
+            for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
+                if ((*i)->send_p()) {
+                    // FIXME: we don't have sequences in netcdf so let's not
+                    // worry about that right now.
                     (*i)->intern_data(bdds->get_ce(), *dds);
-		}
-	    }
-	}
+                }
+            }
+        }
     }
-    catch( Error &e )
-    {
+    catch (Error &e) {
 #if FUNCTIONAL_CE_SUPPORTED
         if (functional_constraint)
-            delete dds;
+        delete dds;
 #endif
-	string em = e.get_error_message() ;
-	string err = "Failed to read data: " + em ;
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+        string em = e.get_error_message();
+        string err = "Failed to read data: " + em;
+        throw BESInternalError(err, __FILE__, __LINE__);
     }
-    catch( ... )
-    {
+    catch (...) {
 #if FUNCTIONAL_CE_SUPPORTED
-            if (functional_constraint)
-            delete dds;
+        if (functional_constraint)
+        delete dds;
 #endif
-	string err = "Failed to read data: Unknown exception caught" ;
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+        string err = "Failed to read data: Unknown exception caught";
+        throw BESInternalError(err, __FILE__, __LINE__);
     }
 
     string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
@@ -261,71 +239,59 @@ FONcTransmitter::send_data( BESResponseObject *obj,
     *(temp_full + len) = '\0';
     // cover the case where older versions of mkstemp() create the file using
     // a mode of 666.
-    mode_t original_mode = umask( 077 );
-    int fd = mkstemp( temp_full ) ;
-    umask( original_mode );
+    mode_t original_mode = umask(077);
+    int fd = mkstemp(temp_full);
+    umask(original_mode);
 
-    if( fd == -1 )
-    {
-        delete [] temp_full;
+    if (fd == -1) {
+        delete[] temp_full;
 #if FUNCTIONAL_CE_SUPPORTED
         if (functional_constraint)
-            delete dds;
+        delete dds;
 #endif
-        string err = string("Failed to open the temporary file: ")
-		     + temp_file_name ;
-        throw BESInternalError( err, __FILE__, __LINE__ ) ;
+        string err = string("Failed to open the temporary file: ") + temp_file_name;
+        throw BESInternalError(err, __FILE__, __LINE__);
     }
 
     // transform the OPeNDAP DataDDS to the netcdf file
-    BESDEBUG( "fonc",
-	      "FONcTransmitter::send_data - transforming into temporary file "
-	      << temp_full << endl ) ;
-    try
-    {
-	FONcTransform ft( dds, dhi, temp_full ) ;
-	ft.transform() ;
+    BESDEBUG("fonc", "FONcTransmitter::send_data - transforming into temporary file " << temp_full << endl);
+    try {
+        FONcTransform ft(dds, dhi, temp_full);
+        ft.transform();
 
-	BESDEBUG( "fonc",
-		  "FONcTransmitter::send_data - transmitting temp file "
-		  << temp_full << endl ) ;
-	FONcTransmitter::return_temp_stream( temp_full, strm ) ;
+        BESDEBUG("fonc", "FONcTransmitter::send_data - transmitting temp file " << temp_full << endl);
+        FONcTransmitter::return_temp_stream(temp_full, strm);
     }
-    catch( BESError &e )
-    {
+    catch (BESError &e) {
         close(fd);
-	(void)unlink( temp_full ) ;
-	delete[] temp_full;
-#if FUNCTIONAL_CE_SUPPORTED
-	if (functional_constraint)
-	    delete dds;
-#endif
-	throw;
-    }
-    catch( ... )
-    {
-        close(fd);
-	(void)unlink( temp_full ) ;
-	delete[] temp_full;
+        (void) unlink(temp_full);
+        delete[] temp_full;
 #if FUNCTIONAL_CE_SUPPORTED
         if (functional_constraint)
-            delete dds;
+        delete dds;
 #endif
-	string err = (string)"File out netcdf, "
-		     + "was not able to transform to netcdf, unknown error" ;
-	throw BESInternalError( err, __FILE__, __LINE__ ) ;
+        throw;
+    }
+    catch (...) {
+        close(fd);
+        (void) unlink(temp_full);
+        delete[] temp_full;
+#if FUNCTIONAL_CE_SUPPORTED
+        if (functional_constraint)
+        delete dds;
+#endif
+        string err = (string) "File out netcdf, " + "was not able to transform to netcdf, unknown error";
+        throw BESInternalError(err, __FILE__, __LINE__);
     }
 
     close(fd);
-    (void)unlink( temp_full ) ;
+    (void) unlink(temp_full);
     delete[] temp_full;
 #if FUNCTIONAL_CE_SUPPORTED
     if (functional_constraint)
-        delete dds;
+    delete dds;
 #endif
-    BESDEBUG( "fonc",
-	      "FONcTransmitter::send_data - done transmitting to netcdf"
-	      << endl ) ;
+    BESDEBUG("fonc", "FONcTransmitter::send_data - done transmitting to netcdf" << endl);
 }
 
 /** @brief stream the temporary netcdf file back to the requester
@@ -337,58 +303,50 @@ FONcTransmitter::send_data( BESResponseObject *obj,
  * @param strm C++ ostream to write the contents of the file to
  * @throws BESInternalError if problem opening the file
  */
-void
-FONcTransmitter::return_temp_stream( const string &filename,
-				     ostream &strm )
+void FONcTransmitter::return_temp_stream(const string &filename, ostream &strm)
 {
     //  int bytes = 0 ;    // Not used; jhrg 3/16/11
-    ifstream os ;
-    os.open( filename.c_str(), ios::binary|ios::in ) ;
-    if( !os )
-    {
-	string err = "Can not connect to file " + filename ;
-	BESInternalError pe(err, __FILE__, __LINE__ ) ;
-	throw pe ;
+    ifstream os;
+    os.open(filename.c_str(), ios::binary | ios::in);
+    if (!os) {
+        string err = "Can not connect to file " + filename;
+        BESInternalError pe(err, __FILE__, __LINE__);
+        throw pe;
     }
-    int nbytes ;
-    char block[4096] ;
+    int nbytes;
+    char block[4096];
 
-    os.read( block, sizeof block ) ;
-    nbytes = os.gcount() ;
-    if( nbytes > 0 )
-    {
-	bool found = false ;
-	string context = "transmit_protocol" ;
-	string protocol =
-	    BESContextManager::TheManager()->get_context( context, found ) ;
-	if( protocol == "HTTP" )
-	{
-	    strm << "HTTP/1.0 200 OK\n" ;
-	    strm << "Content-type: application/octet-stream\n" ;
-	    strm << "Content-Description: " << "BES dataset" << "\n" ;
-	    strm << "Content-Disposition: filename=" << filename << ".nc;\n\n" ;
-	    strm << flush ;
-	}
-	strm.write( block, nbytes ) ;
-	//bytes += nbytes ;
+    os.read(block, sizeof block);
+    nbytes = os.gcount();
+    if (nbytes > 0) {
+        bool found = false;
+        string context = "transmit_protocol";
+        string protocol = BESContextManager::TheManager()->get_context(context, found);
+        if (protocol == "HTTP") {
+            strm << "HTTP/1.0 200 OK\n";
+            strm << "Content-type: application/octet-stream\n";
+            strm << "Content-Description: " << "BES dataset" << "\n";
+            strm << "Content-Disposition: filename=" << filename << ".nc;\n\n";
+            strm << flush;
+        }
+        strm.write(block, nbytes);
+        //bytes += nbytes ;
     }
-    else
-    {
-	// close the stream before we leave.
-	os.close() ;
+    else {
+        // close the stream before we leave.
+        os.close();
 
-	string err = (string)"0XAAE234F: failed to stream. Internal server "
-	             + "error, got zero count on stream buffer." + filename ;
-	BESInternalError pe( err, __FILE__, __LINE__ ) ;
-	throw pe ;
+        string err = (string) "0XAAE234F: failed to stream. Internal server "
+                + "error, got zero count on stream buffer." + filename;
+        BESInternalError pe(err, __FILE__, __LINE__);
+        throw pe;
     }
-    while (os)
-    {
-	os.read( block, sizeof block ) ;
-	nbytes = os.gcount() ;
-	strm.write( block, nbytes ) ;
-	//write( fileno( stdout ),(void*)block, nbytes ) ;
-	//bytes += nbytes ;
+    while (os) {
+        os.read(block, sizeof block);
+        nbytes = os.gcount();
+        strm.write(block, nbytes);
+        //write( fileno( stdout ),(void*)block, nbytes ) ;
+        //bytes += nbytes ;
     }
     os.close();
 }

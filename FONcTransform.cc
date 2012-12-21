@@ -33,8 +33,8 @@
 
 #include <sstream>
 
-using std::ostringstream ;
-using std::istringstream ;
+using std::ostringstream;
+using std::istringstream;
 
 #include "FONcTransform.h"
 #include "FONcUtils.h"
@@ -63,24 +63,19 @@ using std::istringstream ;
  * @throws BESInternalError if dds provided is empty or not read, if the
  * file is not specified or failed to create the netcdf file
  */
-FONcTransform::FONcTransform( DDS *dds, BESDataHandlerInterface &dhi,
-			      const string &localfile )
-    : _ncid( 0 ), _dds( 0 )
+FONcTransform::FONcTransform(DDS *dds, BESDataHandlerInterface &dhi, const string &localfile) :
+        _ncid(0), _dds(0)
 {
-    if( !dds )
-    {
-	string s = (string)"File out netcdf, "
-		   + "null DDS passed to constructor" ;
-	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    if (!dds) {
+        string s = (string) "File out netcdf, " + "null DDS passed to constructor";
+        throw BESInternalError(s, __FILE__, __LINE__);
     }
-    if( localfile.empty() )
-    {
-	string s = (string)"File out netcdf, "
-		   + "empty local file name passed to constructor" ;
-	throw BESInternalError( s, __FILE__, __LINE__ ) ;
+    if (localfile.empty()) {
+        string s = (string) "File out netcdf, " + "empty local file name passed to constructor";
+        throw BESInternalError(s, __FILE__, __LINE__);
     }
-    _localfile = localfile ;
-    _dds = dds ;
+    _localfile = localfile;
+    _dds = dds;
 
     // if there is a variable, attribute, dimension name that is not
     // compliant with netcdf naming conventions then we will create
@@ -88,14 +83,12 @@ FONcTransform::FONcTransform( DDS *dds, BESDataHandlerInterface &dhi,
     // character then we will prefix it with name_prefix. We will
     // get this prefix from the type of data that we are reading in,
     // such as nc, h4, h5, ff, jg, etc...
-    dhi.first_container() ;
-    if( dhi.container )
-    {
-	FONcUtils::name_prefix = dhi.container->get_container_type() + "_" ;
+    dhi.first_container();
+    if (dhi.container) {
+        FONcUtils::name_prefix = dhi.container->get_container_type() + "_";
     }
-    else
-    {
-	FONcUtils::name_prefix = "nc_" ;
+    else {
+        FONcUtils::name_prefix = "nc_";
     }
 }
 
@@ -105,22 +98,19 @@ FONcTransform::FONcTransform( DDS *dds, BESDataHandlerInterface &dhi,
  */
 FONcTransform::~FONcTransform()
 {
-    bool done = false ;
-    while( !done )
-    {
-	vector<FONcBaseType *>::iterator i = _fonc_vars.begin() ;
-	vector<FONcBaseType *>::iterator e = _fonc_vars.end() ;
-	if( i == e )
-	{
-	    done = true ;
-	}
-	else
-	{
-	    // These are the FONc types, not the actual ones
-	    FONcBaseType *b = (*i) ;
-	    delete b ;
-	    _fonc_vars.erase( i ) ;
-	}
+    bool done = false;
+    while (!done) {
+        vector<FONcBaseType *>::iterator i = _fonc_vars.begin();
+        vector<FONcBaseType *>::iterator e = _fonc_vars.end();
+        if (i == e) {
+            done = true;
+        }
+        else {
+            // These are the FONc types, not the actual ones
+            FONcBaseType *b = (*i);
+            delete b;
+            _fonc_vars.erase(i);
+        }
     }
 }
 
@@ -132,93 +122,80 @@ FONcTransform::~FONcTransform()
  * particular netcdf type. Also write out any global variables stored at the
  * top level of the DataDDS.
  */
-void
-FONcTransform::transform( )
+void FONcTransform::transform()
 {
-    FONcUtils::reset() ;
+    FONcUtils::reset();
 
     // Convert the DDS into an internal format to keep track of
     // variables, arrays, shared dimensions, grids, common maps,
     // embedded structures. It only grabs the variables that are to be
     // sent.
-    DDS::Vars_iter vi = _dds->var_begin() ;
-    DDS::Vars_iter ve = _dds->var_end() ;
-    for( ; vi != ve; vi++ )
-    {
-	if( (*vi)->send_p() )
-	{
-	    BaseType *v = *vi ;
-	    BESDEBUG( "fonc", "converting " << v->name() << endl ) ;
-	    FONcBaseType *fb = FONcUtils::convert( v ) ;
-	    _fonc_vars.push_back( fb ) ;
-	    vector<string> embed ;
-	    fb->convert( embed ) ;
-	}
+    DDS::Vars_iter vi = _dds->var_begin();
+    DDS::Vars_iter ve = _dds->var_end();
+    for (; vi != ve; vi++) {
+        if ((*vi)->send_p()) {
+            BaseType *v = *vi;
+            BESDEBUG("fonc", "converting " << v->name() << endl);
+            FONcBaseType *fb = FONcUtils::convert(v);
+            _fonc_vars.push_back(fb);
+            vector<string> embed;
+            fb->convert(embed);
+        }
     }
-    BESDEBUG( "fonc", *this << endl ) ;
+    BESDEBUG("fonc", *this << endl);
 
     // Open the file for writing
-    int stax = nc_create( _localfile.c_str(), NC_CLOBBER, &_ncid ) ;
-    if( stax != NC_NOERR )
-    {
-	string err = (string)"File out netcdf, "
-	             + "unable to open file " + _localfile ;
-	FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+    int stax = nc_create(_localfile.c_str(), NC_CLOBBER, &_ncid);
+    if (stax != NC_NOERR) {
+        string err = (string) "File out netcdf, " + "unable to open file " + _localfile;
+        FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
     }
 
-    try
-    {
-	// Here we will be defining the variables of the netcdf and
-	// adding attributes. To do this we must be in define mode.
-	nc_redef( _ncid ) ;
+    try {
+        // Here we will be defining the variables of the netcdf and
+        // adding attributes. To do this we must be in define mode.
+        nc_redef(_ncid);
 
-	// For each conerted FONc object, call define on it to define
-	// that object to the netcdf file. This also adds the attributes
-	// for the variables to the netcdf file
-	vector<FONcBaseType *>::iterator i = _fonc_vars.begin() ;
-	vector<FONcBaseType *>::iterator e = _fonc_vars.end() ;
-	for( ; i != e; i++ )
-	{
-	    FONcBaseType *fbt = *i ;
-	    fbt->define( _ncid ) ;
-	}
+        // For each conerted FONc object, call define on it to define
+        // that object to the netcdf file. This also adds the attributes
+        // for the variables to the netcdf file
+        vector<FONcBaseType *>::iterator i = _fonc_vars.begin();
+        vector<FONcBaseType *>::iterator e = _fonc_vars.end();
+        for (; i != e; i++) {
+            FONcBaseType *fbt = *i;
+            fbt->define(_ncid);
+        }
 
-	// Add any global attributes to the netcdf file
-	AttrTable &globals = _dds->get_attr_table() ;
-	BESDEBUG( "fonc", "Adding Global Attributes" << endl
-			  << globals << endl ) ;
-	FONcAttributes::addattrs( _ncid, NC_GLOBAL, globals, "", "" ) ;
+        // Add any global attributes to the netcdf file
+        AttrTable &globals = _dds->get_attr_table();
+        BESDEBUG("fonc", "Adding Global Attributes" << endl << globals << endl);
+        FONcAttributes::addattrs(_ncid, NC_GLOBAL, globals, "", "");
 
-	// We are done defining the variables, dimensions, and
-	// attributes of the netcdf file. End the define mode.
-        int stax =nc_enddef( _ncid ) ;
+        // We are done defining the variables, dimensions, and
+        // attributes of the netcdf file. End the define mode.
+        int stax = nc_enddef(_ncid);
 
         // Check error for nc_enddef. Handling of HDF failures
         // can be detected here rather than later.  KY 2012-10-25
-        if (stax != NC_NOERR)
-        {
-            string err = (string)"File out netcdf, "
-                     + "unable to end the define mode " + _localfile ;
-            FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, " + "unable to end the define mode " + _localfile;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
         }
 
-
-	// Write everything out
-	i = _fonc_vars.begin() ;
-	e = _fonc_vars.end() ;
-	for( ; i != e; i++ )
-	{
-	    FONcBaseType *fbt = *i ;
-	    fbt->write( _ncid ) ;
-	}
+        // Write everything out
+        i = _fonc_vars.begin();
+        e = _fonc_vars.end();
+        for (; i != e; i++) {
+            FONcBaseType *fbt = *i;
+            fbt->write(_ncid);
+        }
     }
-    catch( BESError &e )
-    {
-	nc_close( _ncid ) ;
-	throw;
+    catch (BESError &e) {
+        nc_close(_ncid);
+        throw;
     }
 
-    nc_close( _ncid ) ;
+    nc_close(_ncid);
 }
 
 /** @brief dumps information about this transformation object for debugging
@@ -230,23 +207,20 @@ FONcTransform::transform( )
  *
  * @param strm C++ i/o stream to dump the information to
  */
-void
-FONcTransform::dump( ostream &strm ) const
+void FONcTransform::dump(ostream &strm) const
 {
-    strm << BESIndent::LMarg << "FONcTransform::dump - ("
-			     << (void *)this << ")" << endl ;
-    BESIndent::Indent() ;
-    strm << BESIndent::LMarg << "ncid = " << _ncid << endl ;
-    strm << BESIndent::LMarg << "temporary file = " << _localfile << endl ;
-    BESIndent::Indent() ;
-    vector<FONcBaseType *>::const_iterator i = _fonc_vars.begin() ;
-    vector<FONcBaseType *>::const_iterator e = _fonc_vars.end() ;
-    for( ; i != e; i++ )
-    {
-	FONcBaseType *fbt = *i ;
-	fbt->dump( strm ) ;
+    strm << BESIndent::LMarg << "FONcTransform::dump - (" << (void *) this << ")" << endl;
+    BESIndent::Indent();
+    strm << BESIndent::LMarg << "ncid = " << _ncid << endl;
+    strm << BESIndent::LMarg << "temporary file = " << _localfile << endl;
+    BESIndent::Indent();
+    vector<FONcBaseType *>::const_iterator i = _fonc_vars.begin();
+    vector<FONcBaseType *>::const_iterator e = _fonc_vars.end();
+    for (; i != e; i++) {
+        FONcBaseType *fbt = *i;
+        fbt->dump(strm);
     }
-    BESIndent::UnIndent() ;
-    BESIndent::UnIndent() ;
+    BESIndent::UnIndent();
+    BESIndent::UnIndent();
 }
 
