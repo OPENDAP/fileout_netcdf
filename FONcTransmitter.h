@@ -32,9 +32,14 @@
 #ifndef A_FONcTransmitter_h
 #define A_FONcTransmitter_h 1
 
+#include <DataDDS.h>
+#include <ConstraintEvaluator.h>
+
 #include <BESBasicTransmitter.h>
 
-class BESContainer ;
+class BESContainer;
+
+using namespace libdap;
 
 /** @brief BESTransmitter class named "netcdf" that transmits an OPeNDAP
  * data object as a netcdf file
@@ -45,19 +50,19 @@ class BESContainer ;
  *
  * @see BESBasicTransmitter
  */
-class FONcTransmitter : public BESBasicTransmitter
-{
+class FONcTransmitter: public BESBasicTransmitter {
 private:
-    static void		return_temp_stream( const string &filename,
-					    ostream &strm ) ;
-    static string	temp_dir ;
+    static void return_temp_stream(const string &filename, ostream &strm);
+    static string temp_dir;
 public:
-    			FONcTransmitter() ;
-    virtual		~FONcTransmitter() {}
+    FONcTransmitter();
+    virtual ~FONcTransmitter()
+    {
+    }
 
-    static void		send_data( BESResponseObject *obj,
-    				   BESDataHandlerInterface &dhi ) ;
-} ;
+    static void send_data(BESResponseObject *obj, BESDataHandlerInterface &dhi);
+    static void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
+
+};
 
 #endif // A_FONcTransmitter_h
-

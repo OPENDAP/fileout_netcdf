@@ -41,20 +41,14 @@
 #include <sys/types.h>                  // For umask
 #include <sys/stat.h>
 
-#include <sys/types.h>                  // For umask
-#include <sys/stat.h>
-
 #include <iostream>
 #include <fstream>
 
 #include <DataDDS.h>
 #include <BaseType.h>
 #include <escaping.h>
+#include <ConstraintEvaluator.h>
 
-using namespace ::libdap;
-
-#include "FONcTransmitter.h"
-#include "FONcTransform.h"
 #include <BESInternalError.h>
 #include <TheBESKeys.h>
 #include <BESContextManager.h>
@@ -62,6 +56,11 @@ using namespace ::libdap;
 #include <BESDapNames.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
+
+#include "FONcTransmitter.h"
+#include "FONcTransform.h"
+
+using namespace ::libdap;
 
 #define FONC_TEMP_DIR "/tmp"
 
@@ -127,6 +126,32 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         throw pe;
     }
 
+    BESDEBUG("fonc", "FONcTransmitter::send_data - parsing the constraint" << endl);
+
+    ConstraintEvaluator &eval = bdds->get_ce();
+
+    send_data(dds, eval, dhi);
+}
+
+/** @brief version of the send_data() method that takes only libdap/STL objects.
+ *
+ * @note Used for unit tests.
+ */
+void FONcTransmitter::send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi)
+{
+#if 0
+    BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj);
+    if (!bdds) {
+        throw BESInternalError("cast error", __FILE__, __LINE__);
+    }
+
+    DataDDS *dds = bdds->get_dds();
+    if (!dds) {
+        string err = (string) "No DataDDS has been created for transmit";
+        BESInternalError pe(err, __FILE__, __LINE__);
+        throw pe;
+    }
+
     ostream &strm = dhi.get_output_stream();
     if (!strm) {
         string err = (string) "Output stream is not set, can not return as";
@@ -136,10 +161,35 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
 
     BESDEBUG("fonc", "FONcTransmitter::send_data - parsing the constraint" << endl);
 
+    ConstraintEvaluator &eval = bdds->get_ce();
+
     // ticket 1248 jhrg 2/23/09
     string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
     try {
-        bdds->get_ce().parse_constraint(ce, *dds);
+        eval.parse_constraint(ce, *dds);
+    }
+    catch (Error &e) {
+        string em = e.get_error_message();
+        string err = "Failed to parse the constraint expression: " + em;
+        throw BESInternalError(err, __FILE__, __LINE__);
+    }
+    catch (...) {
+        string err = (string) "Failed to parse the constraint expression: " + "Unknown exception caught";
+        throw BESInternalError(err, __FILE__, __LINE__);
+    }
+#endif
+
+    ostream &strm = dhi.get_output_stream();
+    if (!strm) {
+        string err = (string) "Output stream is not set, can not return as";
+        BESInternalError pe(err, __FILE__, __LINE__);
+        throw pe;
+    }
+
+    // ticket 1248 jhrg 2/23/09
+    string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
+    try {
+        eval.parse_constraint(ce, *dds);
     }
     catch (Error &e) {
         string em = e.get_error_message();
@@ -173,17 +223,17 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
 #endif
     try {
         // Handle *functional* constraint expressions specially
-        if (bdds->get_ce().function_clauses()) {
+        if (eval.function_clauses()) {
             BESDEBUG("fonc", "processing a functional constraint clause(s)." << endl);
-            dds = bdds->get_ce().eval_function_clauses(*dds);
+            dds = eval.eval_function_clauses(*dds);
         }
 #if FUNCTIONAL_CE_SUPPORTED
-        if( bdds->get_ce().functional_expression() )
+        if( eval.functional_expression() )
         {
             // This returns a new BaseType, not a pointer to one in the DataDDS
             // So once the data has been read using this var create a new
             // DataDDS and add this new var to the it.
-            BaseType *var = bdds->get_ce().eval_function( *dds, dataset_name );
+            BaseType *var = eval).eval_function( *dds, dataset_name );
             if (!var)
             throw Error(unknown_error, "Error calling the CE function.");
 
@@ -210,7 +260,7 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
                 if ((*i)->send_p()) {
                     // FIXME: we don't have sequences in netcdf so let's not
                     // worry about that right now.
-                    (*i)->intern_data(bdds->get_ce(), *dds);
+                    (*i)->intern_data(eval, *dds);
                 }
             }
         }

@@ -18,13 +18,13 @@ using std::ofstream;
 
 using namespace libdap;
 
-#include <BESDataDDSResponse.h>
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
 #include "test_config.h"
-#include "FONcTransmitter.h"
+#include "test_send_data.h"
+
 #include "ReadTypeFactory.h"
 
 void set_sequence_read(Sequence *s);
@@ -177,18 +177,17 @@ int main(int argc, char **argv) {
 
         // The resulting netcdf file is streamed back. Write this file to a
         // test file locally
-        BESResponseObject *obj = new BESDataDDSResponse(dds);
         BESDataHandlerInterface dhi;
         ofstream fstrm(opath.c_str(), ios::out | ios::trunc);
         dhi.set_output_stream(&fstrm);
         dhi.data[POST_CONSTRAINT] = "";
-        FONcTransmitter ft;
-        FONcTransmitter::send_data(obj, dhi);
+
+        ConstraintEvaluator eval;
+        send_data( dds, eval, dhi ) ;
+
         fstrm.close();
 
-        // deleting the response object deletes the DataDDS
-        // FIXME: This causes an illegal free, why?
-        // delete obj ;
+        delete dds;
     } catch (BESError &e) {
         cout << e.get_message() << endl;
         return 1;

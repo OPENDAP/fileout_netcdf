@@ -4,10 +4,10 @@
 #include <fstream>
 #include <iostream>
 
-using std::ofstream ;
-using std::ios ;
-using std::cerr ;
-using std::endl ;
+using std::ofstream;
+using std::ios;
+using std::cerr;
+using std::endl;
 
 #include <DataDDS.h>
 #include <Structure.h>
@@ -21,102 +21,97 @@ using std::endl ;
 #include <Float64.h>
 #include <Str.h>
 
-using namespace::libdap ;
+using namespace ::libdap;
 
-#include <BESDataDDSResponse.h>
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
 #include "test_config.h"
-#include "FONcTransmitter.h"
+#include "test_send_data.h"
 
-int
-main( int argc, char **argv )
+int main(int argc, char **argv)
 {
-    bool debug = false ;
-    if( argc > 1 )
-    {
-	for( int i = 0; i < argc; i++ )
-	{
-	    string arg = argv[i] ;
-	    if( arg == "debug" )
-	    {
-		debug = true ;
-	    }
-	}
+    bool debug = false;
+    if (argc > 1) {
+        for (int i = 0; i < argc; i++) {
+            string arg = argv[i];
+            if (arg == "debug") {
+                debug = true;
+            }
+        }
     }
 
-    string bes_conf = (string)"BES_CONF=" + TEST_BUILD_DIR + "/bes.conf" ;
-    putenv( (char *)bes_conf.c_str() ) ;
-    if( debug ) BESDebug::SetUp( "cerr,fonc" ) ;
+    string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
+    putenv((char *) bes_conf.c_str());
+    if (debug)
+        BESDebug::SetUp("cerr,fonc");
 
-    try
-    {
-	// build a DataDDS of simple types and set values for each of the
-	// simple types.
-	DataDDS *dds = new DataDDS( NULL, "virtual" ) ;
+    try {
+        // build a DataDDS of simple types and set values for each of the
+        // simple types.
+        DataDDS *dds = new DataDDS(NULL, "virtual");
 
-	Structure s( "mystruct" ) ;
+        Structure s("mystruct");
 
-	Byte b( "byte" ) ;
-	b.set_value( 28 ) ;
-	s.add_var( &b ) ;
+        Byte b("byte");
+        b.set_value(28);
+        s.add_var(&b);
 
-	Int16 i16( "i16" ) ;
-	i16.set_value( -2048 ) ;
-	s.add_var( &i16 ) ;
+        Int16 i16("i16");
+        i16.set_value(-2048);
+        s.add_var(&i16);
 
-	Int32 i32( "i32" ) ;
-	i32.set_value( -105467 ) ;
-	s.add_var( &i32 ) ;
+        Int32 i32("i32");
+        i32.set_value(-105467);
+        s.add_var(&i32);
 
-	UInt16 ui16( "ui16" ) ;
-	ui16.set_value( 2048 ) ;
-	s.add_var( &ui16 ) ;
+        UInt16 ui16("ui16");
+        ui16.set_value(2048);
+        s.add_var(&ui16);
 
-	UInt32 ui32( "ui32" ) ;
-	ui32.set_value( 105467 ) ;
-	s.add_var( &ui32 ) ;
+        UInt32 ui32("ui32");
+        ui32.set_value(105467);
+        s.add_var(&ui32);
 
-	Float32 f32( "f32" ) ;
-	f32.set_value( 5.7866 ) ;
-	s.add_var( &f32 ) ;
+        Float32 f32("f32");
+        f32.set_value(5.7866);
+        s.add_var(&f32);
 
-	Float64 f64( "f64" ) ;
-	f64.set_value( 10245.1234 ) ;
-	s.add_var( &f64 ) ;
+        Float64 f64("f64");
+        f64.set_value(10245.1234);
+        s.add_var(&f64);
 
-	Str str( "str" ) ;
-	str.set_value( "This is a String Value" ) ;
-	s.add_var( &str ) ;
+        Str str("str");
+        str.set_value("This is a String Value");
+        s.add_var(&str);
 
-	dds->add_var( &s ) ;
+        dds->add_var(&s);
 
-	// transform the DataDDS into a netcdf file. The dhi only needs the
-	// output stream and the post constraint. Test no constraints and
-	// then some different constraints (1 var, 2 var)
+        // transform the DataDDS into a netcdf file. The dhi only needs the
+        // output stream and the post constraint. Test no constraints and
+        // then some different constraints (1 var, 2 var)
 
-	// The resulting netcdf file is streamed back. Write this file to a
-	// test file locally
-	BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
-	BESDataHandlerInterface dhi ;
-	ofstream fstrm( "./structT00.nc", ios::out|ios::trunc ) ;
-	dhi.set_output_stream( &fstrm ) ;
-	dhi.data[POST_CONSTRAINT] = "" ;
-	FONcTransmitter ft ;
-	FONcTransmitter::send_data( obj, dhi ) ;
-	fstrm.close() ;
+        // The resulting netcdf file is streamed back. Write this file to a
+        // test file locally
 
-	// deleting the response object deletes the DataDDS
-	delete obj ;
+        BESDataHandlerInterface dhi;
+        ofstream fstrm("./structT00.nc", ios::out | ios::trunc);
+        dhi.set_output_stream(&fstrm);
+        dhi.data[POST_CONSTRAINT] = "";
+
+        ConstraintEvaluator eval;
+        send_data(dds, eval, dhi);
+
+        fstrm.close();
+
+        delete dds;
     }
-    catch( BESError &e )
-    {
-	cerr << e.get_message() << endl ;
-	return 1 ;
+    catch (BESError &e) {
+        cerr << e.get_message() << endl;
+        return 1;
     }
 
-    return 0 ;
+    return 0;
 }
 

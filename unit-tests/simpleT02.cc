@@ -21,13 +21,12 @@ using std::endl ;
 
 using namespace::libdap ;
 
-#include <BESDataDDSResponse.h>
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
 #include "test_config.h"
-#include "FONcTransmitter.h"
+#include "test_send_data.h"
 
 int
 main( int argc, char **argv )
@@ -96,17 +95,18 @@ main( int argc, char **argv )
 
 	// The resulting netcdf file is streamed back. Write this file to a
 	// test file locally
-	BESResponseObject *obj = new BESDataDDSResponse( dds ) ;
+
 	BESDataHandlerInterface dhi ;
 	ofstream fstrm( "./simpleT02.nc", ios::out|ios::trunc ) ;
 	dhi.set_output_stream( &fstrm ) ;
 	dhi.data[POST_CONSTRAINT] = "byte" ;
-	FONcTransmitter ft ;
-	FONcTransmitter::send_data( obj, dhi ) ;
-	fstrm.close() ;
 
-	// deleting the response object deletes the DataDDS
-	delete obj ;
+    ConstraintEvaluator eval;
+    send_data( dds, eval, dhi ) ;
+
+    fstrm.close() ;
+
+	delete dds ;
     }
     catch( BESError &e )
     {

@@ -26,14 +26,17 @@ UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 	structT00 arrayT structT01 structT02	\
 	arrayT01 gridT seqT attrT namesT readT
 
-SRCS = ../FONcTransform.cc ../FONcTransmitter.cc ../FONcUtils.cc	\
+SRCS = ../FONcTransform.cc ../FONcUtils.cc	\
 	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	\
 	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		\
 	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		\
 	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			\
-	../FONcAttributes.cc
+	../FONcAttributes.cc test_send_data.cc
+
+# ../FONcTransmitter.cc
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
+
 simpleT00_LDADD = $(AM_LDADD)
 
 simpleT01_SOURCES = simpleT01.cc $(SRCS)
@@ -43,6 +46,7 @@ simpleT02_SOURCES = simpleT02.cc $(SRCS)
 simpleT02_LDADD = $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc $(SRCS)
+arrayT_CPPFLAGS = $(AM_CPPFLAGS)
 arrayT_LDADD = $(AM_LDADD)
 
 arrayT01_SOURCES = arrayT01.cc $(SRCS)
@@ -76,7 +80,7 @@ readT_LDADD = $(AM_LDADD) $(DAP_CLIENT_LIBS)
 
 AUTOM4TE = autom4te
 DIRS_EXTRA = bes-testsuite nc besstandalone.netcdf common_tests.exp
- 
+
 TESTSUITE = $(srcdir)/fonc_handlerTest
 
 check-local: $(UNIT_TESTS) atconfig atlocal $(TESTSUITE)
