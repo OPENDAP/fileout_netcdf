@@ -31,7 +31,7 @@ SRCS = ../FONcTransform.cc ../FONcUtils.cc	\
 	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		\
 	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		\
 	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			\
-	../FONcAttributes.cc test_send_data.cc
+	../FONcAttributes.cc test_send_data.cc test_send_data.h
 
 # ../FONcTransmitter.cc
 
