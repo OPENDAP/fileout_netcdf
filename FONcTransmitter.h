@@ -52,7 +52,9 @@ using namespace libdap;
  */
 class FONcTransmitter: public BESBasicTransmitter {
 private:
-    static void return_temp_stream(const string &filename, ostream &strm);
+    static void return_temp_stream(const string &filename,
+				   ostream &strm,
+				   const string &ncVersion);
     static string temp_dir;
 public:
     FONcTransmitter();
@@ -66,3 +68,4 @@ public:
 };
 
 #endif // A_FONcTransmitter_h
+

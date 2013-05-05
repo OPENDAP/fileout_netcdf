@@ -53,6 +53,7 @@ protected:
     string			_orig_varname ;
     vector<string>		_embed ;
     bool			_defined ;
+    string			_ncVersion ;
 
     				FONcBaseType()
 				    : _varid( 0 ), _defined( false ) {}
@@ -69,6 +70,10 @@ public:
     virtual int			varid() { return _varid ; }
 
     virtual void		dump( ostream &strm ) const = 0 ;
+
+    virtual void		setVersion( string version ) ;
+    virtual bool		isNetCDF4() ;
+
 } ;
 
 #endif // FONcBaseType_h_

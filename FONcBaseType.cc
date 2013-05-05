@@ -34,6 +34,9 @@
 #include "FONcBaseType.h"
 #include "FONcUtils.h"
 
+#define RETURNAS_NETCDF "netcdf"
+#define RETURNAS_NETCDF4 "netcdf-4"
+
 void
 FONcBaseType::convert( vector<string> embed )
 {
@@ -94,3 +97,36 @@ FONcBaseType::clear_embedded()
     _embed.clear() ;
 }
 
+/** @brief Identifies variable with use of NetCDF4 features
+ */
+void FONcBaseType::setVersion(string version)
+{
+	_ncVersion = version;
+
+	BESDEBUG( "fonc", "FONcBaseType::setVersion: "
+			<< _ncVersion << endl ) ;
+}
+
+/** @brief Returns true if NetCDF4 features will be required
+ */
+bool FONcBaseType::isNetCDF4()
+{
+
+	int stax = NC_NOERR;
+
+	if ( FONcBaseType::_ncVersion == RETURNAS_NETCDF4 ) {
+		return true;
+	}
+
+	if ( FONcBaseType::_ncVersion == RETURNAS_NETCDF ) {
+		return false;
+	}
+	else {
+		string err = (string)"fileout.netcdf - "
+					 + "Failed to define netcdf version: variable "
+					 + _varname ;
+		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+
+		return false;
+	}
+}

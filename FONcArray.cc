@@ -129,6 +129,8 @@ FONcArray::convert( vector<string> embed )
     _dim_ids = new int[_ndims] ;
     _dim_sizes = new size_t[_ndims] ;
 
+    _chunksizes = new size_t[_ndims];
+
     Array::Dim_iter di = _a->dim_begin() ;
     Array::Dim_iter de = _a->dim_end() ;
     int dimnum = 0 ;
@@ -137,6 +139,20 @@ FONcArray::convert( vector<string> embed )
 	int size = _a->dimension_size( di, true ) ;
 	_dim_sizes[dimnum] = size ;
 	_nelements *= size ;
+
+	// Set COMPRESSION CHUNK SIZE for each dimension.
+	if ( size <= 1024 )
+	{
+		_chunksizes[dimnum] = size;
+	}
+	else
+	{
+		_chunksizes[dimnum] = 1024;
+    }
+
+	BESDEBUG( "fonc", "FONcArray::convert - dimension size: "
+	                      << size << " chunksize: " <<
+	                      _chunksizes[dimnum] << endl << *this << endl ) ;
 
 	// See if this dimension has already been defined. If it has the
 	// same name and same size as another dimension, then it is a
@@ -290,6 +306,8 @@ FONcArray::define( int ncid )
 	    FONcDim *fd = *i ;
 	    fd->define( ncid ) ;
 	    _dim_ids[dimnum] = fd->dimid() ;
+	    BESDEBUG( "fonc", "FONcArray::dim_id "
+	    		      << fd->dimid() << " size:" << fd->size() << endl ) ;
 	    dimnum++ ;
 	}
 
@@ -301,6 +319,32 @@ FONcArray::define( int ncid )
 			 + "Failed to define variable "
 			 + _varname ;
 	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+	}
+
+	if ( isNetCDF4() )
+	{
+		stax = nc_def_var_chunking( ncid, _varid, NC_CHUNKED, _chunksizes ) ;
+
+		if( stax != NC_NOERR )
+		{
+			string err = (string)"fileout.netcdf - "
+				+ "Failed to define chunking for variable "
+				+ _varname ;
+			FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
+
+		int shuffle = 0;
+		int deflate = 1;
+		int deflate_level = 4;
+		stax = nc_def_var_deflate( ncid, _varid, shuffle, deflate, deflate_level ) ;
+
+		if( stax != NC_NOERR )
+		{
+			string err = (string)"fileout.netcdf - "
+				+ "Failed to define compression deflation level for variable "
+				+ _varname ;
+			FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+		}
 	}
 
 	FONcAttributes::add_attributes( ncid, _varid, _a ) ;

@@ -49,6 +49,7 @@ using std::endl ;
 #include <BESDebug.h>
 
 #define RETURNAS_NETCDF "netcdf"
+#define RETURNAS_NETCDF4 "netcdf-4"
 
 /** @brief initialize the module by adding callbacks and registering
  * objects with the framework
@@ -74,10 +75,20 @@ FONcModule::initialize( const string &modname )
     BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF,
 						     new FONcTransmitter( ) ) ;
 
-    BESDEBUG( "fonc", "    adding fonc service to dap" << endl ) ;
+    BESDEBUG( "fonc", "    adding fonc netcdf service to dap" << endl ) ;
     BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE,
 						   DATA_SERVICE,
 						   RETURNAS_NETCDF ) ;
+
+    BESDEBUG( "fonc", "    adding " << RETURNAS_NETCDF4 << " transmitter"
+    		<< endl ) ;
+    BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF4,
+							new FONcTransmitter( ) ) ;
+
+    BESDEBUG( "fonc", "    adding fonc netcdf4 service to dap" << endl ) ;
+    BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE,
+							DATA_SERVICE,
+							RETURNAS_NETCDF4 ) ;
 
     BESDEBUG( "fonc", "    adding fonc debug context" << endl ) ;
     BESDebug::Register( "fonc" ) ;

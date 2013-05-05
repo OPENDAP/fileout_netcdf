@@ -64,6 +64,9 @@ using namespace ::libdap;
 
 #define FONC_TEMP_DIR "/tmp"
 
+#define RETURNAS_NETCDF "netcdf"
+#define RETURNAS_NETCDF4 "netcdf-4"
+
 string FONcTransmitter::temp_dir;
 
 /** @brief Construct the FONcTransmitter, adding it with name netcdf to be
@@ -78,7 +81,7 @@ string FONcTransmitter::temp_dir;
  * defaults to the macro definition FONC_TEMP_DIR.
  */
 FONcTransmitter::FONcTransmitter() :
-        BESBasicTransmitter()
+		BESBasicTransmitter()
 {
     add_method(DATA_SERVICE, FONcTransmitter::send_data);
 
@@ -178,6 +181,8 @@ void FONcTransmitter::send_data(DataDDS *dds, ConstraintEvaluator &eval, BESData
         throw BESInternalError(err, __FILE__, __LINE__);
     }
 #endif
+
+    string ncVersion = dhi.data[RETURN_CMD] ;
 
     ostream &strm = dhi.get_output_stream();
     if (!strm) {
@@ -305,12 +310,13 @@ void FONcTransmitter::send_data(DataDDS *dds, ConstraintEvaluator &eval, BESData
 
     // transform the OPeNDAP DataDDS to the netcdf file
     BESDEBUG("fonc", "FONcTransmitter::send_data - transforming into temporary file " << temp_full << endl);
+
     try {
-        FONcTransform ft(dds, dhi, temp_full);
+        FONcTransform ft(dds, dhi, temp_full, ncVersion);
         ft.transform();
 
         BESDEBUG("fonc", "FONcTransmitter::send_data - transmitting temp file " << temp_full << endl);
-        FONcTransmitter::return_temp_stream(temp_full, strm);
+        FONcTransmitter::return_temp_stream(temp_full, strm, ncVersion);
     }
     catch (BESError &e) {
         close(fd);
@@ -353,7 +359,9 @@ void FONcTransmitter::send_data(DataDDS *dds, ConstraintEvaluator &eval, BESData
  * @param strm C++ ostream to write the contents of the file to
  * @throws BESInternalError if problem opening the file
  */
-void FONcTransmitter::return_temp_stream(const string &filename, ostream &strm)
+void FONcTransmitter::return_temp_stream(const string &filename,
+					 ostream &strm,
+					 const string &ncVersion)
 {
     //  int bytes = 0 ;    // Not used; jhrg 3/16/11
     ifstream os;
@@ -376,7 +384,12 @@ void FONcTransmitter::return_temp_stream(const string &filename, ostream &strm)
             strm << "HTTP/1.0 200 OK\n";
             strm << "Content-type: application/octet-stream\n";
             strm << "Content-Description: " << "BES dataset" << "\n";
-            strm << "Content-Disposition: filename=" << filename << ".nc;\n\n";
+            if ( ncVersion == RETURNAS_NETCDF4 ) {
+            	strm << "Content-Disposition: filename=" << filename << ".nc4;\n\n";
+            }
+            else {
+            	strm << "Content-Disposition: filename=" << filename << ".nc;\n\n";
+            }
             strm << flush;
         }
         strm.write(block, nbytes);

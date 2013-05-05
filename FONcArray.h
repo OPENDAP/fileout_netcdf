@@ -70,6 +70,8 @@ private:
     // If the array is already a map in a grid, then we don't want to
     // define it or write it.
     bool			_dont_use_it ;
+    // The netcdf chunk sizes for each dimension of this array.
+    size_t *			_chunksizes;
 
     FONcDim *			find_dim( vector<string> &embed, const string &name, int size, bool ignore_size = false ) ;
 public:

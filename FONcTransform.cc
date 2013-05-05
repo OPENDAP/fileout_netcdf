@@ -52,6 +52,10 @@ using std::istringstream;
 #define ATTRIBUTE_SEPARATOR "."
 #define FONC_ORIGINAL_NAME "fonc_original_name"
 
+#define RETURNAS_NETCDF "netcdf"
+#define RETURNAS_NETCDF4 "netcdf-4"
+
+
 /** @brief Constructor that creates transformation object from the specified
  * DataDDS object to the specified file
  *
@@ -63,7 +67,7 @@ using std::istringstream;
  * @throws BESInternalError if dds provided is empty or not read, if the
  * file is not specified or failed to create the netcdf file
  */
-FONcTransform::FONcTransform(DDS *dds, BESDataHandlerInterface &dhi, const string &localfile) :
+FONcTransform::FONcTransform(DDS *dds, BESDataHandlerInterface &dhi, const string &localfile, const string &ncVersion) :
         _ncid(0), _dds(0)
 {
     if (!dds) {
@@ -76,6 +80,7 @@ FONcTransform::FONcTransform(DDS *dds, BESDataHandlerInterface &dhi, const strin
     }
     _localfile = localfile;
     _dds = dds;
+    _returnAs = ncVersion;
 
     // if there is a variable, attribute, dimension name that is not
     // compliant with netcdf naming conventions then we will create
@@ -137,6 +142,7 @@ void FONcTransform::transform()
             BaseType *v = *vi;
             BESDEBUG("fonc", "converting " << v->name() << endl);
             FONcBaseType *fb = FONcUtils::convert(v);
+            fb->setVersion( FONcTransform::_returnAs );
             _fonc_vars.push_back(fb);
             vector<string> embed;
             fb->convert(embed);
@@ -145,7 +151,16 @@ void FONcTransform::transform()
     BESDEBUG("fonc", *this << endl);
 
     // Open the file for writing
-    int stax = nc_create(_localfile.c_str(), NC_CLOBBER, &_ncid);
+    int stax;
+
+
+    if ( FONcTransform::_returnAs == RETURNAS_NETCDF4 ) {
+    	stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &_ncid);
+    }
+    else {
+    	stax = nc_create(_localfile.c_str(), NC_CLOBBER, &_ncid);
+    }
+
     if (stax != NC_NOERR) {
         string err = (string) "File out netcdf, " + "unable to open file " + _localfile;
         FONcUtils::handle_error(stax, err, __FILE__, __LINE__);

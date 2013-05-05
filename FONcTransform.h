@@ -65,16 +65,19 @@ private:
     int				_ncid ;
     DDS				*_dds ;
     string			_localfile ;
+    string			_returnAs;
     vector<FONcBaseType *>	_fonc_vars ;
 
 public:
     				FONcTransform( DDS *dds,
 					       BESDataHandlerInterface &dhi,
-					       const string &localfile ) ;
+					       const string &localfile,
+					       const string &netcdfVersion) ;
     virtual			~FONcTransform() ;
     virtual void		transform( ) ;
 
     virtual void		dump( ostream &strm ) const ;
+
 } ;
 
 #endif // FONcTransfrom_h_
