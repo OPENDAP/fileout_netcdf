@@ -59,26 +59,32 @@ class FONcBaseType ;
  * more information on the transformation please refer to the OpeNDAP
  * documents wiki.
  */
-class FONcTransform : public BESObj
-{
+class FONcTransform: public BESObj {
 private:
-    int				_ncid ;
-    DDS				*_dds ;
-    string			_localfile ;
-    string			_returnAs;
-    vector<FONcBaseType *>	_fonc_vars ;
+	int _ncid;
+	DDS *_dds;
+	string _localfile;
+	string _returnAs;
+	vector<FONcBaseType *> _fonc_vars;
 
 public:
-    				FONcTransform( DDS *dds,
-					       BESDataHandlerInterface &dhi,
-					       const string &localfile,
-					       const string &netcdfVersion) ;
-    virtual			~FONcTransform() ;
-    virtual void		transform( ) ;
+	/**
+	 * Build a FONcTransform object. By default it builds a netcdf 3 file; pass "netcdf-4"
+	 * to get a netcdf 4 file.
+	 *
+	 * @note added default value to fourth param to preserve the older API. 5/6/13 jhrg
+	 * @param dds
+	 * @param dhi
+	 * @param localfile
+	 * @param netcdfVersion
+	 */
+	FONcTransform(DDS *dds, BESDataHandlerInterface &dhi, const string &localfile, const string &netcdfVersion = "netcdf");
+	virtual ~FONcTransform();
+	virtual void transform();
 
-    virtual void		dump( ostream &strm ) const ;
+	virtual void dump(ostream &strm) const;
 
-} ;
+};
 
 #endif // FONcTransfrom_h_
 

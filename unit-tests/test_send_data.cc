@@ -184,6 +184,7 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
     // transform the OPeNDAP DataDDS to the netcdf file
     BESDEBUG("fonc", "FONcTransmitter::send_data - transforming into temporary file " << temp_full << endl);
     try {
+    	// this ctor defaults to netcdf 3 output
         FONcTransform ft(dds, dhi, temp_full);
         ft.transform();
 
