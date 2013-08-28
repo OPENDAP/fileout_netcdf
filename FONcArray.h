@@ -39,6 +39,8 @@ using namespace libdap ;
 #include "FONcBaseType.h"
 #include "FONcDim.h"
 
+class FONcMap;
+
 /** @brief A DAP Array with file out netcdf information included
  *
  * This class represents a DAP Array with additional information
@@ -72,6 +74,11 @@ private:
     bool			_dont_use_it ;
     // The netcdf chunk sizes for each dimension of this array.
     size_t *			_chunksizes;
+    // This is vector holds instances pf FONcMap* that wrap existing Array
+    // objects that are pushed onto the global FONcGrid::Maps vector. Those
+    // are never freed; I think the general pattern is to use the reference
+    // counting pointers with FONcGrid::Maps. jhrg 8/28/13
+    vector<FONcMap*> 	_grid_maps;
 
     FONcDim *			find_dim( vector<string> &embed, const string &name, int size, bool ignore_size = false ) ;
 public:
