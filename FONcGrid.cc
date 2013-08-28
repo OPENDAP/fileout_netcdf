@@ -80,6 +80,10 @@ FONcGrid::FONcGrid( BaseType *b )
  */
 FONcGrid::~FONcGrid()
 {
+#if 0
+  // Since this is a dtor and _maps is going to go away, no need
+  // to erase. ...wouldn't rewrite, but I was hunting memory leaks
+  // jhrg 8/28/13
     bool done = false ;
     while( !done )
     {
@@ -97,6 +101,27 @@ FONcGrid::~FONcGrid()
 	    _maps.erase( i ) ;
 	}
     }
+#endif
+
+    vector<FONcMap *>::iterator i = _maps.begin() ;
+    while( i != _maps.end() )
+    {
+	// These are the FONc types, not the actual ones
+        (*i)->decref() ;
+        ++i;
+    }
+
+#if 0
+    // Added jhrg 8/28/13
+    i = Maps.begin() ;
+    while( i != Maps.end() )
+    {
+        (*i)->decref() ;
+        ++i;
+    }
+#endif
+    // Added jhrg 8/28/13
+    delete _arr;
 }
 
 /** @brief convert the DAP Grid to a set of embedded variables

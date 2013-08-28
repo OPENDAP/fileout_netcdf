@@ -52,7 +52,7 @@ vector<FONcDim *> FONcArray::Dimensions ;
 FONcArray::FONcArray( BaseType *b )
     : FONcBaseType(), _a( 0 ), _array_type( NC_NAT ), _ndims( 0 ),
       _actual_ndims( 0 ), _nelements( 1 ), _dim_ids( 0 ), _dim_sizes( 0 ),
-      _str_data( 0 ), _dont_use_it( false )
+      _str_data( 0 ), _dont_use_it( false ), _chunksizes( 0 )
 {
     _a = dynamic_cast<Array *>(b) ;
     if( !_a )
@@ -92,6 +92,12 @@ FONcArray::~FONcArray()
 	    _dims.erase( i ) ;
 	}
     }
+
+    // Added jhrg 8/28/13
+    delete[] _dim_ids;
+    delete[] _dim_sizes;
+    delete[] _str_data;
+    delete[] _chunksizes;
 }
 
 /** @brief Converts the DAP Array to a FONcArray
@@ -148,8 +154,8 @@ FONcArray::convert( vector<string> embed )
 	else
 	{
 		_chunksizes[dimnum] = 1024;
-    }
-
+	}
+	
 	BESDEBUG( "fonc", "FONcArray::convert - dimension size: "
 	                      << size << " chunksize: " <<
 	                      _chunksizes[dimnum] << endl << *this << endl ) ;
