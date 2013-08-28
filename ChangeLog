@@ -1,3 +1,71 @@
+2013-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Memory leak fixes.
+
+	M    FONcArray.cc
+	M    FONcGrid.cc
+	M    FONcArray.h
+
+2013-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Working on memoery issues... One remains.
+
+	M    FONcUtils.cc
+	M    FONcArray.cc
+	M    FONcGrid.cc
+
+2013-05-10  James Gallagher <jgallagher@opendap.org>
+
+	ignored the generated conf file
+
+2013-05-06  James Gallagher <jgallagher@opendap.org>
+
+	Modified the FONcTransform ctor so that the old three-arg version is supported. This means old code, like the unit tests, works without modification.
+
+2013-05-05  Dan Holloway <dholloway@opendap.org>
+
+	Updated to create netcdf4 files when transmitter selected is netcdf-4
+
+2013-04-30  James Gallagher <jgallagher@opendap.org>
+
+	Added test_send_data.h to SRCs. This should fix the distcheck target.
+
+2013-02-03  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-02-03  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-02-03  James Gallagher <jgallagher@opendap.org>
+
+	Fixed the tests; they used the dap_module library that BES used to produce but which is now a module. Added stuff to svn:ignore
+
+2013-01-20  James Gallagher <jgallagher@opendap.org>
+
+	Merge of the hyrax 1.8 branch
+
+	_M   .
+	M    configure.ac
+	MM   FONcTransform.cc
+	M    FONcTransmitter.cc
+	M    NEWS
+	M    fileout_netcdf.spec
+	M    OSX_Resources/ReadMe.txt
+
+2012-10-29  muqun
+
+	Updating the info. for UINT16 mapping.
+
+2012-10-29  muqun
+
+	Updating the two tests that are affected by the latest correction of uint16 to int mapping. Some values in hdf4.dump are corrected
+
+2012-10-29  muqun
+
+	 Mainly makes the mapping of variable type UINT16 to netCDF NC_INT. Previously UINT16 is mapped to NC_SHORT for variables, to NC_INT for attributes. The mapping of UINT16 to NC_INT causes the overflow and the inconsistent mapping of datatype for variable and attribute. I also add an error checking for nc_enddef to detect any defined mode failure earlier. Tested with hyrax 1.8.4
+
 2012-10-29  Muqun Yang <myang6@hdfgroup.org>
         Changing mapping of UINT16 from NC_SHORT to NC_INT for variables since that will 
         cause overflow. This also makes it consistent for the mapping of attributes.
