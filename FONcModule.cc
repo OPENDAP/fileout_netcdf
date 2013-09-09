@@ -90,6 +90,7 @@ FONcModule::initialize( const string &modname )
 							DATA_SERVICE,
 							RETURNAS_NETCDF4 ) ;
 
+
     BESDEBUG( "fonc", "    adding fonc debug context" << endl ) ;
     BESDebug::Register( "fonc" ) ;
 
@@ -113,8 +114,13 @@ FONcModule::terminate( const string &modname )
 		     << endl ) ;
     BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF ) ;
 
+    BESDEBUG( "fonc", "    removing " << RETURNAS_NETCDF4 << " transmitter "
+    		      << endl ) ;
+
+	BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF4 ) ;
+
     BESDEBUG( "fonc", "    removing " << modname << " request handler "
-		      << endl ) ;
+    		<< endl ) ;
     BESRequestHandler *rh =
 	BESRequestHandlerList::TheList()->remove_handler( modname ) ;
     if( rh ) delete rh ;
