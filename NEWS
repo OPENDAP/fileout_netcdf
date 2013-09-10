@@ -3,6 +3,7 @@ Version 1.2.0
 Updated to create netcdf4 files when transmitter selected is netcdf-4. 
 Fixed UNIT16 mappings. 
 Improvements to tests and production rules
+Repaired an "on exit" memory leak.
 
 Version 1.1.3
 

@@ -1,3 +1,30 @@
+2013-09-09  Dan Holloway <dholloway@opendap.org>
+
+	Added del_transmitter(NETCDF4) to terminate method.
+
+2013-08-28  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	fileout_nectdf: Updating version number, changelog, etc. for pending Hyrax 1.9 release
+
+2013-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Memory leak fixes.
+
+	M    FONcArray.cc
+	M    FONcGrid.cc
+	M    FONcArray.h
+
+2013-08-28  James Gallagher <jgallagher@opendap.org>
+
+	Working on memoery issues... One remains.
+
+	M    FONcUtils.cc
+	M    FONcArray.cc
+	M    FONcGrid.cc
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2013-08-28  James Gallagher <jgallagher@opendap.org>
 
 	Memory leak fixes.
