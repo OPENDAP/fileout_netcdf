@@ -22,9 +22,6 @@
 	M    FONcArray.cc
 	M    FONcGrid.cc
 
-;; Local Variables:
-;; coding: utf-8
-;; End:
 2013-08-28  James Gallagher <jgallagher@opendap.org>
 
 	Memory leak fixes.
