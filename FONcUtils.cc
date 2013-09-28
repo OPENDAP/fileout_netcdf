@@ -55,8 +55,6 @@ string FONcUtils::name_prefix = "" ;
 void
 FONcUtils::reset()
 {
-  cerr << "In FONcUtils::reset()" << endl;
-
     FONcArray::Dimensions.clear() ;
     FONcGrid::Maps.clear() ;
     FONcDim::DimNameNum = 0 ;
