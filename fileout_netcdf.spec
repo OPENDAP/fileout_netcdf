@@ -1,17 +1,17 @@
 Summary: Return a NetCDF File for a DAP Data response
 Name: fileout_netcdf
-Version: 1.2.0
+Version: 1.2.1
 Release: 1
 License: LGPLv2+
 Group: System Environment/Daemons
 URL: http://www.opendap.org/
 Source0: http://www.opendap.org/pub/source/%{name}-%{version}.tar.gz
-Requires: libdap >= 3.11.0
+Requires: libdap >= 3.12.1
 Requires: netcdf >= 3.6
 Requires: bes >= 3.9.0
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.11.0
+BuildRequires:   libdap-devel >= 3.12.1
 BuildRequires:   netcdf-devel >= 3.6
 BuildRequires:   bes-devel >= 3.9.0
 

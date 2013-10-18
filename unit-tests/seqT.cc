@@ -54,7 +54,7 @@ public:
     virtual bool read()
     {
         set_read_p(true);
-        return false;
+        return true;
     }
 };
 
