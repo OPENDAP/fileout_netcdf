@@ -1,3 +1,35 @@
+2013-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Edits to match the new, sane, semantics for BaseType::read(). True
+	now means done/eof and flase means more data to read (more
+	instances for a sequence). All the tests pass.
+
+2013-10-01  James Gallagher <jgallagher@opendap.org>
+
+	Updated the FSF address in the copyright headers
+
+2013-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Removed some debugging code that got left in by mistake.
+
+2013-09-26  James Gallagher <jgallagher@opendap.org>
+
+	removed -fno-defer-pop from all copies of Makefile.am since the
+	new OSX compiler prints warnings about it and it seems to not make
+	a difference with newer g++ versions.
+
+2013-09-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	fileout_netcdf: Removed the 'mark' from ChangeLog
+
+2013-09-10  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	fileout_netcdf: Updating ChangeLog and NEWS for Hyrax 1.9
+
+2013-09-09  Dan Holloway <dholloway@opendap.org>
+
+	Added del_transmitter(NETCDF4) to terminate method.
+
 2013-09-09  Dan Holloway <dholloway@opendap.org>
 
 	Added del_transmitter(NETCDF4) to terminate method.

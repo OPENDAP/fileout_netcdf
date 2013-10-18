@@ -1,3 +1,7 @@
+Version 1.2.1
+
+Fixed the behavior of BaseType::read()
+
 Version 1.2.0
 
 Updated to create netcdf4 files when transmitter selected is netcdf-4. 
