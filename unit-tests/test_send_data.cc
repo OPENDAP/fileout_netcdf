@@ -5,6 +5,7 @@
  *      Author: jimg
  */
 
+#include <unistd.h>
 #include <sys/types.h>                  // For umask
 #include <sys/stat.h>
 
