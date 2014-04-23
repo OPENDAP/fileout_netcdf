@@ -1,3 +1,27 @@
+2014-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Fix for OSX 10.9
+
+	M    unit-tests/test_send_data.cc
+
+2013-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.9.1
+
+	M    configure.ac
+	M    INSTALL
+	M    NEWS
+	M    fileout_netcdf.spec
+	M    ChangeLog
+	M    README
+
+2013-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Edits to match the new, sane, semantics for BaseType::read(). True now means done/eof and flase means more data to read (more instances for a sequence). All the tests pass.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2013-10-11  James Gallagher <jgallagher@opendap.org>
 
 	Edits to match the new, sane, semantics for BaseType::read(). True
