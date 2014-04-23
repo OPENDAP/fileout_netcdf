@@ -1,3 +1,7 @@
+Version 1.2.2
+
+Updated tests
+
 Version 1.2.1
 
 Fixed the behavior of BaseType::read()
