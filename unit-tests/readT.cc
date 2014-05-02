@@ -15,6 +15,7 @@ using std::ofstream;
 #include <DDS.h>
 #include <Structure.h>
 #include <Sequence.h>
+#include <ConstraintEvaluator.h>
 
 using namespace libdap;
 

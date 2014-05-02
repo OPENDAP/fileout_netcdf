@@ -14,8 +14,9 @@ using std::ostringstream;
 #include <Sequence.h>
 #include <Int32.h>
 #include <Str.h>
+#include <ConstraintEvaluator.h>
 
-using namespace ::libdap;
+using namespace libdap;
 
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
