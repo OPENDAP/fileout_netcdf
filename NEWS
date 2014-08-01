@@ -1,3 +1,7 @@
+Version 1.2.3
+
+Memory leak fixes for CE functions.
+
 Version 1.2.2
 
 Updated tests

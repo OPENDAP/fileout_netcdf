@@ -52,20 +52,18 @@ using namespace libdap;
  */
 class FONcTransmitter: public BESBasicTransmitter {
 private:
-    static void return_temp_stream(const string &filename,
-				   ostream &strm,
-				   const string &ncVersion);
-    static string temp_dir;
+	static string temp_dir;
+
+	static void return_temp_stream(const string &filename, ostream &strm, const string &ncVersion);
+
 public:
-    FONcTransmitter();
-    virtual ~FONcTransmitter()
-    {
-    }
+	FONcTransmitter();
+	virtual ~FONcTransmitter() {}
 
-    static void send_data(BESResponseObject *obj, BESDataHandlerInterface &dhi);
-    static void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
-
+	static void send_data(BESResponseObject *obj, BESDataHandlerInterface &dhi);
+#if 0
+	static void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
+#endif
 };
 
 #endif // A_FONcTransmitter_h
-
