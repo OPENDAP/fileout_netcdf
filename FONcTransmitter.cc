@@ -156,13 +156,25 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     // now we need to read the data
     BESDEBUG("fonc", "FONcTransmitter::send_data - reading data into DataDDS" << endl);
 
+    // ADB: remember when we're using a temp DDS
+    // bool using_temp_dds = false; See comment below about set_dds(). jhrg 8/8/14
+
     try {
         // Handle *functional* constraint expressions specially
         if (eval.function_clauses()) {
             BESDEBUG("fonc", "processing a functional constraint clause(s)." << endl);
             DataDDS *tmp_dds = eval.eval_function_clauses(*dds);
+            // I think setting this fixes the issue Aron (ADB) reported. jhrg 8/8/14
+            bdds->set_dds(tmp_dds);
             delete dds;
             dds = tmp_dds;
+            // ADB: don't delete DDS here because it will already be
+            // deleted by ~BESDataDDSResponse().
+            // delete dds;
+
+            // ADB: instead, remember that you're using a temp and
+            // delete it later
+            //using_temp_dds = true;
         }
         else {
             // Iterate through the variables in the DataDDS and read
@@ -176,13 +188,10 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         }
     }
     catch (Error &e) {
-        string em = e.get_error_message();
-        string err = "Failed to read data: " + em;
-        throw BESInternalError(err, __FILE__, __LINE__);
+        throw BESInternalError("Failed to read data: " + e.get_error_message(), __FILE__, __LINE__);
     }
     catch (...) {
-        string err = "Failed to read data: Unknown exception caught";
-        throw BESInternalError(err, __FILE__, __LINE__);
+        throw BESInternalError("Failed to read data: Unknown exception caught", __FILE__, __LINE__);
     }
 
     string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
@@ -211,16 +220,23 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     catch (BESError &e) {
         close(fd);
         (void) unlink(&temp_full[0]);
+        // ADB: clean-up temp dds
+        // if (using_temp_dds) delete dds; See comment above. jhrg 8/8/14
         throw;
     }
     catch (...) {
         close(fd);
         (void) unlink(&temp_full[0]);
+        // ADB: clean-up temp dds
+        //if (using_temp_dds) delete dds;
+
         throw BESInternalError("File out netcdf, was not able to transform to netcdf, unknown error", __FILE__, __LINE__);
     }
 
     close(fd);
     (void) unlink(&temp_full[0]);
+    // ADB: clean-up temp dds
+    //if (using_temp_dds) delete dds;
 
     BESDEBUG("fonc", "FONcTransmitter::send_data - done transmitting to netcdf" << endl);
 }
