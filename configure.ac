@@ -1,17 +1,23 @@
 # -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT(fileout_netcdf, 1.2.3, opendap-tech@opendap.org)
+AC_PREREQ(2.69)
+AC_INIT(fileout_netcdf, 1.2.4, opendap-tech@opendap.org)
 AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([conf])
 
-AM_INIT_AUTOMAKE(1.10)
+AM_INIT_AUTOMAKE([subdir-objects foreign check-news])
 
 # The handler is a shared object library, so we don't normally need
 # the static lib. Override this default by specifying `--enable-static',
-# which can make running unit tests with valgrind far more pleasant. 
-AM_DISABLE_STATIC
+# which can make running unit tests with valgrind far more pleasant.
+#
+# So, using this is great because it makes for a smaller build, but it 
+# breaks the tests, esp. as automake is now issuing a warning when 
+# subdir-objects is not used and subdir-objects breaks distcheck when
+# sources are specified using ../ or things like that in a subdir's 
+# Makefile. So I'm removing it. jhrg 8/8/14
+# AM_DISABLE_STATIC
 
 LT_INIT
 

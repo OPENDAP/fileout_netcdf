@@ -1,3 +1,24 @@
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed old code and fixed a typo that introduced a double-free
+	bug. This came from patches sent in by Aron (ADB)
+
+2014-08-01  James Gallagher <jgallagher@opendap.org>
+
+	Release 1.2.3 checklist
+
+	M    ChangeLog
+	M    INSTALL
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    fileout_netcdf.spec
+
+2014-07-30  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a memory leak in the FONcTransmitter.cc code that was
+	discovered in the BESAsciiTransmit.cc file (see ticket 2240).
+
 2014-07-30  James Gallagher <jgallagher@opendap.org>
 
 	Fixed a memory leak in the FONcTransmitter.cc code that was

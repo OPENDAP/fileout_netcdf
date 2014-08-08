@@ -5,7 +5,7 @@
 #
 # $Id: Makefile.am 19627 2008-09-18 17:18:05Z jimg $
 
-AUTOMAKE_OPTIONS = foreign check-news
+# AUTOMAKE_OPTIONS = ; Moved to configure.ac
 
 ACLOCAL_AMFLAGS = -I conf
 
