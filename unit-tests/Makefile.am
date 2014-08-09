@@ -1,9 +1,10 @@
 # Tests
 
-AUTOMAKE_OPTIONS = foreign
+# Options now supplied in configure.ac
+# AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS)
-AM_LDADD = $(BES_DAP_LIBS)
+AM_LDADD = $(BES_DAP_LIBS) ../libfonc_module.la
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
@@ -26,14 +27,18 @@ UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 	structT00 arrayT structT01 structT02	\
 	arrayT01 gridT seqT attrT namesT readT
 
-SRCS = ../FONcTransform.cc ../FONcUtils.cc	\
-	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	\
-	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		\
-	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		\
-	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			\
-	../FONcAttributes.cc test_send_data.cc test_send_data.h
+SRCS = test_send_data.cc test_send_data.h
 
-# ../FONcTransmitter.cc
+# See the long note about this in configure.ac where I removed 
+# DISABLE_STATIC. Also note that libfonc_netcdf.la has been added
+# to AM_LDADD above. jhrg 8/8/14
+# 
+# SRCS = ../FONcTransform.cc ../FONcUtils.cc	
+# 	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	
+# 	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		
+# 	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		
+# 	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			
+# 	../FONcAttributes.cc test_send_data.cc test_send_data.h
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 
