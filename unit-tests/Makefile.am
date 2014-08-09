@@ -6,8 +6,6 @@
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS)
 AM_LDADD = $(BES_DAP_LIBS)
 
-#  ../libfonc_module.la
-
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align -Werror
@@ -31,17 +29,9 @@ UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 
 SRCS = test_send_data.cc test_send_data.h
 
-# See the long note about this in configure.ac where I removed 
-# DISABLE_STATIC. Also note that libfonc_netcdf.la has been added
-# to AM_LDADD above. jhrg 8/8/14
-# 
-# SRCS = ../FONcTransform.cc ../FONcUtils.cc	
-# 	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	
-# 	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		
-# 	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		
-# 	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			
-# 	../FONcAttributes.cc test_send_data.cc test_send_data.h
-
+# I replaced the SRCS variable and its references to ../<file>.cc
+# with this to work around a problem in automake 1.14 when using 
+# subdir-objects.
 OBJS =  ../FONcTransform.o ../FONcUtils.o \
 	../FONcByte.o ../FONcStr.o ../FONcShort.o ../FONcInt.o \
 	../FONcFloat.o ../FONcDouble.o ../FONcStructure.o \
