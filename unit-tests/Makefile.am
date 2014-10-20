@@ -4,7 +4,7 @@
 # AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS)
-AM_LDADD = $(BES_DAP_LIBS) ../libfonc_module.la
+AM_LDADD = $(BES_DAP_LIBS)
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
@@ -29,57 +29,55 @@ UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
 
 SRCS = test_send_data.cc test_send_data.h
 
-# See the long note about this in configure.ac where I removed 
-# DISABLE_STATIC. Also note that libfonc_netcdf.la has been added
-# to AM_LDADD above. jhrg 8/8/14
-# 
-# SRCS = ../FONcTransform.cc ../FONcUtils.cc	
-# 	../FONcByte.cc ../FONcStr.cc ../FONcShort.cc ../FONcInt.cc	
-# 	../FONcFloat.cc ../FONcDouble.cc ../FONcStructure.cc		
-# 	../FONcGrid.cc ../FONcArray.cc ../FONcSequence.cc		
-# 	../FONcBaseType.cc ../FONcDim.cc ../FONcMap.cc			
-# 	../FONcAttributes.cc test_send_data.cc test_send_data.h
+# I replaced the SRCS variable and its references to ../<file>.cc
+# with this to work around a problem in automake 1.14 when using 
+# subdir-objects.
+OBJS =  ../FONcTransform.o ../FONcUtils.o \
+	../FONcByte.o ../FONcStr.o ../FONcShort.o ../FONcInt.o \
+	../FONcFloat.o ../FONcDouble.o ../FONcStructure.o \
+	../FONcGrid.o ../FONcArray.o ../FONcSequence.o \
+	../FONcBaseType.o ../FONcDim.o ../FONcMap.o ../FONcAttributes.o
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 
-simpleT00_LDADD = $(AM_LDADD)
+simpleT00_LDADD = $(OBJS) $(AM_LDADD)
 
 simpleT01_SOURCES = simpleT01.cc $(SRCS)
-simpleT01_LDADD = $(AM_LDADD)
+simpleT01_LDADD = $(OBJS) $(AM_LDADD)
 
 simpleT02_SOURCES = simpleT02.cc $(SRCS)
-simpleT02_LDADD = $(AM_LDADD)
+simpleT02_LDADD = $(OBJS) $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc $(SRCS)
 arrayT_CPPFLAGS = $(AM_CPPFLAGS)
-arrayT_LDADD = $(AM_LDADD)
+arrayT_LDADD = $(OBJS) $(AM_LDADD)
 
 arrayT01_SOURCES = arrayT01.cc $(SRCS)
-arrayT01_LDADD = $(AM_LDADD)
+arrayT01_LDADD = $(OBJS) $(AM_LDADD)
 
 structT00_SOURCES = structT00.cc $(SRCS)
-structT00_LDADD = $(AM_LDADD)
+structT00_LDADD = $(OBJS) $(AM_LDADD)
 
 structT01_SOURCES = structT01.cc $(SRCS)
-structT01_LDADD = $(AM_LDADD)
+structT01_LDADD = $(OBJS) $(AM_LDADD)
 
 structT02_SOURCES = structT02.cc $(SRCS)
-structT02_LDADD = $(AM_LDADD)
+structT02_LDADD = $(OBJS) $(AM_LDADD)
 
 attrT_SOURCES = attrT.cc $(SRCS)
-attrT_LDADD = $(AM_LDADD)
+attrT_LDADD = $(OBJS) $(AM_LDADD)
 
 gridT_SOURCES = gridT.cc $(SRCS)
-gridT_LDADD = $(AM_LDADD)
+gridT_LDADD = $(OBJS) $(AM_LDADD)
 
 namesT_SOURCES = namesT.cc $(SRCS)
-namesT_LDADD = $(AM_LDADD)
+namesT_LDADD = $(OBJS) $(AM_LDADD)
 
 seqT_SOURCES = seqT.cc $(SRCS)
-seqT_LDADD = $(AM_LDADD)
+seqT_LDADD = $(OBJS) $(AM_LDADD)
 
 readT_SOURCES = readT.cc $(SRCS) ReadTypeFactory.cc ReadTypeFactory.h ReadSequence.cc ReadSequence.h
-readT_LDADD = $(AM_LDADD) $(DAP_CLIENT_LIBS)
+readT_LDADD = $(OBJS) $(AM_LDADD) $(DAP_CLIENT_LIBS)
 
 ############## Autotest follows #####################
 

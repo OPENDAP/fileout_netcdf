@@ -11,13 +11,7 @@ AM_INIT_AUTOMAKE([subdir-objects foreign check-news])
 # The handler is a shared object library, so we don't normally need
 # the static lib. Override this default by specifying `--enable-static',
 # which can make running unit tests with valgrind far more pleasant.
-#
-# So, using this is great because it makes for a smaller build, but it 
-# breaks the tests, esp. as automake is now issuing a warning when 
-# subdir-objects is not used and subdir-objects breaks distcheck when
-# sources are specified using ../ or things like that in a subdir's 
-# Makefile. So I'm removing it. jhrg 8/8/14
-# AM_DISABLE_STATIC
+AM_DISABLE_STATIC
 
 LT_INIT
 

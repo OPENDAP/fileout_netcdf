@@ -1,5 +1,38 @@
 2014-08-08  James Gallagher <jgallagher@opendap.org>
 
+	distcheck fixes for linux
+
+	M    configure.ac
+	M    unit-tests/Makefile.am
+
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
+	test fix for make check - works on OSX
+
+	M    unit-tests/Makefile.am
+
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Version 1.2.4
+
+	M    ChangeLog
+	M    INSTALL
+	M    Makefile.am
+	M    NEWS
+	M    README
+	M    configure.ac
+	M    fileout_netcdf.spec
+	M    unit-tests/Makefile.am
+
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed old code and fixed a typo that introduced a double-free bug. This came from patches sent in by Aron (ADB)
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
+2014-08-08  James Gallagher <jgallagher@opendap.org>
+
 	Removed old code and fixed a typo that introduced a double-free
 	bug. This came from patches sent in by Aron (ADB)
 
