@@ -1,10 +1,18 @@
 # Tests
 
-# Options now supplied in configure.ac
-# AUTOMAKE_OPTIONS = foreign
+if DAP_MODULES
+AM_CPPFLAGS = -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap -I$(top_srcdir)/modules/fileout_netcdf $(NC_CPPFLAGS) $(DAP_CFLAGS)
+LIBADD = $(NC_LDFLAGS) $(NC_LIBS) $(BES_DISPATCH_LIB) $(BES_EXTRA_LIBS) $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS)
+else
+AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS) # or wahtever was set here or in ..._CPPFLAGS
+LIBADD = $(BES_DAP_LIBS)      # and ..._LIBADD
+endif
 
-AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS)
-AM_LDADD = $(BES_DAP_LIBS)
+# AM_CPPFLAGS =  $(BES_CPPFLAGS)
+# There actually is no AM_LDADD in automake, so we should probably get
+# rid of this and use a name that's not so confusing - makes it seem
+# like automake does something to manage this, but it doesn't
+AM_LDADD = $(LIBADD)
 
 # These are not used by automake but are often useful for certain types of
 # debugging. Set CXXFLAGS to this in the nightly build using export ...
@@ -15,7 +23,8 @@ DISTCLEANFILES = test_config.h
 
 CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
-EXTRA_DIST = data baselines test_config.h.in bes.conf.in fonc_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4
+EXTRA_DIST = data baselines test_config.h.in bes.conf.in fonc_handlerTest.at \
+$(TESTSUITE) atlocal.in $(srcdir)/package.m4
 
 check_PROGRAMS = $(UNIT_TESTS)
 
@@ -39,7 +48,6 @@ OBJS =  ../FONcTransform.o ../FONcUtils.o \
 	../FONcBaseType.o ../FONcDim.o ../FONcMap.o ../FONcAttributes.o
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
-
 simpleT00_LDADD = $(OBJS) $(AM_LDADD)
 
 simpleT01_SOURCES = simpleT01.cc $(SRCS)
