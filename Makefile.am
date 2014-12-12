@@ -40,8 +40,7 @@ FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
 	FONcGrid.h FONcSequence.h FONcByte.h FONcBaseType.h		\
 	FONcDim.h FONcMap.h FONcAttributes.h
 
-EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec	\
-	doxy.conf
+EXTRA_DIST = COPYRIGHT COPYING fonc.conf.in fileout_netcdf.spec	doxy.conf
 
 CLEANFILES = *~ fonc.conf
 
