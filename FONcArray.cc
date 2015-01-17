@@ -41,6 +41,8 @@
 
 vector<FONcDim *> FONcArray::Dimensions;
 
+const int MAX_CHUNK_SIZE = 1024;
+
 /** @brief Constructor for FONcArray that takes a DAP Array
  *
  * This constructor takes a DAP BaseType and makes sure that it is a DAP
@@ -155,11 +157,11 @@ void FONcArray::convert(vector<string> embed)
 		_nelements *= size;
 
 		// Set COMPRESSION CHUNK SIZE for each dimension.
-		if (size <= 1024) {
+		if (size <= MAX_CHUNK_SIZE) {
 			_chunksizes[dimnum] = size;
 		}
 		else {
-			_chunksizes[dimnum] = 1024;
+			_chunksizes[dimnum] = MAX_CHUNK_SIZE;
 		}
 
 		BESDEBUG( "fonc", "FONcArray::convert - dimension size: "
