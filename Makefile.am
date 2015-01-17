@@ -63,13 +63,6 @@ uninstall-local:
 fonc.conf: fonc.conf.in $(top_srcdir)/config.status
 	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > fonc.conf
 
-# Not nearly as clean as it could be, but this removes .svn directories
-# in subdirs.
-dist-hook:
-	rm -rf `find $(distdir) -name .svn`
-
-# docs
-
 .PHONY: docs
 docs:
 	srcdir=$(srcdir) doxygen $(srcdir)/doxy.conf
