@@ -3,7 +3,7 @@ dimensions:
 	dim1 = 2 ;
 	dim2 = 5 ;
 variables:
-	byte byte_array(dim1, dim2) ;
+	short byte_array(dim1, dim2) ;
 	short i16_array(dim1, dim2) ;
 	int i32_array(dim1, dim2) ;
 data:

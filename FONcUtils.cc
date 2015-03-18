@@ -106,7 +106,7 @@ FONcUtils::get_nc_type( BaseType *element )
 
     string var_type = element->type_name() ;
     if( var_type == "Byte" )        	// check this for dods type
-	x_type = NC_BYTE ;
+	x_type = NC_SHORT ;
     else if( var_type == "String" )
 	x_type = NC_CHAR ;
     else if( var_type == "Int16" )
