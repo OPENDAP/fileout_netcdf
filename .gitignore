@@ -44,6 +44,7 @@ aclocal.m4
 libtool
 atconfig
 atlocal
+fonc.conf
 
 ## fileout_netcdf specific files
 
