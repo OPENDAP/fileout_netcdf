@@ -69,6 +69,38 @@ using namespace ::libdap;
 
 string FONcTransmitter::temp_dir;
 
+#if 0
+// I added this because I was hoping to make the byte --> short option added
+// via a pull request from NSIDC as controllable via a conf file parameter.
+// jhrg 4/1/15
+/**
+ * Look at the BES configuration keys and see if key_name is included
+ * and if so, what its value is.
+ *
+ * @todo Build a collection of BES utilities for handlers and include this
+ * in it. I copied this code from dapreader DapRequestHandler.cc
+ *
+ * @param key_name
+ * @param key_value
+ * @param is_key_set
+ */
+static void read_key_value(const std::string &key_name, bool &key_value, bool &is_key_set)
+{
+    if (is_key_set == false) {
+        bool key_found = false;
+        string doset;
+        TheBESKeys::TheKeys()->get_value(key_name, doset, key_found);
+        if (key_found) {
+            // It was set in the conf file
+            is_key_set = true;
+
+            doset = BESUtil::lowercase(doset);
+            key_value = (doset == "true" || doset == "yes");
+        }
+    }
+}
+#endif
+
 /** @brief Construct the FONcTransmitter, adding it with name netcdf to be
  * able to transmit a data response
  *
