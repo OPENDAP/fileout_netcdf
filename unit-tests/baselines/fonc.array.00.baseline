@@ -19,7 +19,7 @@ dimensions:
 	str_dim3 = 6 ;
 	str_array_len = 10 ;
 variables:
-	byte byte_array(byte_dim1, byte_dim2) ;
+	short byte_array(byte_dim1, byte_dim2) ;
 	short i16_array(i16_dim1, i16_dim2) ;
 	int i32_array(i32_dim1, i32_dim2) ;
 	int ui16_array(ui16_dim1, ui16_dim2) ;

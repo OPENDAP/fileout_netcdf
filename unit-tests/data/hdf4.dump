@@ -8,17 +8,17 @@ variables:
 		NSCAT_Rev_20.WVC_Lat:fonc_original_name = "NSCAT Rev 20.WVC_Lat" ;
 	int NSCAT_Rev_20.WVC_Lon(row, WVC) ;
 		NSCAT_Rev_20.WVC_Lon:fonc_original_name = "NSCAT Rev 20.WVC_Lon" ;
-	byte NSCAT_Rev_20.Num_Sigma0(row, WVC) ;
+	short NSCAT_Rev_20.Num_Sigma0(row, WVC) ;
 		NSCAT_Rev_20.Num_Sigma0:fonc_original_name = "NSCAT Rev 20.Num_Sigma0" ;
-	byte NSCAT_Rev_20.Num_Beam_12(row, WVC) ;
+	short NSCAT_Rev_20.Num_Beam_12(row, WVC) ;
 		NSCAT_Rev_20.Num_Beam_12:fonc_original_name = "NSCAT Rev 20.Num_Beam_12" ;
-	byte NSCAT_Rev_20.Num_Beam_34(row, WVC) ;
+	short NSCAT_Rev_20.Num_Beam_34(row, WVC) ;
 		NSCAT_Rev_20.Num_Beam_34:fonc_original_name = "NSCAT Rev 20.Num_Beam_34" ;
-	byte NSCAT_Rev_20.Num_Beam_56(row, WVC) ;
+	short NSCAT_Rev_20.Num_Beam_56(row, WVC) ;
 		NSCAT_Rev_20.Num_Beam_56:fonc_original_name = "NSCAT Rev 20.Num_Beam_56" ;
-	byte NSCAT_Rev_20.Num_Beam_78(row, WVC) ;
+	short NSCAT_Rev_20.Num_Beam_78(row, WVC) ;
 		NSCAT_Rev_20.Num_Beam_78:fonc_original_name = "NSCAT Rev 20.Num_Beam_78" ;
-	byte NSCAT_Rev_20.WVC_Quality_Flag(row, WVC) ;
+	short NSCAT_Rev_20.WVC_Quality_Flag(row, WVC) ;
 		NSCAT_Rev_20.WVC_Quality_Flag:fonc_original_name = "NSCAT Rev 20.WVC_Quality_Flag" ;
 	int NSCAT_Rev_20.Mean_Wind(row, WVC) ;
 		NSCAT_Rev_20.Mean_Wind:fonc_original_name = "NSCAT Rev 20.Mean_Wind" ;
@@ -32,7 +32,7 @@ variables:
 		NSCAT_Rev_20.Error_Dir:fonc_original_name = "NSCAT Rev 20.Error_Dir" ;
 	short NSCAT_Rev_20.MLE_Likelihood(row, WVC, position) ;
 		NSCAT_Rev_20.MLE_Likelihood:fonc_original_name = "NSCAT Rev 20.MLE_Likelihood" ;
-	byte NSCAT_Rev_20.Num_Ambigs(row, WVC) ;
+	short NSCAT_Rev_20.Num_Ambigs(row, WVC) ;
 		NSCAT_Rev_20.Num_Ambigs:fonc_original_name = "NSCAT Rev 20.Num_Ambigs" ;
 
 // global attributes:
