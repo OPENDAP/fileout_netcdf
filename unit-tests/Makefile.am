@@ -23,29 +23,32 @@ DISTCLEANFILES = test_config.h
 
 CLEANFILES = *.dbg *.log *.sum site.exp *.nc
 
-EXTRA_DIST = data baselines test_config.h.in bes.conf.in fonc_handlerTest.at \
-$(TESTSUITE) atlocal.in $(srcdir)/package.m4
+EXTRA_DIST = data baselines test_config.h.in bes.conf.in $(TESTSUITE).at \
+$(TESTSUITE) atlocal.in package.m4
 
-check_PROGRAMS = $(UNIT_TESTS)
+# The check_PROGRAMS will be run before the autotest tests below (which
+# are run using check-local). Note that the check_PROGRAMS are not really
+# tests; they build various netcdf files that we then test using ncdump.
+# jhrg 3/25/15
+# check_PROGRAMS = $(DRIVERS)
+noinst_PROGRAMS = $(DRIVERS)
 
 ############################################################################
 # Unit Tests
 #
 
-UNIT_TESTS = simpleT00 simpleT01 simpleT02	\
-	structT00 arrayT structT01 structT02	\
-	arrayT01 gridT seqT attrT namesT readT
+DRIVERS = simpleT00 simpleT01 simpleT02 structT00 arrayT structT01	\
+	structT02 arrayT01 gridT seqT attrT namesT readT
 
 SRCS = test_send_data.cc test_send_data.h
 
 # I replaced the SRCS variable and its references to ../<file>.cc
-# with this to work around a problem in automake 1.14 when using 
-# subdir-objects.
-OBJS =  ../FONcTransform.o ../FONcUtils.o \
-	../FONcByte.o ../FONcStr.o ../FONcShort.o ../FONcInt.o \
-	../FONcFloat.o ../FONcDouble.o ../FONcStructure.o \
-	../FONcGrid.o ../FONcArray.o ../FONcSequence.o \
-	../FONcBaseType.o ../FONcDim.o ../FONcMap.o ../FONcAttributes.o
+# with this to work-around a problem with distclean. jhrg 3/25/15
+OBJS = ../FONcTransform.o ../FONcUtils.o ../FONcByte.o ../FONcStr.o	\
+	../FONcShort.o ../FONcInt.o ../FONcFloat.o ../FONcDouble.o	\
+	../FONcStructure.o ../FONcGrid.o ../FONcArray.o			\
+	../FONcSequence.o ../FONcBaseType.o ../FONcDim.o ../FONcMap.o	\
+	../FONcAttributes.o
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 simpleT00_LDADD = $(OBJS) $(AM_LDADD)
@@ -89,13 +92,18 @@ readT_LDADD = $(OBJS) $(AM_LDADD) $(DAP_CLIENT_LIBS)
 
 ############## Autotest follows #####################
 
+# check-local: $(UNIT_TESTS) atconfig atlocal $(TESTSUITE)
+# 	export PATH="@NC_BIN_PATH@:$$PATH"; $(TESTSUITE) $(TESTSUITEFLAGS)
+
 AUTOM4TE = autom4te
-DIRS_EXTRA = bes-testsuite nc besstandalone.netcdf common_tests.exp
 
 TESTSUITE = $(srcdir)/fonc_handlerTest
+TESTSUITEFLAGS =
 
-check-local: $(UNIT_TESTS) atconfig atlocal $(TESTSUITE)
-	export PATH="@NC_BIN_PATH@:$$PATH"; $(TESTSUITE) $(TESTSUITEFLAGS)
+$(TESTSUITE): $(TESTSUITE).at $(srcdir)/package.m4
+
+check-local: atconfig atlocal $(TESTSUITE)
+	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS) PATH="@NC_BIN_PATH@:$$PATH"
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
@@ -104,9 +112,9 @@ distclean-local:
 	-rm atconfig
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/fonc_handlerTest.at $(srcdir)/package.m4
-	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
-	mv $@.tmp $@
+
+% : %.at 
+	$(AUTOTEST) -I '$(srcdir)' -o $@ $@.at
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
