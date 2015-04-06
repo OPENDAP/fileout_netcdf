@@ -359,7 +359,7 @@ void FONcArray::write(int ncid)
     BESDEBUG("fonc", "FONcArray::write for var " << _varname << endl);
 
     if (_dont_use_it) {
-        BESDEBUG("fonc", "FONcTransform::write_array not using variable " << _varname << endl);
+        BESDEBUG("fonc", "FONcTransform::write not using variable " << _varname << endl);
         return;
     }
 
@@ -519,7 +519,7 @@ void FONcArray::write(int ncid)
         _str_data = 0;  // prevent double delete by the dtor
     }
 
-    BESDEBUG("fonc", "FONcTransform::write_array done for " << _varname << endl);
+    BESDEBUG("fonc", "FONcTransform::write done for " << _varname << endl);
 }
 
 /** @brief returns the name of the DAP Array
