@@ -1,3 +1,81 @@
+2015-04-06  James Gallagher  <jgallagher@opendap.org>
+
+	Set version to 1.3 because of change from NSIDC
+
+	Fixed text in some instrumentation.
+
+2015-04-02  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes for the tests.
+	Now the unit-tests/Makefile.am reads a bit better and the test
+	driver programs only build when the tests are run. However, the
+	directory should be renamed from unit-tests to tests since these
+	are not unit tests.
+
+2015-04-01  James Gallagher  <jgallagher@opendap.org>
+
+	I fixed a memory leak.
+	I the FONcArray.cc:write memory was allocated using new
+	but not deleted until after an exception could be thrown.
+	This was a bit hard to see because the exception was thrown
+	by an error formating/reporting function.
+
+	Merge branch 'nsidc-fix_uint'
+
+	Merge branch 'fix_uint' of https://github.com/nsidc/fileout_netcdf into nsidc-fix_uint
+
+2015-03-31  James Gallagher  <jgallagher@opendap.org>
+
+	Added to git ignore
+
+2015-03-24  Michael Brandt  <mbrandt@colorado.edu>
+
+	Convert OPeNDAP Byte array data to NetCDF NC_SHORT The handler's
+	output currently interprets unsigned Bytes from OPeNDAP as signed
+	bytes (NC_BYTE). To avoid misrepresenting data and retain
+	compatiblity with NetCDF3/classic we need to convert/output this
+	data as a NC_SHORT.
+	
+	The existing test data for fits utilizes signed integers which
+	shouldn't ever be a valid output from DAP2. The test data should
+	be validated/regenerated and the test re-enabled.
+
+2015-01-16  James Gallagher  <jgallagher@opendap.org>
+
+	Removed dist-hook which as a hack for SVN
+
+	Changed the chunk size to a constant from a hard coded value.
+	NetCDF4 chunking is set to MAX_CHUNK_SIZE (1024) or the dimension
+	size, whichever is smaller. This was set down in the code and I've
+	moved it up to a constant defiend at the top of FONcArray.cc
+
+2014-12-12  James Gallagher  <jgallagher@opendap.org>
+
+	Merge remote-tracking branch 'origin/modules'
+
+	Merge branch 'modules' of https://github.com/opendap/fileout_netcdf into modules
+
+	Fixes for make check and make dist.
+
+2014-12-07  James Gallagher  <jgallagher@opendap.org>
+
+	Added module name and version info to Makefile.am
+	This change was made to support the modules build where the autoconf
+	symbols PACKAGE_NAME and _MODULE are defined by the bes configure
+	script. This meant that the version response from the bes was useless
+	since it listed every module as 'bes' and gave the bes' version
+	number.
+
+2014-12-04  James Gallagher  <jgallagher@opendap.org>
+
+	Hyrax 1.10 changes
+	Added a .gitignore file in the 'data' dir so that make dist
+	works and modified the spec file to use up to date version
+	numbers for the dependencies.
+
+2014-11-26  James Gallagher  <jgallagher@opendap.org>
+
+	Changes to support the BES modules build.
 2014-08-08  James Gallagher <jgallagher@opendap.org>
 
 	distcheck fixes for linux
