@@ -113,8 +113,6 @@ distclean-local:
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
 
-# % : %.at 
-
 $(TESTSUITE): $(TESTSUITE).at
 	$(AUTOTEST) -I '$(srcdir)' -o $@ $@.at
 
