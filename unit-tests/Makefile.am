@@ -102,12 +102,13 @@ TESTSUITEFLAGS =
 
 $(TESTSUITE): $(TESTSUITE).at $(srcdir)/package.m4
 
-check-local: atconfig atlocal $(TESTSUITE)
+check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS) PATH="@NC_BIN_PATH@:$$PATH"
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
-
+	-rm $(srcdir)/package.m4 
+	
 distclean-local:
 	-rm atconfig
 
