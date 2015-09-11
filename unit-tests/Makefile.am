@@ -19,12 +19,12 @@ AM_LDADD = $(LIBADD)
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-DISTCLEANFILES = test_config.h
+DISTCLEANFILES = test_config.h atconfig
 
-CLEANFILES = *.dbg *.log *.sum site.exp *.nc
+CLEANFILES = *.dbg *.log *.sum *.nc $(TESTSUITE) $(srcdir)package.m4
 
 EXTRA_DIST = data baselines test_config.h.in bes.conf.in $(TESTSUITE).at \
-$(TESTSUITE) atlocal.in package.m4
+$(TESTSUITE) atlocal.in $(srcdir)/package.m4
 
 # The check_PROGRAMS will be run before the autotest tests below (which
 # are run using check-local). Note that the check_PROGRAMS are not really
@@ -107,10 +107,6 @@ check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
-	-rm $(srcdir)/package.m4 
-	
-distclean-local:
-	-rm atconfig
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
 
