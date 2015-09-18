@@ -1,3 +1,28 @@
+2015-09-11  James Gallagher  <jgallagher@opendap.org>
+
+	Modified Makefile.am to support distcheck
+
+2015-08-04  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed package.m4 in the autoconf dirs Makefile.am files
+
+2015-05-14  James Gallagher  <jgallagher@opendap.org>
+
+	Removed warning about GNU-specific rule in unit-tests/Makefile.am
+
+2015-05-12  James Gallagher  <jgallagher@opendap.org>
+
+	Removed GNU-specific Makefile.am hack
+
+2015-04-09  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/fileout_netcdf
+
+	Modified Makefile.am to support bes distcheck
+
+2015-04-06  James Gallagher  <jgallagher@opendap.org>
+
+	Version 1.3.0
 2015-04-06  James Gallagher  <jgallagher@opendap.org>
 
 	Set version to 1.3 because of change from NSIDC
