@@ -21,7 +21,7 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 DISTCLEANFILES = test_config.h atconfig
 
-CLEANFILES = *.dbg *.log *.sum *.nc $(TESTSUITE) $(srcdir)package.m4
+# CLEANFILES = 
 
 EXTRA_DIST = data baselines test_config.h.in bes.conf.in $(TESTSUITE).at \
 $(TESTSUITE) atlocal.in $(srcdir)/package.m4
@@ -107,6 +107,7 @@ check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
+	-rm -f $(TESTSUITE) $(srcdir)/package.m4 
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
 
