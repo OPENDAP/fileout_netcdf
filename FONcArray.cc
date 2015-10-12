@@ -107,6 +107,7 @@ FONcArray::~FONcArray()
     }
 
     // Added jhrg 8/28/13
+    // If these become vector<> types, fix this too! jhrg 10/12/15
     delete[] _dim_ids;
     delete[] _dim_sizes;
     delete[] _str_data;
@@ -326,6 +327,21 @@ void FONcArray::define(int ncid)
                         + _varname;
                 FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
             }
+        }
+
+        // If the array type is NC_SHORT it may have been an unsigned byte type before,
+        // so make sure the _FillValue is also 16 bits (SMAP NetCDF-3 reformatting issue
+        // for landcover_class).
+        //
+        // Contributed by abdul.g.khan@nasa.gov
+        //
+        // Question: Are there other cases where an unsigned type is 'promoted' and thus
+        // the type of the fill value attribute should be too? jhrg 10/12/15
+        AttrTable &attrs = _a->get_attr_table();
+        if (_array_type == NC_SHORT && attrs.get_size()) {
+            for (AttrTable::Attr_iter iter = attrs.attr_begin(); iter != attrs.attr_end(); iter++)
+                if (attrs.get_name(iter) == "_FillValue" && attrs.get_attr_type(iter) == Attr_byte)
+                    (*iter)->type = Attr_int16;
         }
 
         FONcAttributes::add_attributes(ncid, _varid, _a);
