@@ -34,7 +34,7 @@
 
 #include <Array.h>
 
-using namespace libdap ;
+using namespace libdap;
 
 #include "FONcBaseType.h"
 #include "FONcDim.h"
@@ -47,55 +47,64 @@ class FONcMap;
  * needed to write it out to a netcdf file. Includes a reference to the
  * actual DAP Array being converted
  */
-class FONcArray : public FONcBaseType
-{
+class FONcArray: public FONcBaseType {
 private:
     // The array being converted
-    Array *			_a ;
+    Array * _a;
     // The type of data stored in the array
-    nc_type			_array_type ;
+    nc_type _array_type;
     // The number of dimensions to be stored in netcdf (if string, 2)
-    int				_ndims ;
+    int _ndims;
     // The actual number of dimensions of this array (if string, 1)
-    int				_actual_ndims ;
+    int _actual_ndims;
     // The number of elements that will be stored in netcdf
-    int				_nelements ;
+    int _nelements;
     // The FONcDim dimensions to be used for this variable
-    vector<FONcDim *>		_dims ;
+    vector<FONcDim *> _dims;
+
+    // Make these vector<> types. jhrg 10/12/15
+    //
     // The netcdf dimension ids for this array
-    int *			_dim_ids ;
+    int * _dim_ids;
     // The netcdf dimension sizes to be written
-    size_t *			_dim_sizes ; // changed int to size_t. jhrg 12.27.2011
+    size_t * _dim_sizes; // changed int to size_t. jhrg 12.27.2011
     // If string data, we need to do some comparison, so instead of
     // reading it more than once, read it once and save here
-    string *			_str_data ;
+    string * _str_data;
     // If the array is already a map in a grid, then we don't want to
     // define it or write it.
-    bool			_dont_use_it ;
+
+    bool _dont_use_it;
+
+    // Make this a vector<> jhrg 10/12/15
     // The netcdf chunk sizes for each dimension of this array.
-    size_t *			_chunksizes;
+    size_t * _chunksizes;
+
     // This is vector holds instances pf FONcMap* that wrap existing Array
     // objects that are pushed onto the global FONcGrid::Maps vector. Those
     // are never freed; I think the general pattern is to use the reference
     // counting pointers with FONcGrid::Maps. jhrg 8/28/13
-    vector<FONcMap*> 	_grid_maps;
+    vector<FONcMap*> _grid_maps;
 
-    FONcDim *			find_dim( vector<string> &embed, const string &name, int size, bool ignore_size = false ) ;
+    FONcDim * find_dim(vector<string> &embed, const string &name, int size, bool ignore_size = false);
 public:
-    				FONcArray( BaseType *b ) ;
-    virtual			~FONcArray() ;
+    FONcArray(BaseType *b);
+    virtual ~FONcArray();
 
-    virtual void		convert( vector<string> embed ) ;
-    virtual void		define( int ncid ) ;
-    virtual void		write( int ncid ) ;
+    virtual void convert(vector<string> embed);
+    virtual void define(int ncid);
+    virtual void write(int ncid);
 
-    virtual string 		name() ;
-    virtual Array *		array() { return _a ; }
+    virtual string name();
+    virtual Array * array()
+    {
+        return _a;
+    }
 
-    virtual void		dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const;
 
-    static vector<FONcDim *>	Dimensions ;
-} ;
+    static vector<FONcDim *> Dimensions;
+};
 
 #endif // FONcArray_h_
 
