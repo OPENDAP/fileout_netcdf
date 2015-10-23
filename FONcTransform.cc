@@ -148,12 +148,9 @@ void FONcTransform::transform()
             fb->convert(embed);
         }
     }
-    BESDEBUG("fonc", *this << endl);
 
     // Open the file for writing
     int stax;
-
-
     if ( FONcTransform::_returnAs == RETURNAS_NETCDF4 ) {
     	stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &_ncid);
     }
@@ -162,8 +159,7 @@ void FONcTransform::transform()
     }
 
     if (stax != NC_NOERR) {
-        string err = (string) "File out netcdf, " + "unable to open file " + _localfile;
-        FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        FONcUtils::handle_error(stax, "File out netcdf, unable to open: " + _localfile, __FILE__, __LINE__);
     }
 
     try {
@@ -193,8 +189,7 @@ void FONcTransform::transform()
         // Check error for nc_enddef. Handling of HDF failures
         // can be detected here rather than later.  KY 2012-10-25
         if (stax != NC_NOERR) {
-            string err = (string) "File out netcdf, " + "unable to end the define mode " + _localfile;
-            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+            FONcUtils::handle_error(stax, "File out netcdf, unable to end the define mode: " + _localfile, __FILE__, __LINE__);
         }
 
         // Write everything out
@@ -204,13 +199,15 @@ void FONcTransform::transform()
             FONcBaseType *fbt = *i;
             fbt->write(_ncid);
         }
+
+        stax = nc_close(_ncid);
+        if (stax != NC_NOERR)
+            FONcUtils::handle_error(stax, "File out netcdf, unable to close: " + _localfile, __FILE__, __LINE__);
     }
     catch (BESError &e) {
-        nc_close(_ncid);
+        (void) nc_close(_ncid); // ignore the error at this point
         throw;
     }
-
-    nc_close(_ncid);
 }
 
 /** @brief dumps information about this transformation object for debugging

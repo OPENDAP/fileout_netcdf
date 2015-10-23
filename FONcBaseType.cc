@@ -111,7 +111,17 @@ void FONcBaseType::setVersion(string version)
  */
 bool FONcBaseType::isNetCDF4()
 {
+    return FONcBaseType::_ncVersion == RETURNAS_NETCDF4;
 
+#if 0
+    // I don't see the purpose of this code. First, either RETURNAS_NETCDF4
+    // is true or it isn't. Second, the code sets stax to NC_NOERR and then
+    // may call FONcUtils::handle_error() which will return nothing (I've since
+    // modified handle_error() so that's no longer true, but when this
+    // method was written this way that was the case). Also, I found that
+    // _ncVersion is sometimes neither RETURNAS_NETCDF4 or RETURNAS_NETCDF
+    // (but no error was thrown because stax was == NC_NOERR).
+    // jhrg 10/23/15
 	int stax = NC_NOERR;
 
 	if ( FONcBaseType::_ncVersion == RETURNAS_NETCDF4 ) {
@@ -129,4 +139,5 @@ bool FONcBaseType::isNetCDF4()
 
 		return false;
 	}
+#endif
 }

@@ -22,6 +22,7 @@ using namespace libdap;
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
+#include <BESInternalError.h>
 
 #include "test_config.h"
 #include "test_send_data.h"
@@ -30,7 +31,8 @@ using namespace libdap;
 
 void set_sequence_read(Sequence *s);
 
-void set_structure_read(Structure *s) {
+void set_structure_read(Structure *s)
+{
     s->set_read_p(true);
     s->set_send_p(true);
     Constructor::Vars_iter i = s->var_begin();
@@ -38,12 +40,18 @@ void set_structure_read(Structure *s) {
     for (; i != e; i++) {
         BaseType *v = *i;
         if (v->type() == dods_sequence_c) {
-            Sequence *new_s = dynamic_cast<Sequence *> (v);
-            set_sequence_read(new_s);
+            Sequence *new_s = dynamic_cast<Sequence *>(v);
+            if (new_s)
+                set_sequence_read(new_s);
+            else
+                throw BESInternalError("Expected a Sequence", __FILE__, __LINE__);
         }
         else if (v->type() == dods_structure_c) {
-            Structure *new_s = dynamic_cast<Structure *> (v);
-            set_structure_read(new_s);
+            Structure *new_s = dynamic_cast<Structure *>(v);
+            if (new_s)
+                set_structure_read(new_s);
+            else
+                throw BESInternalError("Expected a Structure", __FILE__, __LINE__);
         }
         else {
             v->set_read_p(true);
@@ -52,7 +60,8 @@ void set_structure_read(Structure *s) {
     }
 }
 
-void set_sequence_read(Sequence *s) {
+void set_sequence_read(Sequence *s)
+{
     s->set_read_p(true);
     s->set_send_p(true);
     s->reset_row_number();
@@ -61,12 +70,18 @@ void set_sequence_read(Sequence *s) {
     for (; i != e; i++) {
         BaseType *v = *i;
         if (v->type() == dods_sequence_c) {
-            Sequence *new_s = dynamic_cast<Sequence *> (v);
-            set_sequence_read(new_s);
+            Sequence *new_s = dynamic_cast<Sequence *>(v);
+            if (new_s)
+                set_sequence_read(new_s);
+            else
+                throw BESInternalError("Expected a Sequence", __FILE__, __LINE__);
         }
         else if (v->type() == dods_structure_c) {
-            Structure *new_s = dynamic_cast<Structure *> (v);
-            set_structure_read(new_s);
+            Structure *new_s = dynamic_cast<Structure *>(v);
+            if (new_s)
+                set_structure_read(new_s);
+            else
+                throw BESInternalError("Expected a Structure", __FILE__, __LINE__);
         }
         else {
             v->set_read_p(true);
@@ -75,16 +90,23 @@ void set_sequence_read(Sequence *s) {
     }
 }
 
-static void set_read(DDS *dds) {
+static void set_read(DDS *dds)
+{
     for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
         BaseType *v = *i;
         if (v->type() == dods_sequence_c) {
-            Sequence *s = dynamic_cast<Sequence *> (v);
-            set_sequence_read(s);
+            Sequence *s = dynamic_cast<Sequence *>(v);
+            if (s)
+                set_sequence_read(s);
+            else
+                throw BESInternalError("Expected a Sequence", __FILE__, __LINE__);
         }
         else if (v->type() == dods_structure_c) {
-            Structure *s = dynamic_cast<Structure *> (v);
-            set_structure_read(s);
+            Structure *s = dynamic_cast<Structure *>(v);
+            if (s)
+                set_structure_read(s);
+            else
+                throw BESInternalError("Expected a Structure", __FILE__, __LINE__);
         }
         else {
             v->set_read_p(true);
@@ -93,13 +115,14 @@ static void set_read(DDS *dds) {
     }
 }
 
-static void print_data(DDS *dds, bool print_rows) {
+static void print_data(DDS *dds, bool print_rows)
+{
     cout << "The data:" << endl;
 
     for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
         BaseType *v = *i;
         if (print_rows && (*i)->type() == dods_sequence_c)
-            dynamic_cast<Sequence *> (*i)->print_val_by_rows(cout);
+            dynamic_cast<Sequence &>(**i).print_val_by_rows(cout);
         else
             v->print_val(cout);
     }
@@ -107,7 +130,8 @@ static void print_data(DDS *dds, bool print_rows) {
     cout << endl << flush;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     bool debug = false;
     string file;
     if (argc > 1) {
@@ -126,11 +150,10 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+#if 0
     string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
     putenv((char *) bes_conf.c_str());
-    if (debug)
-        BESDebug::SetUp("cerr,fonc");
-
+#endif
     string fpath = (string) TEST_SRC_DIR + "/data/" + file;
     string opath = file + ".nc";
 
@@ -139,6 +162,8 @@ int main(int argc, char **argv) {
     ReadTypeFactory factory;
     DataDDS *dds = new DataDDS(&factory);
     try {
+        if (debug) BESDebug::SetUp("cerr,fonc");
+
         url = new Connect(fpath);
         r = new Response(fopen(fpath.c_str(), "r"), 0);
 
@@ -149,27 +174,26 @@ int main(int argc, char **argv) {
 
         url->read_data_no_mime(*dds, r);
 
-        if (debug)
-            print_data(dds, false);
-    } catch (Error & e) {
+        if (debug) print_data(dds, false);
+    }
+    catch (Error & e) {
         cout << e.get_error_message() << endl;
-        if (r)
-            delete r;
-        if (url)
-            delete url;
+        if (r) delete r;
+        if (url) delete url;
         return 1;
     }
-    if (r)
-        delete r;
-    if (url)
-        delete url;
+    catch (BESError &e) {
+        cout << e.get_message() << endl;
+        return 1;
+    }
+
+    if (r) delete r;
+    if (url) delete url;
 
     dds->tag_nested_sequences();
-    if (debug)
-        dds->print(cerr);
+    if (debug) dds->print(cerr);
     set_read(dds);
-    if (debug)
-        cerr << *dds << endl;
+    if (debug) cerr << *dds << endl;
 
     try {
         // transform the DataDDS into a netcdf file. The dhi only needs the
@@ -184,12 +208,13 @@ int main(int argc, char **argv) {
         dhi.data[POST_CONSTRAINT] = "";
 
         ConstraintEvaluator eval;
-        send_data( dds, eval, dhi ) ;
+        send_data(dds, eval, dhi);
 
         fstrm.close();
 
         delete dds;
-    } catch (BESError &e) {
+    }
+    catch (BESError &e) {
         cout << e.get_message() << endl;
         return 1;
     }

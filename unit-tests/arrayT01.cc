@@ -43,12 +43,14 @@ int main(int argc, char **argv)
         }
     }
 
-    string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
-    putenv((char *) bes_conf.c_str());
-    if (debug)
-        BESDebug::SetUp("cerr,fonc");
-
     try {
+#if 0
+        string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
+        putenv((char *) bes_conf.c_str());
+#endif
+        if (debug)
+            BESDebug::SetUp("cerr,fonc");
+
         // build a DataDDS of simple type arrays with shared dimensions
         DataDDS *dds = new DataDDS(NULL, "virtual");
         {

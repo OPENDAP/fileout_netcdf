@@ -30,6 +30,9 @@
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
 #include "config.h"
+
+#include <cassert>
+
 #include "FONcUtils.h"
 #include "FONcByte.h"
 #include "FONcStr.h"
@@ -48,16 +51,15 @@
  * with a character that is not supported by netcdf, then use this
  * prefix to prepend to the name.
  */
-string FONcUtils::name_prefix = "" ;
+string FONcUtils::name_prefix = "";
 
 /** @brief Resets the FONc transformation for a new input and out file
  */
-void
-FONcUtils::reset()
+void FONcUtils::reset()
 {
-    FONcArray::Dimensions.clear() ;
-    FONcGrid::Maps.clear() ;
-    FONcDim::DimNameNum = 0 ;
+    FONcArray::Dimensions.clear();
+    FONcGrid::Maps.clear();
+    FONcDim::DimNameNum = 0;
 }
 
 /** @brief convert the provided string to a netcdf allowed
@@ -69,26 +71,23 @@ FONcUtils::reset()
  * @param in identifier to convert
  * @returns new netcdf compliant identifier
  */
-string
-FONcUtils::id2netcdf( string in )
+string FONcUtils::id2netcdf(string in)
 {
     // string of allowed characters in netcdf naming convention
-    string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_.@" ;
+    string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_.@";
     // string of allowed first characters in netcdf naming
     // convention
-    string first = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_" ;
+    string first = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
 
     string::size_type i = 0;
 
-    while( (i = in.find_first_not_of( allowed, i ) ) != string::npos)
-    {
-	in.replace( i, 1, "_" ) ;
-	i++ ;
+    while ((i = in.find_first_not_of(allowed, i)) != string::npos) {
+        in.replace(i, 1, "_");
+        i++;
     }
 
-    if( first.find( in[0] ) == string::npos )
-    {
-	in = FONcUtils::name_prefix + in ;
+    if (first.find(in[0]) == string::npos) {
+        in = FONcUtils::name_prefix + in;
     }
 
     return in;
@@ -99,35 +98,33 @@ FONcUtils::id2netcdf( string in )
  * @param element The OPeNDAP element to translate
  * @return the netcdf data type
  */
-nc_type
-FONcUtils::get_nc_type( BaseType *element )
+nc_type FONcUtils::get_nc_type(BaseType *element)
 {
-    nc_type x_type = NC_NAT ; // the constant ncdf uses to define simple type
+    nc_type x_type = NC_NAT; // the constant ncdf uses to define simple type
 
-    string var_type = element->type_name() ;
-    if( var_type == "Byte" )        	// check this for dods type
-	x_type = NC_SHORT ;
-    else if( var_type == "String" )
-	x_type = NC_CHAR ;
-    else if( var_type == "Int16" )
-	x_type = NC_SHORT ;
+    string var_type = element->type_name();
+    if (var_type == "Byte")        	// check this for dods type
+        x_type = NC_SHORT;
+    else if (var_type == "String")
+        x_type = NC_CHAR;
+    else if (var_type == "Int16")
+        x_type = NC_SHORT;
     // The attribute of UInt16 maps to NC_INT, so we need to map UInt16
     // to NC_INT for the variable so that end_def won't complain about
     // the inconsistent datatype between fillvalue and the variable. KY 2012-10-25
     //else if( var_type == "UInt16" )
     //  x_type = NC_SHORT ;
-    else if( var_type == "UInt16" )
-	x_type = NC_INT ;
-    else if( var_type == "Int32" )
-	x_type = NC_INT ;
-    else if( var_type == "UInt32" )
-	x_type = NC_INT ;
-    else if( var_type == "Float32" )
-	x_type = NC_FLOAT ;
-    else if( var_type == "Float64" )
-	x_type = NC_DOUBLE ;
+    else if (var_type == "UInt16")
+        x_type = NC_INT;
+    else if (var_type == "Int32")
+        x_type = NC_INT;
+    else if (var_type == "UInt32")
+        x_type = NC_INT;
+    else if (var_type == "Float32")
+        x_type = NC_FLOAT;
+    else if (var_type == "Float64") x_type = NC_DOUBLE;
 
-    return x_type ;
+    return x_type;
 }
 
 /** @brief generate a new name for the embedded variable
@@ -146,26 +143,27 @@ FONcUtils::get_nc_type( BaseType *element )
  * @returns the newly generated name with embedded names preceeding it,
  * and converted using id2netcdf
  */
-string
-FONcUtils::gen_name( const vector<string> &embed, const string &name,
-		     string &original )
+string FONcUtils::gen_name(const vector<string> &embed, const string &name, string &original)
 {
-    string new_name ;
-    vector<string>::const_iterator i = embed.begin() ;
-    vector<string>::const_iterator e = embed.end() ;
-    bool first = true ;
-    for( ; i != e; i++ )
-    {
-	if( first ) new_name = (*i) ;
-	else new_name += FONC_EMBEDDED_SEPARATOR + (*i) ;
-	first = false ;
+    string new_name;
+    vector<string>::const_iterator i = embed.begin();
+    vector<string>::const_iterator e = embed.end();
+    bool first = true;
+    for (; i != e; i++) {
+        if (first)
+            new_name = (*i);
+        else
+            new_name += FONC_EMBEDDED_SEPARATOR + (*i);
+        first = false;
     }
-    if( first ) new_name = name ;
-    else new_name += FONC_EMBEDDED_SEPARATOR + name ;
+    if (first)
+        new_name = name;
+    else
+        new_name += FONC_EMBEDDED_SEPARATOR + name;
 
-    original = new_name ;
+    original = new_name;
 
-    return FONcUtils::id2netcdf( new_name ) ;
+    return FONcUtils::id2netcdf(new_name);
 }
 
 /** @brief creates a FONc object for the given DAP object
@@ -175,80 +173,73 @@ FONcUtils::gen_name( const vector<string> &embed, const string &name,
  * @throws BESInternalError if the DAP object is not an expected type
  */
 FONcBaseType *
-FONcUtils::convert( BaseType *v )
+FONcUtils::convert(BaseType *v)
 {
-    FONcBaseType *b = 0 ;
-    switch( v->type() )
-    {
-	case dods_str_c:
-	case dods_url_c:
-	    b = new FONcStr( v ) ;
-	    break ;
-	case dods_byte_c:
-	    b = new FONcByte( v ) ;
-	    break ;
-	case dods_int16_c:
-	case dods_uint16_c:
-	    b = new FONcShort( v ) ;
-	    break ;
-	case dods_int32_c:
-	case dods_uint32_c:
-	    b = new FONcInt( v ) ;
-	    break ;
-	case dods_float32_c:
-	    b = new FONcFloat( v ) ;
-	    break ;
-	case dods_float64_c:
-	    b = new FONcDouble( v ) ;
-	    break ;
-	case dods_grid_c:
-	    b = new FONcGrid( v ) ;
-	    break ;
-	case dods_array_c:
-	    b = new FONcArray( v ) ;
-	    break ;
-	case dods_structure_c:
-	    b = new FONcStructure( v ) ;
-	    break ;
-	case dods_sequence_c:
-	    b = new FONcSequence( v ) ;
-	    break ;
-	default:
-	    string err = (string)"file out netcdf, unable to "
-			 + "write unknown variable type" ;
-	    throw BESInternalError( err, __FILE__, __LINE__ ) ;
+    FONcBaseType *b = 0;
+    switch (v->type()) {
+    case dods_str_c:
+    case dods_url_c:
+        b = new FONcStr(v);
+        break;
+    case dods_byte_c:
+        b = new FONcByte(v);
+        break;
+    case dods_int16_c:
+    case dods_uint16_c:
+        b = new FONcShort(v);
+        break;
+    case dods_int32_c:
+    case dods_uint32_c:
+        b = new FONcInt(v);
+        break;
+    case dods_float32_c:
+        b = new FONcFloat(v);
+        break;
+    case dods_float64_c:
+        b = new FONcDouble(v);
+        break;
+    case dods_grid_c:
+        b = new FONcGrid(v);
+        break;
+    case dods_array_c:
+        b = new FONcArray(v);
+        break;
+    case dods_structure_c:
+        b = new FONcStructure(v);
+        break;
+    case dods_sequence_c:
+        b = new FONcSequence(v);
+        break;
+    default:
+        string err = (string) "file out netcdf, unable to " + "write unknown variable type";
+        throw BESInternalError(err, __FILE__, __LINE__);
 
     }
-    return b ;
+    return b;
 }
 
 /** @brief handle any netcdf errors
  *
  * Looks up the netcdf error message associated with the provided netcdf
  * return value and throws an exception with that information appended to
- * the provided error message
+ * the provided error message.
  *
- * @param stax A netcdf return value, NC_NOERR if no error occurred
+ * @note Modified: This used to test the value of stax and return without
+ * doing anything if stax == NC_NOERR. This should not be called if there
+ * is no error.
+ *
+ * @param stax A netcdf return value. Should be any value other than NC_NOERR
  * @param err A provided error message to begin the error message with
  * @param file The source code file name where the error was generated
  * @param line The source code line number where the error was generated
- * @throws BESInternalError if the return value represents a netcdf error
+ * @return Never returns
+ *
+ * @throws BESError if the return value represents a netcdf error
  */
-void
-FONcUtils::handle_error( int stax, string &err, const string &file, int line )
+void FONcUtils::handle_error(int stax, const string &err, const string &file, int line)
 {
-    if( stax != NC_NOERR )
-    {
-	const char *nerr = nc_strerror( stax ) ;
-	if( nerr )
-	{
-	    err += (string)": " + nerr ;
-	}
-	else
-	{
-	    err += (string)": unknown error" ;
-	}
-	throw BESInternalError( err, file, line ) ;
-    }
+    assert(stax != NC_NOERR);   // This should not be called for NOERR
+
+    throw BESInternalError(err + string(": ") + nc_strerror(stax), file, line);
 }
 

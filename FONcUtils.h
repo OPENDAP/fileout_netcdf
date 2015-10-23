@@ -35,12 +35,12 @@
 #include <netcdf.h>
 
 #include <string>
-using std::string ;
+using std::string;
 
 #include <BaseType.h>
-using namespace libdap ;
+using namespace libdap;
 
-class FONcBaseType ;
+class FONcBaseType;
 
 #define FONC_EMBEDDED_SEPARATOR "."
 #define FONC_ATTRIBUTE_SEPARATOR "."
@@ -52,21 +52,17 @@ class FONcBaseType ;
  * This class includes static functions to help with the conversion of
  * an OPeNDAP DataDDS object into a netcdf file.
  */
-class FONcUtils
-{
+class FONcUtils {
 public:
-    static string		name_prefix ;
-    static void			reset() ;
-    static string		id2netcdf( string in ) ;
-    static nc_type		get_nc_type( BaseType *element ) ;
-    static string		gen_name( const vector<string> &embed,
-					  const string &name,
-					  string &original ) ;
-    static FONcBaseType *	convert( BaseType *v ) ;
-    static void			handle_error( int stax, string &err,
-					      const string &file, int line ) ;
+    static string name_prefix;
+    static void reset();
+    static string id2netcdf(string in);
+    static nc_type get_nc_type(BaseType *element);
+    static string gen_name(const vector<string> &embed, const string &name, string &original);
+    static FONcBaseType * convert(BaseType *v);
+    static void handle_error(int stax, const string &err, const string &file, int line);
 
-} ;
+};
 
 #endif // FONcUtils
 
