@@ -187,15 +187,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (r) delete r;
-    if (url) delete url;
-
-    dds->tag_nested_sequences();
-    if (debug) dds->print(cerr);
-    set_read(dds);
-    if (debug) cerr << *dds << endl;
+    delete r; r = 0;
+    delete url; url = 0;
 
     try {
+	dds->tag_nested_sequences();
+	if (debug) dds->print(cerr);
+	set_read(dds);
+	if (debug) cerr << *dds << endl;
+
         // transform the DataDDS into a netcdf file. The dhi only needs the
         // output stream and the post constraint. Test no constraints and
         // then some different constraints (1 var, 2 var)
