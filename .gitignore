@@ -8,6 +8,7 @@ autom4te.cache
 *.o
 *.lo
 *.Po
+*.Tpo
 *.output
 *.tab.cc
 *.tab.hh
