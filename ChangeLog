@@ -1,3 +1,46 @@
+2015-10-26  James Gallagher  <jgallagher@opendap.org>
+
+	Added *.Tpo
+
+2015-10-23  James Gallagher  <jgallagher@opendap.org>
+
+	Coverity fixes
+
+	coverity fixes
+
+2015-10-14  James Gallagher  <jgallagher@opendap.org>
+
+	Formatting
+
+2015-10-12  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/fileout_netcdf
+
+	Added fix for _FillValue from abdul.g.khan@nasa.gov
+	This is a fix for issue ODIP-133 where an unsigned byte
+	array is promoted to a short and the type of the _FillValue
+	attribtue is not. This results in a type-mismatch for the
+	attribute and that makes netcdf clients gag. Thanks to Abdul
+	for the fix. We should check other types for this same issue,
+	although unsigned byte maybe a special case...
+
+	Added fix for _FillValue from abdul.g.khan@nasa.gov
+
+2015-09-23  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes to Makefile.am in the autotest dirs; clean removes bes.conf
+
+2015-09-19  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed syntax error introduced by version_update_modules.sh script.
+
+2015-09-18  James Gallagher  <jgallagher@opendap.org>
+
+	version number bump
+
+2015-09-11  James Gallagher  <jgallagher@opendap.org>
+
+	Modified Makefile.am to support distcheck
 2015-09-11  James Gallagher  <jgallagher@opendap.org>
 
 	Modified Makefile.am to support distcheck

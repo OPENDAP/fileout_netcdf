@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
-AC_INIT(fileout_netcdf, 1.3.1, opendap-tech@opendap.org)
+AC_INIT([fileout_netcdf], [1.3.2], [opendap-tech@opendap.org])
 AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_MACRO_DIR([conf])
 
