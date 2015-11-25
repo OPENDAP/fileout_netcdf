@@ -32,6 +32,7 @@
 #include <BESInternalError.h>
 #include <BESDebug.h>
 
+#include "FONcRequestHandler.h" // For access to the handler's keys
 #include "FONcArray.h"
 #include "FONcDim.h"
 #include "FONcGrid.h"
@@ -299,15 +300,17 @@ void FONcArray::define(int ncid)
                 FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
             }
 
-            int shuffle = 0;
-            int deflate = 1;
-            int deflate_level = 4;
-            stax = nc_def_var_deflate(ncid, _varid, shuffle, deflate, deflate_level);
+            if (FONcRequestHandler::use_compression) {
+                int shuffle = 0;
+                int deflate = 1;
+                int deflate_level = 4;
+                stax = nc_def_var_deflate(ncid, _varid, shuffle, deflate, deflate_level);
 
-            if (stax != NC_NOERR) {
-                string err = (string) "fileout.netcdf - Failed to define compression deflation level for variable "
+                if (stax != NC_NOERR) {
+                    string err = (string) "fileout.netcdf - Failed to define compression deflation level for variable "
                         + _varname;
-                FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+                    FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+                }
             }
         }
 

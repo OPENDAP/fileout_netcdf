@@ -49,6 +49,11 @@ public:
 
     virtual void dump(ostream &strm) const;
 
+    static string temp_dir;
+    static bool byte_to_short;
+    static bool use_compression;
+    static int default_block_size;
+
     static bool build_help(BESDataHandlerInterface &dhi);
     static bool build_version(BESDataHandlerInterface &dhi);
 };

@@ -58,13 +58,14 @@
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
+#include "FONcRequestHandler.h"
 #include "FONcTransmitter.h"
 #include "FONcTransform.h"
 
 using namespace ::libdap;
 using namespace std;
 
-#define FONC_TEMP_DIR "/tmp"
+//#define FONC_TEMP_DIR "/tmp"
 // size of the buffer used to read from the temporary file built on disk and
 // send data to the client over the network connection (socket/stream)
 #define BLOCK_SIZE 4096
@@ -72,39 +73,7 @@ using namespace std;
 #define RETURNAS_NETCDF "netcdf"
 #define RETURNAS_NETCDF4 "netcdf-4"
 
-string FONcTransmitter::temp_dir;
-
-#if 0
-// I added this because I was hoping to make the byte --> short option added
-// via a pull request from NSIDC as controllable via a conf file parameter.
-// jhrg 4/1/15
-/**
- * Look at the BES configuration keys and see if key_name is included
- * and if so, what its value is.
- *
- * @todo Build a collection of BES utilities for handlers and include this
- * in it. I copied this code from dapreader DapRequestHandler.cc
- *
- * @param key_name
- * @param key_value
- * @param is_key_set
- */
-static void read_key_value(const std::string &key_name, bool &key_value, bool &is_key_set)
-{
-    if (is_key_set == false) {
-        bool key_found = false;
-        string doset;
-        TheBESKeys::TheKeys()->get_value(key_name, doset, key_found);
-        if (key_found) {
-            // It was set in the conf file
-            is_key_set = true;
-
-            doset = BESUtil::lowercase(doset);
-            key_value = (doset == "true" || doset == "yes");
-        }
-    }
-}
-#endif
+//string FONcTransmitter::temp_dir;
 
 /** @brief Construct the FONcTransmitter, adding it with name netcdf to be
  * able to transmit a data response
@@ -121,7 +90,7 @@ FONcTransmitter::FONcTransmitter() :
     BESBasicTransmitter()
 {
     add_method(DATA_SERVICE, FONcTransmitter::send_data);
-
+#if 0
     if (FONcTransmitter::temp_dir.empty()) {
         // Where is the temp directory for creating these files
         bool found = false;
@@ -135,7 +104,19 @@ FONcTransmitter::FONcTransmitter() :
             FONcTransmitter::temp_dir = FONcTransmitter::temp_dir.substr(0, len - 1);
         }
     }
+#endif
 }
+
+#if 0
+/**
+ * Hack to ensure the file descriptor for the temporary file is closed.
+ */
+struct wrap_file_descriptor {
+    int fd;
+    wrap_file_descriptor(int i) : fd(i) { }
+    ~wrap_file_descriptor() { cerr << "*** Closing fd" << endl; close(fd); }
+};
+#endif
 
 /** @brief The static method registered to transmit OPeNDAP data objects as
  * a netcdf file.
@@ -223,20 +204,25 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
             }
         }
     }
+#if 0
     catch (BESError &e) {
         throw e;
     }
     catch (Error &e) {
         throw BESInternalError("Failed to read data: " + e.get_error_message(), __FILE__, __LINE__);
     }
+#endif
     catch (std::exception &e) {
         throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
+#if 0
     catch (...) {
         throw BESInternalError("Failed to read data: Unknown exception caught", __FILE__, __LINE__);
     }
+#endif
 
-    string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
+    //string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
+    string temp_file_name = FONcRequestHandler::temp_dir + '/' + "ncXXXXXX";
     vector<char> temp_full(temp_file_name.length() + 1);
     string::size_type len = temp_file_name.copy(&temp_full[0], temp_file_name.length());
     temp_full[len] = '\0';
@@ -245,7 +231,14 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     mode_t original_mode = umask(077);
     int fd = mkstemp(&temp_full[0]);
     umask(original_mode);
-
+#if 0
+    // Trick: We can unlink the file right here - it will persist until the file descriptor
+    // is closed. This means we don't have to litter the code with call to unlink(). jhrg 11/25/15
+    (void) unlink(&temp_full[0]);
+    // Hack: Use this simple class to 'wrap' the file descriptor so that we can be sure it
+    // is closed no matter how this code is exited. jhrg 11/25/15
+    wrap_file_descriptor wrapped_fd(fd);
+#endif
     if (fd == -1) throw BESInternalError("Failed to open the temporary file: " + temp_file_name, __FILE__, __LINE__);
 
     // transform the OPeNDAP DataDDS to the netcdf file
@@ -258,32 +251,28 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         BESDEBUG("fonc", "FONcTransmitter::send_data - transmitting temp file " << &temp_full[0] << endl);
         FONcTransmitter::return_temp_stream(&temp_full[0], strm, ncVersion);
     }
+#if 0
     catch (BESError &e) {
         close(fd);
-        (void) unlink(&temp_full[0]);
-        // ADB: clean-up temp dds
-        // if (using_temp_dds) delete dds; See comment above. jhrg 8/8/14
         throw;
     }
+#endif
     catch (std::exception &e) {
-        close(fd);
         (void) unlink(&temp_full[0]);
+        close(fd);
         throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
+#if 0
     catch (...) {
         close(fd);
-        (void) unlink(&temp_full[0]);
-        // ADB: clean-up temp dds
-        //if (using_temp_dds) delete dds;
-
-        throw BESInternalError("File out netcdf, was not able to transform to netcdf, unknown error", __FILE__,
-            __LINE__);
+        throw BESInternalError("File out netcdf, was not able to transform to netcdf, unknown error", __FILE__, __LINE__);
     }
 
-    close(fd);
+    close(fd);  // The 'wrap_file_descriptor' struct will close this.
+#endif
+
     (void) unlink(&temp_full[0]);
-    // ADB: clean-up temp dds
-    //if (using_temp_dds) delete dds;
+    close(fd);
 
     BESDEBUG("fonc", "FONcTransmitter::send_data - done transmitting to netcdf" << endl);
 }

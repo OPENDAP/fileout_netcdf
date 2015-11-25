@@ -57,6 +57,9 @@ BES.DefaultResponseMethod=POST
 #                                                                       #
 #-----------------------------------------------------------------------#
 
+FONc.Tempdir=@abs_top_builddir@/modules/fileout_netcdf/tests/
+FONc.UseCompression=true
+
 # For HDF4
 
 # H4.EnableCF=true

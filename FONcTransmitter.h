@@ -61,9 +61,6 @@ public:
 	virtual ~FONcTransmitter() {}
 
 	static void send_data(BESResponseObject *obj, BESDataHandlerInterface &dhi);
-#if 0
-	static void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
-#endif
 };
 
 #endif // A_FONcTransmitter_h

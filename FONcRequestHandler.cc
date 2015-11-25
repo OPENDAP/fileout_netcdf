@@ -30,6 +30,7 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include "config.h"
 
 #include "FONcRequestHandler.h"
 #include <BESResponseHandler.h>
@@ -38,7 +39,59 @@
 #include <BESDataNames.h>
 #include <BESDataNames.h>
 #include <TheBESKeys.h>
-#include "config.h"
+#include <BESDebug.h>
+#include <BESUtil.h>
+
+#define FONC_TEMP_DIR "/tmp"
+#define FONC_TEMP_DIR_KEY "FONc.Tempdir"
+
+#define FONC_USE_COMP true
+#define FONC_USE_COMP_KEY "FONc.UseCompression"
+
+string FONcRequestHandler::temp_dir;
+bool FONcRequestHandler::byte_to_short;
+bool FONcRequestHandler::use_compression;
+int FONcRequestHandler::default_block_size;
+
+using namespace std;
+
+/**
+ * Look at the BES configuration keys and see if key_name is included
+ * and, if so, what its value is.
+ *
+ * @param key_name The key to loop up
+ * @param key Value result parameter that takes on the value of the key
+ * @param default_value
+ * @see read_key_value() - other impls
+ */
+static void read_key_value(const string &key_name, bool &key, const bool default_value)
+{
+    bool key_found = false;
+    string value;
+    TheBESKeys::TheKeys()->get_value(key_name, value, key_found);
+    // 'key' holds the string value at this point if key_found is true
+    if (key_found) {
+        value = BESUtil::lowercase(value);
+        key = (value == "true" || value == "yes");
+    }
+    else {
+        key = default_value;
+    }
+}
+
+static void read_key_value(const string &key_name, string &key, const string &default_value)
+{
+    bool key_found = false;
+    TheBESKeys::TheKeys()->get_value(key_name, key, key_found);
+    // 'key' holds the string value at this point if key_found is true
+    if (key_found) {
+        if (key[key.length() - 1] == '/') key.erase(key.length() - 1);
+    }
+    else {
+        key = default_value;
+    }
+}
+
 
 /** @brief Constructor for FileOut NetCDF module
  *
@@ -53,6 +106,15 @@ FONcRequestHandler::FONcRequestHandler( const string &name )
 {
     add_handler( HELP_RESPONSE, FONcRequestHandler::build_help ) ;
     add_handler( VERS_RESPONSE, FONcRequestHandler::build_version ) ;
+
+    if (FONcRequestHandler::temp_dir.empty()) {
+        read_key_value(FONC_TEMP_DIR_KEY, FONcRequestHandler::temp_dir, FONC_TEMP_DIR);
+    }
+
+    read_key_value(FONC_USE_COMP_KEY, FONcRequestHandler::use_compression, FONC_USE_COMP);
+
+    BESDEBUG("fonc", "FONcRequestHandler::temp_dir: " << FONcRequestHandler::temp_dir << endl);
+    BESDEBUG("fonc", "FONcRequestHandler::use_compression: " << FONcRequestHandler::use_compression << endl);
 }
 
 /** @brief Any cleanup that needs to take place

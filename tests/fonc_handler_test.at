@@ -16,8 +16,6 @@ dnl This file is huge so these accesses are contrained
 AT_BESCMD_NETCDF_RESPONSE_TEST(MOD02.1.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(MOD02.2.bescmd)
 
-dnl TODO Remove AT_BESCMD_RESPONSE_TEST(MISR.0.bescmd)
-
 AT_BESCMD_RESPONSE_TEST(t_string.0.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(t_string.1.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(t_string.2.bescmd)
