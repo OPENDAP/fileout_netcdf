@@ -34,6 +34,7 @@
 #include <cassert>
 
 #include "FONcUtils.h"
+#include "FONcDim.h"
 #include "FONcByte.h"
 #include "FONcStr.h"
 #include "FONcShort.h"

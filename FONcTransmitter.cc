@@ -43,6 +43,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <exception>
 
 #include <DataDDS.h>
 #include <BaseType.h>
@@ -61,6 +62,7 @@
 #include "FONcTransform.h"
 
 using namespace ::libdap;
+using namespace std;
 
 #define FONC_TEMP_DIR "/tmp"
 // size of the buffer used to read from the temporary file built on disk and
@@ -221,8 +223,14 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
             }
         }
     }
+    catch (BESError &e) {
+        throw e;
+    }
     catch (Error &e) {
         throw BESInternalError("Failed to read data: " + e.get_error_message(), __FILE__, __LINE__);
+    }
+    catch (std::exception &e) {
+        throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
     catch (...) {
         throw BESInternalError("Failed to read data: Unknown exception caught", __FILE__, __LINE__);
@@ -256,6 +264,11 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         // ADB: clean-up temp dds
         // if (using_temp_dds) delete dds; See comment above. jhrg 8/8/14
         throw;
+    }
+    catch (std::exception &e) {
+        close(fd);
+        (void) unlink(&temp_full[0]);
+        throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
     catch (...) {
         close(fd);

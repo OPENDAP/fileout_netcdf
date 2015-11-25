@@ -31,14 +31,14 @@
 
 #include <sstream>
 
-using std::ostringstream ;
+using std::ostringstream;
 
 #include <netcdf.h>
 
 #include "FONcDim.h"
 #include "FONcUtils.h"
 
-int FONcDim::DimNameNum = 0 ;
+int FONcDim::DimNameNum = 0;
 
 /** @brief Constructor for FOncDim that defines the dimension of an
  * array
@@ -46,8 +46,8 @@ int FONcDim::DimNameNum = 0 ;
  * @param name The name of the dimension
  * @param size The size of the dimension
  */
-FONcDim::FONcDim( const string &name, int size )
-    : _name( name ), _size( size ), _dimid( 0 ), _defined( false ), _ref( 1 )
+FONcDim::FONcDim(const string &name, int size) :
+    _name(name), _size(size), _dimid(0), _defined(false), _ref(1)
 {
 }
 
@@ -58,11 +58,10 @@ FONcDim::FONcDim( const string &name, int size )
  * instance. if the reference count gets to zero, then the instance is
  * deleted
  */
-void
-FONcDim::decref()
+void FONcDim::decref()
 {
-    _ref-- ;
-    if( !_ref ) delete this ;
+    _ref--;
+    if (!_ref) delete this;
 }
 
 /** @brief define the DAP dimension in the netcdf file
@@ -77,30 +76,24 @@ FONcDim::decref()
  * @throws BESInternalError if there is a problem defining the
  * dimension
  */
-void
-FONcDim::define( int ncid )
+void FONcDim::define(int ncid)
 {
-    if( !_defined )
-    {
-	if( _name.empty() )
-	{
-	    ostringstream dimname_strm ;
-	    dimname_strm << "dim" << FONcDim::DimNameNum+1 ;
-	    FONcDim::DimNameNum++ ;
-	    _name = dimname_strm.str() ;
-	}
-	else
-	{
-	    _name = FONcUtils::id2netcdf( _name ) ;
-	}
-	int stax = nc_def_dim( ncid, _name.c_str(), _size, &_dimid ) ;
-	if( stax != NC_NOERR )
-	{
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to add dimension " + _name ;
-	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	}
-	_defined = true ;
+    if (!_defined) {
+        if (_name.empty()) {
+            ostringstream dimname_strm;
+            dimname_strm << "dim" << FONcDim::DimNameNum + 1;
+            FONcDim::DimNameNum++;
+            _name = dimname_strm.str();
+        }
+        else {
+            _name = FONcUtils::id2netcdf(_name);
+        }
+        int stax = nc_def_dim(ncid, _name.c_str(), _size, &_dimid);
+        if (stax != NC_NOERR) {
+            string err = (string) "fileout.netcdf - " + "Failed to add dimension " + _name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+        _defined = true;
     }
 }
 
@@ -110,21 +103,19 @@ FONcDim::define( int ncid )
  *
  * @param strm C++ i/o stream to dump the information to
  */
-void
-FONcDim::dump( ostream &strm ) const
+void FONcDim::dump(ostream &strm) const
 {
-    strm << BESIndent::LMarg << "FONcDim::dump - ("
-			     << (void *)this << ")" << endl ;
-    BESIndent::Indent() ;
-    strm << BESIndent::LMarg << "name = " << _name << endl ;
-    strm << BESIndent::LMarg << "size = " << _size << endl ;
-    strm << BESIndent::LMarg << "dimid = " << _dimid << endl ;
-    strm << BESIndent::LMarg << "already defined? " ;
-    if( _defined )
-	strm << "true" ;
+    strm << BESIndent::LMarg << "FONcDim::dump - (" << (void *) this << ")" << endl;
+    BESIndent::Indent();
+    strm << BESIndent::LMarg << "name = " << _name << endl;
+    strm << BESIndent::LMarg << "size = " << _size << endl;
+    strm << BESIndent::LMarg << "dimid = " << _dimid << endl;
+    strm << BESIndent::LMarg << "already defined? ";
+    if (_defined)
+        strm << "true";
     else
-	strm << "false" ;
-    strm << endl ;
-    BESIndent::UnIndent() ;
+        strm << "false";
+    strm << endl;
+    BESIndent::UnIndent();
 }
 

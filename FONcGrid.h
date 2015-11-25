@@ -54,28 +54,27 @@ using namespace libdap ;
  * It is possible to share maps among grids, so a global map list is
  * kept as well.
  */
-class FONcGrid : public FONcBaseType
-{
+class FONcGrid: public FONcBaseType {
 private:
-    Grid *			_grid ;
-    FONcArray *			_arr ;
-    vector<FONcMap *>		_maps ;
+    Grid * _grid;
+    FONcArray * _arr;
+    vector<FONcMap *> _maps;
 public:
-    				FONcGrid( BaseType *b ) ;
-    virtual			~FONcGrid() ;
+    FONcGrid(BaseType *b);
+    virtual ~FONcGrid();
 
-    virtual void		convert( vector<string> embed ) ;
-    virtual void		define( int ncid ) ;
-    virtual void		write( int ncid ) ;
+    virtual void convert(vector<string> embed);
+    virtual void define(int ncid);
+    virtual void write(int ncid);
 
-    virtual string 		name() ;
+    virtual string name();
 
-    virtual void		dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const;
 
-    static vector<FONcMap *>	Maps ;
-    static FONcMap *		InMaps( Array *array ) ;
-    static bool			InGrid ;
-} ;
+    static vector<FONcMap *> Maps;
+    static FONcMap * InMaps(Array *array);
+    static bool InGrid;
+};
 
 #endif // FONcGrid_h_
 
