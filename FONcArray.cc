@@ -53,11 +53,11 @@ const int MAX_CHUNK_SIZE = 1024;
  */
 FONcArray::FONcArray(BaseType *b) :
         FONcBaseType(), _a(0), _array_type(NC_NAT), _ndims(0), _actual_ndims(0), _nelements(1), _dim_ids(0), _dim_sizes(
-                0), _str_data(0), _dont_use_it(false), _chunksizes(0), _grid_maps(0)
+                0), _str_data(0), _dont_use_it(false), d_chunksizes(0), _grid_maps(0)
 {
     _a = dynamic_cast<Array *>(b);
     if (!_a) {
-        string s = (string) "File out netcdf, FONcArray was passed a " + "variable that is not a DAP Array";
+        string s = "File out netcdf, FONcArray was passed a variable that is not a DAP Array";
         throw BESInternalError(s, __FILE__, __LINE__);
     }
 }
@@ -111,7 +111,10 @@ FONcArray::~FONcArray()
     delete[] _dim_ids;
     delete[] _dim_sizes;
     delete[] _str_data;
-    delete[] _chunksizes;
+#if 0
+    delete[] d_chunksizes;
+#endif
+
 }
 
 /** @brief Converts the DAP Array to a FONcArray
@@ -145,8 +148,9 @@ void FONcArray::convert(vector<string> embed)
 
     _dim_ids = new int[_ndims];
     _dim_sizes = new size_t[_ndims];
-
-    _chunksizes = new size_t[_ndims];
+#if 0
+    d_chunksizes = new size_t[_ndims];
+#endif
 
     Array::Dim_iter di = _a->dim_begin();
     Array::Dim_iter de = _a->dim_end();
@@ -157,15 +161,18 @@ void FONcArray::convert(vector<string> embed)
         _nelements *= size;
 
         // Set COMPRESSION CHUNK SIZE for each dimension.
+#if 0
         if (size <= MAX_CHUNK_SIZE) {
-            _chunksizes[dimnum] = size;
+            d_chunksizes[dimnum] = size;
         }
         else {
-            _chunksizes[dimnum] = MAX_CHUNK_SIZE;
+            d_chunksizes[dimnum] = MAX_CHUNK_SIZE;
         }
+#endif
+        d_chunksizes.push_back(size <= MAX_CHUNK_SIZE ? size: MAX_CHUNK_SIZE);
 
-        BESDEBUG("fonc",
-                "FONcArray::convert - dimension size: " << size << " chunksize: " << _chunksizes[dimnum] << endl << *this << endl);
+        BESDEBUG("fonc", "FONcArray::convert - dim num: " << dimnum << ", dim size: " << size << ", chunk size: " << d_chunksizes[dimnum] << endl);
+        BESDEBUG("fonc2", *this << endl);
 
         // See if this dimension has already been defined. If it has the
         // same name and same size as another dimension, then it is a
@@ -194,7 +201,7 @@ void FONcArray::convert(vector<string> embed)
         string lendim_name = _varname + "_len";
 
         FONcDim *use_dim = find_dim(empty_embed, lendim_name, max_length, true);
-        // Added static_cast to supress warning. 12.27.2011 jhrg
+        // Added static_cast to suppress warning. 12.27.2011 jhrg
         if (use_dim->size() < static_cast<int>(max_length)) {
             use_dim->update_size(max_length);
         }
@@ -202,6 +209,15 @@ void FONcArray::convert(vector<string> embed)
         _dim_sizes[_ndims - 1] = use_dim->size();
         _dim_ids[_ndims - 1] = use_dim->dimid();
         _dims.push_back(use_dim);
+
+        // Adding this fixes the bug reported by GSFC where arrays of strings
+        // caused the handler to throw an error stating that 'Bad chunk sizes'
+        // were used. When the dimension of the string array was extended (because
+        // strings become char arrays in netcdf3/4), the numbers of dimensions
+        // in 'chunksizes' was not bumped up. The code below in convert() that
+        // set the chunk sizes then tried to access data that had never been set.
+        // jhrg 11/25/15
+        d_chunksizes.push_back(max_length <= MAX_CHUNK_SIZE ? max_length: MAX_CHUNK_SIZE);
     }
 
     // If this array has a single dimension, and the name of the array
@@ -221,7 +237,9 @@ void FONcArray::convert(vector<string> embed)
         }
     }
 
-    BESDEBUG("fonc", "FONcArray::convert - done converting array " << _varname << endl << *this << endl);
+    BESDEBUG("fonc", "FONcArray::convert - done converting array " << _varname << endl);
+    BESDEBUG("fonc2", *this << endl);
+
 }
 
 /** @brief Find a possible shared dimension in the global list
@@ -258,7 +276,7 @@ FONcArray::find_dim(vector<string> &embed, const string &name, int size, bool ig
                     vector<string> tmp;
                     return find_dim(tmp, ename, size);
                 }
-                string err = (string) "fileout_netcdf:dimension found " + "with the same name, but different size";
+                string err = "fileout_netcdf: dimension found with the same name, but different size";
                 throw BESInternalError(err, __FILE__, __LINE__);
             }
         }
@@ -305,15 +323,15 @@ void FONcArray::define(int ncid)
 
         int stax = nc_def_var(ncid, _varname.c_str(), _array_type, _ndims, _dim_ids, &_varid);
         if (stax != NC_NOERR) {
-            string err = (string) "fileout.netcdf - " + "Failed to define variable " + _varname;
+            string err = (string) "fileout.netcdf - Failed to define variable " + _varname;
             FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
         }
 
         if (isNetCDF4()) {
-            stax = nc_def_var_chunking(ncid, _varid, NC_CHUNKED, _chunksizes);
+            stax = nc_def_var_chunking(ncid, _varid, NC_CHUNKED, &d_chunksizes[0]);
 
             if (stax != NC_NOERR) {
-                string err = (string) "fileout.netcdf - " + "Failed to define chunking for variable " + _varname;
+                string err = "fileout.netcdf - Failed to define chunking for variable " + _varname;
                 FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
             }
 
@@ -323,7 +341,7 @@ void FONcArray::define(int ncid)
             stax = nc_def_var_deflate(ncid, _varid, shuffle, deflate, deflate_level);
 
             if (stax != NC_NOERR) {
-                string err = (string) "fileout.netcdf - " + "Failed to define compression deflation level for variable "
+                string err = (string) "fileout.netcdf - Failed to define compression deflation level for variable "
                         + _varname;
                 FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
             }

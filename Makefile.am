@@ -23,7 +23,7 @@ endif
 
 AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER)\"
 
-SUBDIRS = . unit-tests
+SUBDIRS = . unit-tests tests
 # DIST_SUBDIRS = unit-tests
 
 lib_besdir=$(libdir)/bes

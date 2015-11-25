@@ -42,7 +42,7 @@ AUTOM4TE = autom4te
 # is put in the source directory along with the *.at file used to
 # build it, which is important since these scripts are distributed
 # in the tar.gz distribution.
-TESTSUITE = $(srcdir)/fnoc_handler_test
+TESTSUITE = $(srcdir)/fonc_handler_test
 
 check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
@@ -55,7 +55,7 @@ clean-local:
 	-rm -f $(TESTSUITE) $(srcdir)/package.m4 
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/csv_handlerTest.at $(srcdir)/package.m4
+$(TESTSUITE): $(srcdir)/$(TESTSUITE).at handler_tests_macros.m4 $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 

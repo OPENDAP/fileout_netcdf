@@ -78,7 +78,7 @@ private:
 
     // Make this a vector<> jhrg 10/12/15
     // The netcdf chunk sizes for each dimension of this array.
-    size_t * _chunksizes;
+    vector<size_t> d_chunksizes;
 
     // This is vector holds instances pf FONcMap* that wrap existing Array
     // objects that are pushed onto the global FONcGrid::Maps vector. Those

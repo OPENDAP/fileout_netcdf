@@ -30,7 +30,6 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
-
 #ifndef I_FONcRequestHandler_H
 #define I_FONcRequestHandler_H 1
 
@@ -43,16 +42,15 @@
  * used to build a Dap DataDDS object, so those functions are not needed
  * here.
  */
-class FONcRequestHandler : public BESRequestHandler
-{
+class FONcRequestHandler: public BESRequestHandler {
 public:
-			FONcRequestHandler( const string &name ) ;
-    virtual		~FONcRequestHandler( void ) ;
+    FONcRequestHandler(const string &name);
+    virtual ~FONcRequestHandler(void);
 
-    virtual void	dump( ostream &strm ) const ;
+    virtual void dump(ostream &strm) const;
 
-    static bool		build_help( BESDataHandlerInterface &dhi ) ;
-    static bool		build_version( BESDataHandlerInterface &dhi ) ;
+    static bool build_help(BESDataHandlerInterface &dhi);
+    static bool build_version(BESDataHandlerInterface &dhi);
 };
 
 #endif

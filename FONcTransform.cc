@@ -49,9 +49,6 @@ using std::istringstream;
 #include <BESDebug.h>
 #include <BESInternalError.h>
 
-#define ATTRIBUTE_SEPARATOR "."
-#define FONC_ORIGINAL_NAME "fonc_original_name"
-
 #define RETURNAS_NETCDF "netcdf"
 #define RETURNAS_NETCDF4 "netcdf-4"
 

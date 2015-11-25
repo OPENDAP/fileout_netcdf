@@ -269,3 +269,9 @@ BES.DefaultResponseMethod=POST
 #                                                                       #
 #-----------------------------------------------------------------------#
 
+# For HDF4
+
+H4.EnableCF=true
+H4.DisableStructMetaAttr=true
+H4.EnableVdata_to_Attr=true
+

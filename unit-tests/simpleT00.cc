@@ -41,10 +41,6 @@ int main(int argc, char **argv)
     }
 
     try {
-#if 0
-        string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
-        putenv((char *) bes_conf.c_str());
-#endif
         if (debug) {
             BESDebug::SetUp("cerr,fonc");
         }

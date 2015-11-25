@@ -32,36 +32,38 @@
 #ifndef FONcStr_h_
 #define FONcStr_h_ 1
 
-#include <Str.h>
-
-using namespace libdap ;
-
 #include "FONcBaseType.h"
+
+namespace libdap {
+class BaseType;
+class Str;
+}
 
 /** @brief A class representing the DAP Str class for file out netcdf
  *
  * This class represents a DAP Str with additional information
- * needed to write it out to a netcdf file. Includes a reference to the
- * actual DAP Str being converted
+ * needed to write it out to a netcdf file. Includes a pointer to the
+ * actual DAP Str being converted.
+ *
+ * @note That the FONcStr does not inherit from the libdap::Str class.
  */
-class FONcStr : public FONcBaseType
-{
+class FONcStr: public FONcBaseType {
 private:
-    Str *			_str ;
-    int				_dimid ;
-    string *			_data ;
+    libdap::Str *_str;
+    int _dimid;
+    string *_data;
 public:
-    				FONcStr( BaseType *b ) ;
-    virtual			~FONcStr() ;
+    FONcStr(libdap::BaseType *b);
+    virtual ~FONcStr();
 
-    virtual void		define( int ncid ) ;
-    virtual void		write( int ncid ) ;
+    virtual void define(int ncid);
+    virtual void write(int ncid);
 
-    virtual string 		name() ;
-    virtual nc_type		type() ;
+    virtual string name();
+    virtual nc_type type();
 
-    virtual void		dump( ostream &strm ) const ;
-} ;
+    virtual void dump(ostream &strm) const;
+};
 
 #endif // FONcStr_h_
 

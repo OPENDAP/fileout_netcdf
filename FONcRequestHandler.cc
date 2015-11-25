@@ -72,32 +72,25 @@ FONcRequestHandler::~FONcRequestHandler()
  * @throws BESInternalError if the response object is not an
  * informational response object.
  */
-bool
-FONcRequestHandler::build_help( BESDataHandlerInterface &dhi )
+bool FONcRequestHandler::build_help(BESDataHandlerInterface &dhi)
 {
-    BESResponseObject *response = dhi.response_handler->get_response_object() ;
-    BESInfo *info = dynamic_cast < BESInfo * >(response) ;
-    if( !info )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
+    BESResponseObject *response = dhi.response_handler->get_response_object();
+    BESInfo *info = dynamic_cast<BESInfo *>(response);
+    if (!info) throw BESInternalError("cast error", __FILE__, __LINE__);
 
-    bool found = false ;
-    string key = "FONc.Reference" ;
-    string ref ;
-    TheBESKeys::TheKeys()->get_value( key, ref, found ) ;
-    if( ref.empty() )
-	ref = "http://docs.opendap.org/index.php/BES_-_Modules_-_FileOut_Netcdf" ;
-    map<string,string> attrs ;
-    attrs["name"] = MODULE_NAME ;
-    attrs["version"] = MODULE_VERSION ;
-#if 0
-    attrs["name"] = PACKAGE_NAME;
-    attrs["version"] = PACKAGE_VERSION;
-#endif
-    attrs["reference"] = ref ;
-    info->begin_tag( "module", &attrs ) ;
-    info->end_tag( "module" ) ;
+    bool found = false;
+    string key = "FONc.Reference";
+    string ref;
+    TheBESKeys::TheKeys()->get_value(key, ref, found);
+    if (ref.empty()) ref = "http://docs.opendap.org/index.php/BES_-_Modules_-_FileOut_Netcdf";
+    map<string, string> attrs;
+    attrs["name"] = MODULE_NAME;
+    attrs["version"] = MODULE_VERSION;
+    attrs["reference"] = ref;
+    info->begin_tag("module", &attrs);
+    info->end_tag("module");
 
-    return true ;
+    return true;
 }
 
 /** @brief add version information to a version response
@@ -107,20 +100,15 @@ FONcRequestHandler::build_help( BESDataHandlerInterface &dhi )
  * @param dhi The data interface containing information for the current
  * request to the BES
  */
-bool
-FONcRequestHandler::build_version( BESDataHandlerInterface &dhi )
+bool FONcRequestHandler::build_version(BESDataHandlerInterface &dhi)
 {
-    BESResponseObject *response = dhi.response_handler->get_response_object() ;
-    BESVersionInfo *info = dynamic_cast < BESVersionInfo * >(response) ;
-    if( !info )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
+    BESResponseObject *response = dhi.response_handler->get_response_object();
+    BESVersionInfo *info = dynamic_cast<BESVersionInfo *>(response);
+    if (!info) throw BESInternalError("cast error", __FILE__, __LINE__);
 
-#if 0
-    info->add_module(PACKAGE_NAME, PACKAGE_VERSION);
-#endif
     info->add_module(MODULE_NAME, MODULE_VERSION);
 
-    return true ;
+    return true;
 }
 
 /** @brief dumps information about this object
