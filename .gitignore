@@ -69,3 +69,4 @@ unit-tests/test_config.h
 tests/bes.conf
 tests/fonc_handler_test
 tests/fonc_handler_test.dir/
+tests/package.m4
