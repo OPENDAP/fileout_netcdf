@@ -1,0 +1,4 @@
+netcdf test {
+variables:
+	byte byte ;
+}
