@@ -32,7 +32,9 @@
 
 #include "config.h"
 
-#include "FONcRequestHandler.h"
+#include <string>
+#include <sstream>
+
 #include <BESResponseHandler.h>
 #include <BESResponseNames.h>
 #include <BESVersionInfo.h>
@@ -42,16 +44,24 @@
 #include <BESDebug.h>
 #include <BESUtil.h>
 
+#include "FONcRequestHandler.h"
+
 #define FONC_TEMP_DIR "/tmp"
 #define FONC_TEMP_DIR_KEY "FONc.Tempdir"
+
+#define FONC_BYTE_TO_SHORT true
+#define FONC_BYTE_TO_SHORT_KEY "FONc.ByteToShort"
 
 #define FONC_USE_COMP true
 #define FONC_USE_COMP_KEY "FONc.UseCompression"
 
+#define FONC_BLOCK_SIZE 4096
+#define FONC_BLOCK_SIZE_KEY "FONc.BlockSize"
+
 string FONcRequestHandler::temp_dir;
 bool FONcRequestHandler::byte_to_short;
 bool FONcRequestHandler::use_compression;
-int FONcRequestHandler::default_block_size;
+int FONcRequestHandler::block_size;
 
 using namespace std;
 
@@ -92,6 +102,22 @@ static void read_key_value(const string &key_name, string &key, const string &de
     }
 }
 
+static void read_key_value(const string &key_name, int &key, const int default_value)
+{
+    bool key_found = false;
+    string value;
+    TheBESKeys::TheKeys()->get_value(key_name, value, key_found);
+    // 'key' holds the string value at this point if key_found is true
+    if (key_found) {
+        istringstream iss(value);
+        iss >> key;
+        if (iss.eof() || iss.bad() || iss.fail()) key = default_value;
+    }
+    else {
+        key = default_value;
+    }
+}
+
 
 /** @brief Constructor for FileOut NetCDF module
  *
@@ -111,10 +137,16 @@ FONcRequestHandler::FONcRequestHandler( const string &name )
         read_key_value(FONC_TEMP_DIR_KEY, FONcRequestHandler::temp_dir, FONC_TEMP_DIR);
     }
 
+    read_key_value(FONC_BYTE_TO_SHORT_KEY, FONcRequestHandler::byte_to_short, FONC_BYTE_TO_SHORT);
+
     read_key_value(FONC_USE_COMP_KEY, FONcRequestHandler::use_compression, FONC_USE_COMP);
 
+    read_key_value(FONC_BLOCK_SIZE_KEY, FONcRequestHandler::block_size, FONC_BLOCK_SIZE);
+
     BESDEBUG("fonc", "FONcRequestHandler::temp_dir: " << FONcRequestHandler::temp_dir << endl);
+    BESDEBUG("fonc", "FONcRequestHandler::byte_to_short: " << FONcRequestHandler::byte_to_short << endl);
     BESDEBUG("fonc", "FONcRequestHandler::use_compression: " << FONcRequestHandler::use_compression << endl);
+    BESDEBUG("fonc", "FONcRequestHandler::block_size: " << FONcRequestHandler::block_size << endl);
 }
 
 /** @brief Any cleanup that needs to take place

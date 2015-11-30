@@ -29,11 +29,11 @@ EXTRA_DIST =
 # These programs are used to build the .dods files used by the tests in
 # the 'tests' directory
 noinst_PROGRAMS = simpleT00 structT00 structT01 structT02 arrayT arrayT01 \
-gridT seqT
+gridT seqT attrT namesT
 
 ############################################################################
 
-#  attrT namesT readT
+# readT
 
 SRCS = test_send_data.cc test_send_data.h
 
@@ -65,7 +65,7 @@ structT02_SOURCES = structT02.cc $(SRCS)
 structT02_LDADD = $(AM_LDADD)
 
 attrT_SOURCES = attrT.cc $(SRCS)
-attrT_LDADD = $(OBJS) $(AM_LDADD)
+attrT_LDADD = $(AM_LDADD)
 
 gridT_SOURCES = gridT.cc $(SRCS)
 gridT_LDADD = $(AM_LDADD)

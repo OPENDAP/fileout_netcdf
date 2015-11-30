@@ -45,12 +45,12 @@ m4_define([_AT_BESCMD_BINARYDATA_TEST],  [dnl
 
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([besstandalone -c $abs_builddir/bes.conf -i $input | getdap -M -], [], [stdout], [])
+        AT_CHECK([besstandalone -c $abs_builddir/bes.conf -i $input | getdap -Ms -], [], [stdout])
         AT_CHECK([mv stdout $baseline.tmp])
         ],
         [
-        AT_CHECK([besstandalone -c $abs_builddir/bes.conf -i $input | getdap -M - || true], [], [stdout], [stderr])
-        AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore], [], [])
+        AT_CHECK([besstandalone -c $abs_builddir/bes.conf -i $input | getdap -Ms -], [], [stdout])
+        AT_CHECK([diff -b -B $baseline stdout])
         AT_XFAIL_IF([test "$3" = "xfail"])
         ])
 

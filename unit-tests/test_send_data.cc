@@ -13,13 +13,13 @@
 #include <ConstraintEvaluator.h>
 #include <escaping.h>
 
-#include <BESInternalError.h>
 #include <TheBESKeys.h>
 #include <BESContextManager.h>
-#include <BESDataNames.h>
-#include <BESDebug.h>
-
 #include <BESDataHandlerInterface.h>
+#include <BESDapResponseBuilder.h>
+#include <BESDataNames.h>
+#include <BESInternalError.h>
+#include <BESDebug.h>
 
 #include "FONcTransform.h"
 
@@ -29,6 +29,44 @@ string temp_dir = "/tmp";
 
 using namespace libdap;
 
+void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
+
+/**
+ * Given a DataDDS and a file name, write the DAP2 Data (aka .dods)
+ * response to that file. Do not write the MIME headers.
+ */
+void build_dods_response(DataDDS* dds, const string &file_name)
+{
+    for (DDS::Vars_citer i = dds->var_begin(), e = dds->var_end(); i != e; ++i) {
+        cerr << (*i)->name() << " read_p: " << (*i)->read_p() << endl;
+        // already done in set_value(). jhrg 11/27/15 (*i)->set_read_p(true);
+        (*i)->set_send_p(false);
+    }
+    BESDapResponseBuilder rb;
+    ofstream dods_strm(file_name, ios::out | ios::trunc);
+    ConstraintEvaluator eval_dods;
+    rb.send_dap2_data(dods_strm, *dds, eval_dods, false);
+}
+
+/**
+ * Given a DataDDS and a file name, build a NetCDF file for those
+ * variables and write it to that file.
+ */
+void build_netcdf_file(DataDDS* dds, const string &file_name)
+{
+    // transform the DataDDS into a netcdf file. The dhi only needs the
+    // output stream and the post constraint. Test no constraints and
+    // then some different constraints (1 var, 2 var)
+    // The resulting netcdf file is streamed back. Write this file to a
+    // test file locally
+    BESDataHandlerInterface dhi;
+    ofstream fstrm(file_name, ios::out | ios::trunc);
+    dhi.set_output_stream(&fstrm);
+    dhi.data[POST_CONSTRAINT] = "";
+    ConstraintEvaluator eval;
+    send_data(dds, eval, dhi);
+    fstrm.close();
+}
 
 /** @brief stream the temporary netcdf file back to the requester
  *

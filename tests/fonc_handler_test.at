@@ -2,19 +2,32 @@
 
 m4_include([handler_tests_macros.m4])
 
-dnl These DDS response are here as a sanity check so that when/if a test 
-dnl fails, it is wasy to see what kinds of variables are being sent to the
+dnl These DDS and Data responses are here as a sanity check so that when/if a test 
+dnl fails, it is easy to see what kinds of variables are being sent to the
 dnl fileout_netcdf handler. Also, this will serve as test to make sure the
 dnl handlers that are reading the data are still working as expected.
+
+AT_BESCMD_RESPONSE_TEST(simpleT00.0.bescmd)
+AT_BESCMD_BINARYDATA_RESPONSE_TEST(simpleT00.1.bescmd)
+AT_BESCMD_NETCDF_RESPONSE_TEST(simpleT00.2.bescmd)
+AT_BESCMD_NETCDF_RESPONSE_TEST(simpleT00.3.bescmd)
+
+dnl The same data (same .dods response) but with different constraints
+AT_BESCMD_NETCDF_RESPONSE_TEST(simpleT00.4.bescmd)
+AT_BESCMD_NETCDF_RESPONSE_TEST(simpleT00.5.bescmd)
+
+AT_BESCMD_NETCDF_RESPONSE_TEST(simpleT00.6.bescmd)
+AT_BESCMD_NETCDF_RESPONSE_TEST(simpleT00.7.bescmd)
+
 
 AT_BESCMD_RESPONSE_TEST(fnoc.0.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(fnoc.1.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(fnoc.2.bescmd)
 
-AT_BESCMD_RESPONSE_TEST(MOD02.0.bescmd)
+dnl AT_BESCMD_RESPONSE_TEST(MOD02.0.bescmd)
 dnl This file is huge so these accesses are contrained
-AT_BESCMD_NETCDF_RESPONSE_TEST(MOD02.1.bescmd)
-AT_BESCMD_NETCDF_RESPONSE_TEST(MOD02.2.bescmd)
+dnl AT_BESCMD_NETCDF_RESPONSE_TEST(MOD02.1.bescmd)
+dnl AT_BESCMD_NETCDF_RESPONSE_TEST(MOD02.2.bescmd)
 
 AT_BESCMD_RESPONSE_TEST(t_string.0.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(t_string.1.bescmd)
