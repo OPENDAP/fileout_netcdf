@@ -21,13 +21,12 @@ using std::ostringstream;
 #include <Float32.h>
 #include <Str.h>
 
-using namespace ::libdap;
+using namespace libdap;
 
 #include <BESDataHandlerInterface.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
-#include "test_config.h"
 #include "test_send_data.h"
 
 int main(int argc, char **argv)
@@ -43,10 +42,6 @@ int main(int argc, char **argv)
     }
 
     try {
-#if 0
-        string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
-        putenv((char *) bes_conf.c_str());
-#endif
         if (debug)
             BESDebug::SetUp("cerr,fonc");
 
@@ -107,21 +102,7 @@ int main(int argc, char **argv)
 
         dds->add_var(&s);
 
-        // transform the DataDDS into a netcdf file. The dhi only needs the
-        // output stream and the post constraint. Test no constraints and
-        // then some different constraints (1 var, 2 var)
-
-        // The resulting netcdf file is streamed back. Write this file to a
-        // test file locally
-        BESDataHandlerInterface dhi;
-        ofstream fstrm("./namesT.nc", ios::out | ios::trunc);
-        dhi.set_output_stream(&fstrm);
-        dhi.data[POST_CONSTRAINT] = "";
-
-        ConstraintEvaluator eval;
-        send_data(dds, eval, dhi);
-
-        fstrm.close();
+        build_dods_response(dds, "./namesT.dods");
 
         delete dds;
     }

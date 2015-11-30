@@ -39,11 +39,14 @@ SRCS = test_send_data.cc test_send_data.h
 
 # I replaced the SRCS variable and its references to ../<file>.cc
 # with this to work-around a problem with distclean. jhrg 3/25/15
-OBJS = ../FONcTransform.o ../FONcUtils.o ../FONcByte.o ../FONcStr.o	\
-	../FONcShort.o ../FONcInt.o ../FONcFloat.o ../FONcDouble.o	\
-	../FONcStructure.o ../FONcGrid.o ../FONcArray.o			\
-	../FONcSequence.o ../FONcBaseType.o ../FONcDim.o ../FONcMap.o	\
-	../FONcAttributes.o ../FONcRequestHandler.o
+#
+# Not used by the code in this directory. jhrg 11/29/15
+#
+# OBJS = ../FONcTransform.o ../FONcUtils.o ../FONcByte.o ../FONcStr.o	\
+#	../FONcShort.o ../FONcInt.o ../FONcFloat.o ../FONcDouble.o	\
+#	../FONcStructure.o ../FONcGrid.o ../FONcArray.o			\
+#	../FONcSequence.o ../FONcBaseType.o ../FONcDim.o ../FONcMap.o	\
+#   ../FONcAttributes.o ../FONcRequestHandler.o
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 simpleT00_LDADD = $(AM_LDADD)
@@ -76,6 +79,10 @@ namesT_LDADD = $(OBJS) $(AM_LDADD)
 seqT_SOURCES = seqT.cc $(SRCS)
 seqT_LDADD = $(AM_LDADD)
 
-readT_SOURCES = readT.cc $(SRCS) ReadTypeFactory.cc ReadTypeFactory.h ReadSequence.cc ReadSequence.h
-readT_LDADD = $(OBJS) $(AM_LDADD) $(DAP_CLIENT_LIBS)
+# This was/is a way to read data from .dods files and build netcdf
+# that worked without using the dapreader handler (before that was
+# working). Keep it around if it's useful. jhrg 11/29/15 
+#
+# readT_SOURCES = readT.cc $(SRCS) ReadTypeFactory.cc ReadTypeFactory.h ReadSequence.cc ReadSequence.h
+# readT_LDADD = $(OBJS) $(AM_LDADD) $(DAP_CLIENT_LIBS)
 
