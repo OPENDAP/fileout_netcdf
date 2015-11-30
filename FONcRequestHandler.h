@@ -53,6 +53,7 @@ public:
     static bool byte_to_short;
     static bool use_compression;
     static int block_size;
+    static bool classic_model;
 
     static bool build_help(BESDataHandlerInterface &dhi);
     static bool build_version(BESDataHandlerInterface &dhi);

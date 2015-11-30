@@ -23,7 +23,7 @@ BES.Data.RootDirectory=/dev/null
 
 BES.Catalog.catalog.TypeMatch=dr:.*\.dods$;
 BES.Catalog.catalog.TypeMatch+=nc:.*\.nc(\.bz2|\.gz|\.Z)?$;
-BES.Catalog.catalog.TypeMatch+=h4:.*\.hdf(\.bz2|\.gz|\.Z)?$;
+BES.Catalog.catalog.TypeMatch+=h4:.*\.(hdf|HDF)(\.bz2|\.gz|\.Z)?$;
 BES.Catalog.catalog.TypeMatch+=h5:.*\.h5(\.bz2|\.gz|\.Z)?$;
 
 BES.Catalog.catalog.Include=;
@@ -61,9 +61,17 @@ BES.DefaultResponseMethod=POST
 #-----------------------------------------------------------------------#
 
 FONc.Tempdir=@abs_top_builddir@/modules/fileout_netcdf/tests/
+
+# The default values for these keys
+FONc.ByteToShort = true
 FONc.UseCompression=true
+FONc.BlockSize=4096
+FONc.ClassicModel=true
 
 # For HDF4
+
+# Note that changing H4.EnableCF will change the output of the HDF4 tests.
+# If CF is enabled, the HDF4 handler will turn Sequecnes into arrays.
 
 # H4.EnableCF=true
 # H4.DisableStructMetaAttr=true

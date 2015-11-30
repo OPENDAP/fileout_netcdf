@@ -16,6 +16,18 @@
 using namespace libdap;
 
 /**
+ * Given a DataDDS and a file name, write the DAP2 DAS (aka .das)
+ * response to that file. Do not write the MIME headers.
+ */
+void build_das_response(DataDDS* dds, const string &file_name)
+{
+    BESDapResponseBuilder rb;
+    ofstream dods_strm(file_name, ios::out | ios::trunc);
+    ConstraintEvaluator eval_dods;
+    rb.send_das(dods_strm, *dds, eval_dods, false);
+}
+
+/**
  * Given a DataDDS and a file name, write the DAP2 Data (aka .dods)
  * response to that file. Do not write the MIME headers.
  */

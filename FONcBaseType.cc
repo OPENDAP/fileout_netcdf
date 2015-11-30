@@ -34,14 +34,10 @@
 #include "FONcBaseType.h"
 #include "FONcUtils.h"
 
-#define RETURNAS_NETCDF "netcdf"
-#define RETURNAS_NETCDF4 "netcdf-4"
-
-void
-FONcBaseType::convert( vector<string> embed )
+void FONcBaseType::convert(vector<string> embed)
 {
-    _embed = embed ;
-    _varname = name() ;
+    _embed = embed;
+    _varname = name();
 }
 
 /** @brief Define the variable in the netcdf file
@@ -54,26 +50,18 @@ FONcBaseType::convert( vector<string> embed )
  * @param ncid Id of the NetCDF file
  * @throws BESInternalError if defining the variable fails
  */
-void
-FONcBaseType::define( int ncid )
+void FONcBaseType::define(int ncid)
 {
-    if( !_defined )
-    {
-	_varname = FONcUtils::gen_name( _embed, _varname, _orig_varname ) ;
-	BESDEBUG( "fonc", "FONcBaseType::define - defining "
-			  << _varname << endl ) ;
-	int stax = nc_def_var( ncid, _varname.c_str(), type(),
-			       0, NULL, &_varid ) ;
-	if( stax != NC_NOERR )
-	{
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to define variable "
-			 + _varname ;
-	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	}
+    if (!_defined) {
+        _varname = FONcUtils::gen_name(_embed, _varname, _orig_varname);
+        BESDEBUG("fonc", "FONcBaseType::define - defining " << _varname << endl);
+        int stax = nc_def_var(ncid, _varname.c_str(), type(), 0, NULL, &_varid);
+        if (stax != NC_NOERR) {
+            string err = (string) "fileout.netcdf - " + "Failed to define variable " + _varname;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
 
-	BESDEBUG( "fonc", "FONcBaseType::define - done defining "
-			  << _varname << endl ) ;
+        BESDEBUG("fonc", "FONcBaseType::define - done defining " << _varname << endl);
     }
 }
 
@@ -83,28 +71,25 @@ FONcBaseType::define( int ncid )
  * Subclasses of FONcBaseType will return the specific type of data for
  * simple types
  */
-nc_type
-FONcBaseType::type()
+nc_type FONcBaseType::type()
 {
-    return NC_NAT ; // the constant ncdf uses to define simple type
+    return NC_NAT; // the constant ncdf uses to define simple type
 }
 
 /** @brief Clears the list of embedded variable names
  */
-void
-FONcBaseType::clear_embedded()
+void FONcBaseType::clear_embedded()
 {
-    _embed.clear() ;
+    _embed.clear();
 }
 
 /** @brief Identifies variable with use of NetCDF4 features
  */
 void FONcBaseType::setVersion(string version)
 {
-	_ncVersion = version;
+    _ncVersion = version;
 
-	BESDEBUG( "fonc", "FONcBaseType::setVersion: "
-			<< _ncVersion << endl ) ;
+    BESDEBUG("fonc", "FONcBaseType::setVersion: " << _ncVersion << endl);
 }
 
 /** @brief Returns true if NetCDF4 features will be required
@@ -112,32 +97,4 @@ void FONcBaseType::setVersion(string version)
 bool FONcBaseType::isNetCDF4()
 {
     return FONcBaseType::_ncVersion == RETURNAS_NETCDF4;
-
-#if 0
-    // I don't see the purpose of this code. First, either RETURNAS_NETCDF4
-    // is true or it isn't. Second, the code sets stax to NC_NOERR and then
-    // may call FONcUtils::handle_error() which will return nothing (I've since
-    // modified handle_error() so that's no longer true, but when this
-    // method was written this way that was the case). Also, I found that
-    // _ncVersion is sometimes neither RETURNAS_NETCDF4 or RETURNAS_NETCDF
-    // (but no error was thrown because stax was == NC_NOERR).
-    // jhrg 10/23/15
-	int stax = NC_NOERR;
-
-	if ( FONcBaseType::_ncVersion == RETURNAS_NETCDF4 ) {
-		return true;
-	}
-
-	if ( FONcBaseType::_ncVersion == RETURNAS_NETCDF ) {
-		return false;
-	}
-	else {
-		string err = (string)"fileout.netcdf - "
-					 + "Failed to define netcdf version: variable "
-					 + _varname ;
-		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-
-		return false;
-	}
-#endif
 }

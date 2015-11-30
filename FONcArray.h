@@ -32,12 +32,16 @@
 #ifndef FONcArray_h_
 #define FONcArray_h_ 1
 
+#include <vector>
+#include <string>
+
 #include "FONcBaseType.h"
 
 class FONcDim;
 class FONcMap;
 
 namespace libdap {
+class BaseType;
 class Array;
 }
 
@@ -60,16 +64,16 @@ private:
     // The number of elements that will be stored in netcdf
     int d_nelements;
     // The FONcDim dimensions to be used for this variable
-    vector<FONcDim *> d_dims;
+    std::vector<FONcDim *> d_dims;
 
     // The netcdf dimension ids for this array
-    vector<int> d_dim_ids;
+    std::vector<int> d_dim_ids;
     // The netcdf dimension sizes to be written
     //size_t * d_dim_sizes; // changed int to size_t. jhrg 12.27.2011
-    vector<size_t> d_dim_sizes;
+    std::vector<size_t> d_dim_sizes;
     // If string data, we need to do some comparison, so instead of
     // reading it more than once, read it once and save here
-    vector<string> d_str_data;
+    std::vector<std::string> d_str_data;
 
     // If the array is already a map in a grid, then we don't want to
     // define it or write it.
@@ -77,34 +81,34 @@ private:
 
     // Make this a vector<> jhrg 10/12/15
     // The netcdf chunk sizes for each dimension of this array.
-    vector<size_t> d_chunksizes;
+    std::vector<size_t> d_chunksizes;
 
     // This is vector holds instances of FONcMap* that wrap existing Array
     // objects that are pushed onto the global FONcGrid::Maps vector. These
     // are hand made reference counting pointers. I'm not sure we need to
     // store copies in this object, but it may be the case that without
     // calling the FONcMap->decref() method they are not deleted. jhrg 8/28/13
-    vector<FONcMap*> d_grid_maps;
+    std::vector<FONcMap*> d_grid_maps;
 
-    FONcDim * find_dim(vector<string> &embed, const string &name, int size, bool ignore_size = false);
+    FONcDim * find_dim(std::vector<std::string> &embed, const std::string &name, int size, bool ignore_size = false);
 
 public:
-    FONcArray(BaseType *b);
+    FONcArray(libdap::BaseType *b);
     virtual ~FONcArray();
 
-    virtual void convert(vector<string> embed);
+    virtual void convert(std::vector<std::string> embed);
     virtual void define(int ncid);
     virtual void write(int ncid);
 
-    virtual string name();
-    virtual Array * array()
+    virtual std::string name();
+    virtual libdap::Array *array()
     {
         return d_a;
     }
 
-    virtual void dump(ostream &strm) const;
+    virtual void dump(std::ostream &strm) const;
 
-    static vector<FONcDim *> Dimensions;
+    static std::vector<FONcDim *> Dimensions;
 };
 
 #endif // FONcArray_h_

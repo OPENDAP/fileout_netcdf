@@ -159,6 +159,7 @@ int main(int argc, char **argv)
         gattrs.append_attr("contact", "String", "Patrick West");
         gattrs.append_attr("contact_email", "String", "opendap-tech@opendap.org");
 
+        build_das_response(dds, "./attrT.das");
         build_dods_response(dds, "./attrT.dods");
 
         delete dds;

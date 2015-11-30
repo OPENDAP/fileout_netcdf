@@ -1,0 +1,17 @@
+
+This directory holds programs that build .dods files that are 
+used along with the dapreader hadnler to test the fileout_netcdf 
+handler's operation. The programs were copied from the original
+'unit-tests' directory (whcih may have been removed by now...)
+and modified to just make .dods files that the dapreader handler
+can process.
+
+Some of the programs are here but are not used:
+
+attrT is redundant and makes for broken output
+seqT is pointless since this handler just ignores sequences
+readT seems really odd
+
+The programs are built automatically, but they have to be run 
+by hand - the data files are stored in the data directory.
+

@@ -33,6 +33,7 @@
 
 #include <BESDebug.h>
 
+#include "FONcArray.h"
 #include "FONcMap.h"
 #include "FONcUtils.h"
 

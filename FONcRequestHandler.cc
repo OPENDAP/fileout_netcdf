@@ -58,10 +58,14 @@
 #define FONC_BLOCK_SIZE 4096
 #define FONC_BLOCK_SIZE_KEY "FONc.BlockSize"
 
+#define FONC_CLASSIC_MODEL true
+#define FONC_CLASSIC_MODEL_KEY "FONc.ClassicModel"
+
 string FONcRequestHandler::temp_dir;
 bool FONcRequestHandler::byte_to_short;
 bool FONcRequestHandler::use_compression;
 int FONcRequestHandler::block_size;
+bool FONcRequestHandler::classic_model;
 
 using namespace std;
 
@@ -143,10 +147,13 @@ FONcRequestHandler::FONcRequestHandler( const string &name )
 
     read_key_value(FONC_BLOCK_SIZE_KEY, FONcRequestHandler::block_size, FONC_BLOCK_SIZE);
 
+    read_key_value(FONC_CLASSIC_MODEL_KEY, FONcRequestHandler::block_size, FONC_CLASSIC_MODEL);
+
     BESDEBUG("fonc", "FONcRequestHandler::temp_dir: " << FONcRequestHandler::temp_dir << endl);
     BESDEBUG("fonc", "FONcRequestHandler::byte_to_short: " << FONcRequestHandler::byte_to_short << endl);
     BESDEBUG("fonc", "FONcRequestHandler::use_compression: " << FONcRequestHandler::use_compression << endl);
     BESDEBUG("fonc", "FONcRequestHandler::block_size: " << FONcRequestHandler::block_size << endl);
+    BESDEBUG("fonc", "FONcRequestHandler::classic_model: " << FONcRequestHandler::classic_model << endl);
 }
 
 /** @brief Any cleanup that needs to take place

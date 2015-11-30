@@ -58,6 +58,7 @@
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
+#include "FONcBaseType.h"
 #include "FONcRequestHandler.h"
 #include "FONcTransmitter.h"
 #include "FONcTransform.h"
@@ -65,15 +66,9 @@
 using namespace ::libdap;
 using namespace std;
 
-//#define FONC_TEMP_DIR "/tmp"
 // size of the buffer used to read from the temporary file built on disk and
 // send data to the client over the network connection (socket/stream)
-#define BLOCK_SIZE 4096
-
-#define RETURNAS_NETCDF "netcdf"
-#define RETURNAS_NETCDF4 "netcdf-4"
-
-//string FONcTransmitter::temp_dir;
+#define OUTPUT_FILE_BLOCK_SIZE 4096
 
 /** @brief Construct the FONcTransmitter, adding it with name netcdf to be
  * able to transmit a data response
@@ -90,21 +85,6 @@ FONcTransmitter::FONcTransmitter() :
     BESBasicTransmitter()
 {
     add_method(DATA_SERVICE, FONcTransmitter::send_data);
-#if 0
-    if (FONcTransmitter::temp_dir.empty()) {
-        // Where is the temp directory for creating these files
-        bool found = false;
-        string key = "FONc.Tempdir";
-        TheBESKeys::TheKeys()->get_value(key, FONcTransmitter::temp_dir, found);
-        if (!found || FONcTransmitter::temp_dir.empty()) {
-            FONcTransmitter::temp_dir = FONC_TEMP_DIR;
-        }
-        string::size_type len = FONcTransmitter::temp_dir.length();
-        if (FONcTransmitter::temp_dir[len - 1] == '/') {
-            FONcTransmitter::temp_dir = FONcTransmitter::temp_dir.substr(0, len - 1);
-        }
-    }
-#endif
 }
 
 #if 0
@@ -204,22 +184,9 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
             }
         }
     }
-#if 0
-    catch (BESError &e) {
-        throw e;
-    }
-    catch (Error &e) {
-        throw BESInternalError("Failed to read data: " + e.get_error_message(), __FILE__, __LINE__);
-    }
-#endif
     catch (std::exception &e) {
         throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
-#if 0
-    catch (...) {
-        throw BESInternalError("Failed to read data: Unknown exception caught", __FILE__, __LINE__);
-    }
-#endif
 
     //string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
     string temp_file_name = FONcRequestHandler::temp_dir + '/' + "ncXXXXXX";
@@ -251,25 +218,11 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         BESDEBUG("fonc", "FONcTransmitter::send_data - transmitting temp file " << &temp_full[0] << endl);
         FONcTransmitter::return_temp_stream(&temp_full[0], strm, ncVersion);
     }
-#if 0
-    catch (BESError &e) {
-        close(fd);
-        throw;
-    }
-#endif
     catch (std::exception &e) {
         (void) unlink(&temp_full[0]);
         close(fd);
         throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
-#if 0
-    catch (...) {
-        close(fd);
-        throw BESInternalError("File out netcdf, was not able to transform to netcdf, unknown error", __FILE__, __LINE__);
-    }
-
-    close(fd);  // The 'wrap_file_descriptor' struct will close this.
-#endif
 
     (void) unlink(&temp_full[0]);
     close(fd);
@@ -293,7 +246,7 @@ void FONcTransmitter::return_temp_stream(const string &filename, ostream &strm, 
     if (!os)
         throw BESInternalError("Fileout netcdf: Cannot connect to netcdf file.", __FILE__, __LINE__);;
 
-    char block[BLOCK_SIZE];
+    char block[OUTPUT_FILE_BLOCK_SIZE];
 
     os.read(block, sizeof block);
     int nbytes = os.gcount();

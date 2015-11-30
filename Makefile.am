@@ -23,8 +23,9 @@ endif
 
 AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER)\"
 
-SUBDIRS = . unit-tests tests data/build_test_data
-# DIST_SUBDIRS = unit-tests
+# I'm switching from the older tests in 'unit-tests' to the newer ones in 'tests'
+SUBDIRS = . data/build_test_data tests 
+DIST_SUBDIRS = unit-tests data/build_test_data tests 
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libfonc_module.la

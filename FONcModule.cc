@@ -35,6 +35,7 @@
 
 using std::endl;
 
+#include "FONcBaseType.h"
 #include "FONcModule.h"
 #include "FONcTransmitter.h"
 #include "FONcRequestHandler.h"
@@ -47,9 +48,6 @@ using std::endl;
 
 #include <TheBESKeys.h>
 #include <BESDebug.h>
-
-#define RETURNAS_NETCDF "netcdf"
-#define RETURNAS_NETCDF4 "netcdf-4"
 
 /** @brief initialize the module by adding callbacks and registering
  * objects with the framework

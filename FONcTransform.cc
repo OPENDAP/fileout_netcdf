@@ -49,9 +49,10 @@ using std::istringstream;
 #include <BESDebug.h>
 #include <BESInternalError.h>
 
+#if 0
 #define RETURNAS_NETCDF "netcdf"
 #define RETURNAS_NETCDF4 "netcdf-4"
-
+#endif
 
 /** @brief Constructor that creates transformation object from the specified
  * DataDDS object to the specified file

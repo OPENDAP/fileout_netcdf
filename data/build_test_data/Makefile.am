@@ -3,7 +3,9 @@
 if DAP_MODULES
 AM_CPPFLAGS = -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap -I$(top_srcdir)/modules/fileout_netcdf \
 $(NC_CPPFLAGS) $(DAP_CFLAGS)
-LIBADD = $(NC_LDFLAGS) $(NC_LIBS) $(BES_DISPATCH_LIB) -L$(top_builddir)/dap -ldap_module \
+# Forcing the link with the static archive removes a warning about linking
+# with 'modules' not being portable. jhrg 11/30/15
+LIBADD = $(NC_LDFLAGS) $(NC_LIBS) $(BES_DISPATCH_LIB) $(top_builddir)/dap/.libs/libdap_module.a \
 $(BES_EXTRA_LIBS) $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS)
 else
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS) # or wahtever was set here or in ..._CPPFLAGS
@@ -37,22 +39,10 @@ gridT seqT attrT namesT
 
 SRCS = test_send_data.cc test_send_data.h
 
-# I replaced the SRCS variable and its references to ../<file>.cc
-# with this to work-around a problem with distclean. jhrg 3/25/15
-#
-# Not used by the code in this directory. jhrg 11/29/15
-#
-# OBJS = ../FONcTransform.o ../FONcUtils.o ../FONcByte.o ../FONcStr.o	\
-#	../FONcShort.o ../FONcInt.o ../FONcFloat.o ../FONcDouble.o	\
-#	../FONcStructure.o ../FONcGrid.o ../FONcArray.o			\
-#	../FONcSequence.o ../FONcBaseType.o ../FONcDim.o ../FONcMap.o	\
-#   ../FONcAttributes.o ../FONcRequestHandler.o
-
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 simpleT00_LDADD = $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc $(SRCS)
-# arrayT_CPPFLAGS = $(AM_CPPFLAGS)
 arrayT_LDADD = $(AM_LDADD)
 
 arrayT01_SOURCES = arrayT01.cc $(SRCS)
