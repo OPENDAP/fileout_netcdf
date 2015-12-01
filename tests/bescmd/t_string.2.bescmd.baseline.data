@@ -8,7 +8,7 @@ dimensions:
 	dim4 = 1 ;
 	dim5 = 1 ;
 	_array_special_case_len = 2 ;
-	_scalar_len = 31 ;
+	_scalar_len = 30 ;
 variables:
 	char _array_1d(dim1, _array_1d_len) ;
 		_array_1d:HDF5_OBJ_FULLPATH = "/array_1d" ;

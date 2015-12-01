@@ -77,11 +77,13 @@ AT_BESCMD_RESPONSE_TEST(fnoc.0.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(fnoc.1.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(fnoc.2.bescmd)
 
-dnl Tests that require handlers other than dapreader
+dnl t_string is derived from an hdf5 file
 
 AT_BESCMD_RESPONSE_TEST(t_string.0.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(t_string.1.bescmd)
 AT_BESCMD_NETCDF_RESPONSE_TEST(t_string.2.bescmd)
+
+dnl Tests that require handlers other than dapreader
 
 AT_BESCMD_RESPONSE_TEST(hdf4.0.bescmd)
 AT_BESCMD_BINARYDATA_RESPONSE_TEST(hdf4.1.bescmd)
