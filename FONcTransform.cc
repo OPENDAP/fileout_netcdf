@@ -36,6 +36,8 @@
 using std::ostringstream;
 using std::istringstream;
 
+#include "FONcRequestHandler.h" // for the keys
+
 #include "FONcTransform.h"
 #include "FONcUtils.h"
 #include "FONcBaseType.h"
@@ -48,11 +50,6 @@ using std::istringstream;
 #include <Sequence.h>
 #include <BESDebug.h>
 #include <BESInternalError.h>
-
-#if 0
-#define RETURNAS_NETCDF "netcdf"
-#define RETURNAS_NETCDF4 "netcdf-4"
-#endif
 
 /** @brief Constructor that creates transformation object from the specified
  * DataDDS object to the specified file
@@ -150,7 +147,10 @@ void FONcTransform::transform()
     // Open the file for writing
     int stax;
     if ( FONcTransform::_returnAs == RETURNAS_NETCDF4 ) {
-    	stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &_ncid);
+        if (FONcRequestHandler::classic_model)
+            stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &_ncid);
+        else
+            stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4, &_ncid);
     }
     else {
     	stax = nc_create(_localfile.c_str(), NC_CLOBBER, &_ncid);
@@ -165,7 +165,7 @@ void FONcTransform::transform()
         // adding attributes. To do this we must be in define mode.
         nc_redef(_ncid);
 
-        // For each conerted FONc object, call define on it to define
+        // For each converted FONc object, call define on it to define
         // that object to the netcdf file. This also adds the attributes
         // for the variables to the netcdf file
         vector<FONcBaseType *>::iterator i = _fonc_vars.begin();

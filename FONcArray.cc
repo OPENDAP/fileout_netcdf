@@ -293,7 +293,11 @@ void FONcArray::define(int ncid)
         }
 
         if (isNetCDF4()) {
-            stax = nc_def_var_chunking(ncid, _varid, NC_CHUNKED, &d_chunksizes[0]);
+            if (FONcRequestHandler::chunk_size == 0)
+                // I have no idea if chunksizes is needed in this case.
+                stax = nc_def_var_chunking(ncid, _varid, NC_CONTIGUOUS, &d_chunksizes[0]);
+            else
+                stax = nc_def_var_chunking(ncid, _varid, NC_CHUNKED, &d_chunksizes[0]);
 
             if (stax != NC_NOERR) {
                 string err = "fileout.netcdf - Failed to define chunking for variable " + _varname;
@@ -388,7 +392,7 @@ void FONcArray::write(int ncid)
         case NC_SHORT: {
             short *data = new short[d_nelements];
 
-            // Given Byte/UInt8/Char will always be unsigned they must map
+            // Given Byte/UInt8 will always be unsigned they must map
             // to a NetCDF type that will support unsigned bytes.  This
             // detects the original variable was of type Byte and typecasts
             // each data value to a short.

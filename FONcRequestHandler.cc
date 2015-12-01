@@ -49,14 +49,17 @@
 #define FONC_TEMP_DIR "/tmp"
 #define FONC_TEMP_DIR_KEY "FONc.Tempdir"
 
+// I think this should be true always. I'm leaving it in for now
+// but the code does not use the key. Maybe this will be used when
+// there is more comprehensive support for DAP4. jhrg 11/30/15
 #define FONC_BYTE_TO_SHORT true
 #define FONC_BYTE_TO_SHORT_KEY "FONc.ByteToShort"
 
 #define FONC_USE_COMP true
 #define FONC_USE_COMP_KEY "FONc.UseCompression"
 
-#define FONC_BLOCK_SIZE 4096
-#define FONC_BLOCK_SIZE_KEY "FONc.BlockSize"
+#define FONC_CHUNK_SIZE 4096
+#define FONC_CHUNK_SIZE_KEY "FONc.ChunkSize"
 
 #define FONC_CLASSIC_MODEL true
 #define FONC_CLASSIC_MODEL_KEY "FONc.ClassicModel"
@@ -64,7 +67,7 @@
 string FONcRequestHandler::temp_dir;
 bool FONcRequestHandler::byte_to_short;
 bool FONcRequestHandler::use_compression;
-int FONcRequestHandler::block_size;
+int FONcRequestHandler::chunk_size;
 bool FONcRequestHandler::classic_model;
 
 using namespace std;
@@ -141,18 +144,19 @@ FONcRequestHandler::FONcRequestHandler( const string &name )
         read_key_value(FONC_TEMP_DIR_KEY, FONcRequestHandler::temp_dir, FONC_TEMP_DIR);
     }
 
+    // Not currently used. jhrg 11/30/15
     read_key_value(FONC_BYTE_TO_SHORT_KEY, FONcRequestHandler::byte_to_short, FONC_BYTE_TO_SHORT);
 
     read_key_value(FONC_USE_COMP_KEY, FONcRequestHandler::use_compression, FONC_USE_COMP);
 
-    read_key_value(FONC_BLOCK_SIZE_KEY, FONcRequestHandler::block_size, FONC_BLOCK_SIZE);
+    read_key_value(FONC_CHUNK_SIZE_KEY, FONcRequestHandler::chunk_size, FONC_CHUNK_SIZE);
 
-    read_key_value(FONC_CLASSIC_MODEL_KEY, FONcRequestHandler::block_size, FONC_CLASSIC_MODEL);
+    read_key_value(FONC_CLASSIC_MODEL_KEY, FONcRequestHandler::classic_model, FONC_CLASSIC_MODEL);
 
     BESDEBUG("fonc", "FONcRequestHandler::temp_dir: " << FONcRequestHandler::temp_dir << endl);
     BESDEBUG("fonc", "FONcRequestHandler::byte_to_short: " << FONcRequestHandler::byte_to_short << endl);
     BESDEBUG("fonc", "FONcRequestHandler::use_compression: " << FONcRequestHandler::use_compression << endl);
-    BESDEBUG("fonc", "FONcRequestHandler::block_size: " << FONcRequestHandler::block_size << endl);
+    BESDEBUG("fonc", "FONcRequestHandler::chunk_size: " << FONcRequestHandler::chunk_size << endl);
     BESDEBUG("fonc", "FONcRequestHandler::classic_model: " << FONcRequestHandler::classic_model << endl);
 }
 

@@ -52,7 +52,7 @@ public:
     static string temp_dir;
     static bool byte_to_short;
     static bool use_compression;
-    static int block_size;
+    static int chunk_size;
     static bool classic_model;
 
     static bool build_help(BESDataHandlerInterface &dhi);
