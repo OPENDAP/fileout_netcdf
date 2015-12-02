@@ -29,8 +29,11 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include <Array.h>
+
 #include <BESDebug.h>
 
+#include "FONcArray.h"
 #include "FONcMap.h"
 #include "FONcUtils.h"
 

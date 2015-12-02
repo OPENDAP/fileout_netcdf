@@ -22,6 +22,7 @@ using std::endl;
 using namespace ::libdap;
 
 #include <BESDataHandlerInterface.h>
+#include <BESDapResponseBuilder.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
 
@@ -31,20 +32,20 @@ using namespace ::libdap;
 int main(int argc, char **argv)
 {
     bool debug = false;
+    bool dods_response = false; // write either a .dods or a netcdf file
     if (argc > 1) {
         for (int i = 0; i < argc; i++) {
             string arg = argv[i];
             if (arg == "debug") {
                 debug = true;
             }
+            else if (arg == "dods") {
+                dods_response = true;
+            }
         }
     }
 
     try {
-#if 0
-        string bes_conf = (string) "BES_CONF=" + TEST_BUILD_DIR + "/bes.conf";
-        putenv((char *) bes_conf.c_str());
-#endif
         if (debug) {
             BESDebug::SetUp("cerr,fonc");
         }
@@ -85,22 +86,15 @@ int main(int argc, char **argv)
         s.set_value("This is a String Value");
         dds->add_var(&s);
 
-        // transform the DataDDS into a netcdf file. The dhi only needs the
-        // output stream and the post constraint. Test no constraints and
-        // then some different constraints (1 var, 2 var)
-
-        // The resulting netcdf file is streamed back. Write this file to a
-        // test file locally
-
-        BESDataHandlerInterface dhi;
-        ofstream fstrm("./simpleT00.nc", ios::out | ios::trunc);
-        dhi.set_output_stream(&fstrm);
-        dhi.data[POST_CONSTRAINT] = "";
-
-        ConstraintEvaluator eval;
-        send_data(dds, eval, dhi);
-
-        fstrm.close();
+        // Hack this to write out a .dods file as well. The code can ol=nly produce one
+        // of the two responses since calling serialize() now erases the 'local data.'
+        // jhrg 11/28/15
+        if (dods_response) {
+            build_dods_response(dds, "./simpleT00.dods");
+        }
+        else {
+            build_netcdf_file(dds, "./simpleT00.nc");
+        }
 
         delete dds;
     }

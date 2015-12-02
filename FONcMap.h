@@ -34,7 +34,13 @@
 
 #include <BESObj.h>
 
-#include "FONcArray.h"
+//#include "FONcArray.h"
+
+class FONcArray;
+
+namespace libdap {
+class Array;
+}
 
 /** @brief A map of a DAP Grid with file out netcdf information included
  *
@@ -43,31 +49,29 @@
  * amongst many grids, so it includes reference counting for reference
  * by the different FONcGrid instances.
  */
-class FONcMap : public BESObj
-{
+class FONcMap: public BESObj {
 private:
-    FONcArray *			_arr ;
-    bool			_ingrid ;
-    vector<string>		_shared_by ;
-    bool			_defined ;
-    int				_ref ;
-    				FONcMap() : _arr( 0 ), _ingrid( false ),
-					    _defined( false ), _ref( 1 ) {}
+    FONcArray *_arr;
+    bool _ingrid;
+    std::vector<std::string> _shared_by;
+    bool _defined;
+    int _ref;
+    FONcMap() : _arr(0), _ingrid(false), _defined(false), _ref(1) { }
 public:
-    				FONcMap( FONcArray *a, bool ingrid = false ) ;
-    virtual			~FONcMap() ;
+    FONcMap(FONcArray *a, bool ingrid = false);
+    virtual ~FONcMap();
 
-    virtual void		incref() { _ref++ ; }
-    virtual void		decref() ;
+    virtual void incref() { _ref++; }
+    virtual void decref();
 
-    virtual bool		compare( Array *arr ) ;
-    virtual void		add_grid( const string &name ) ;
-    virtual void		clear_embedded() ;
-    virtual void		define( int ncid ) ;
-    virtual void		write( int ncid ) ;
+    virtual bool compare(libdap::Array *arr);
+    virtual void add_grid(const std::string &name);
+    virtual void clear_embedded();
+    virtual void define(int ncid);
+    virtual void write(int ncid);
 
-    virtual void		dump( ostream &strm ) const ;
-} ;
+    virtual void dump(std::ostream &strm) const;
+};
 
 #endif // FONcMap_h_
 

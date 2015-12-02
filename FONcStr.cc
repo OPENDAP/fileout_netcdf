@@ -29,12 +29,16 @@
 //      pwest       Patrick West <pwest@ucar.edu>
 //      jgarcia     Jose Garcia <jgarcia@ucar.edu>
 
+#include <Str.h>
+
 #include <BESInternalError.h>
 #include <BESDebug.h>
 
 #include "FONcStr.h"
 #include "FONcUtils.h"
 #include "FONcAttributes.h"
+
+using namespace libdap;
 
 /** @brief Constructor for FONcStr that takes a DAP Str
  *
@@ -44,16 +48,12 @@
  * @param b A DAP BaseType that should be a Str
  * @throws BESInternalError if the BaseType is not a Str
  */
-FONcStr::FONcStr( BaseType *b )
-    : FONcBaseType(), _str( 0 ), _dimid( 0 ), _data( 0 )
+FONcStr::FONcStr(BaseType *b) :
+    FONcBaseType(), _str(0), _dimid(0), _data(0)
 {
-    _str = dynamic_cast<Str *>(b) ;
-    if( !_str )
-    {
-	string s = (string)"File out netcdf, FONcStr was passed a "
-		   + "variable that is not a DAP Str" ;
-	throw BESInternalError( s, __FILE__, __LINE__ ) ;
-    }
+    _str = dynamic_cast<Str *>(b);
+    if (!_str)
+        throw BESInternalError("File out netcdf, FONcStr was passed a variable that is not a DAP Str", __FILE__, __LINE__);
 }
 
 /** @brief Destructor that cleans up the str
@@ -65,7 +65,7 @@ FONcStr::FONcStr( BaseType *b )
  */
 FONcStr::~FONcStr()
 {
-    if( _data ) delete _data ;
+    delete _data;
 }
 
 /** @brief Define the string variable in the netcdf file
@@ -76,51 +76,37 @@ FONcStr::~FONcStr()
  * @param ncid Id of the NetCDF file
  * @throws BESInternalError if defining the variable fails
  */
-void
-FONcStr::define( int ncid )
+void FONcStr::define(int ncid)
 {
-    if( !_defined )
-    {
-	BESDEBUG( "fonc", "FONcStr::define - defining "
-			  << _varname << endl ) ;
+    if (!_defined) {
+        BESDEBUG("fonc", "FONcStr::define - defining " << _varname << endl);
 
-	int var_dims[1] ;		// variable shape
-	// size_t var_start[1] ;	// variable start     // Not used; jhrg 3/16/11
-	// size_t var_count[1] ;	// variable count     // Not used; jhrg 3/16/11
+        _varname = FONcUtils::gen_name(_embed, _varname, _orig_varname);
+        _data = new string;
+        _str->buf2val((void**) &_data);
+        int size = _data->size() + 1;
 
-	_varname = FONcUtils::gen_name( _embed, _varname, _orig_varname ) ;
-	_data = new string ;
-	_str->buf2val( (void**)&_data ) ;
-	int size = _data->size() + 1 ;
+        string dimname = _varname + "_len";
+        int stax = nc_def_dim(ncid, dimname.c_str(), size, &_dimid);
+        if (stax != NC_NOERR) {
+            string err = (string) "fileout.netcdf - " + "Failed to define dim " + dimname + " for " + _varname;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
 
-	string dimname = _varname + "_len" ;
-	int stax = nc_def_dim( ncid, dimname.c_str(), size, &_dimid ) ;
-	if( stax != NC_NOERR )
-	{
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to define dim " + dimname + " for "
-			 + _varname ;
-	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	}
+        int var_dims[1];        // variable shape
+        var_dims[0] = _dimid;
+        stax = nc_def_var(ncid, _varname.c_str(), NC_CHAR, 1, var_dims, &_varid);
+        if (stax != NC_NOERR) {
+            string err = (string) "fileout.netcdf - " + "Failed to define var " + _varname;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
 
-	var_dims[0] = _dimid ;
-	stax = nc_def_var( ncid, _varname.c_str(), NC_CHAR, 1,
-			   var_dims, &_varid );
-	if( stax != NC_NOERR )
-	{
-	    string err = (string)"fileout.netcdf - "
-			 + "Failed to define var " + _varname ;
-	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	}
+        _defined = true;
 
-	_defined = true ;
+        FONcAttributes::add_attributes(ncid, _varid, _str);
+        FONcAttributes::add_original_name(ncid, _varid, _varname, _orig_varname);
 
-	FONcAttributes::add_attributes( ncid, _varid, _str ) ;
-	FONcAttributes::add_original_name( ncid, _varid,
-					   _varname, _orig_varname ) ;
-
-	BESDEBUG( "fonc", "FONcStr::define - done defining "
-			  << _varname << endl ) ;
+        BESDEBUG("fonc", "FONcStr::define - done defining " << _varname << endl);
     }
 }
 
@@ -133,50 +119,44 @@ FONcStr::define( int ncid )
  * @throws BESInternalError if there is a problem writing the value out
  * to the netcdf file
  */
-void
-FONcStr::write( int ncid )
+void FONcStr::write(int ncid)
 {
-    BESDEBUG( "fonc", "FONcStr::write for var " << _varname << endl ) ;
+    BESDEBUG("fonc", "FONcStr::write for var " << _varname << endl);
 
-    size_t var_start[1] ;	// variable start
-    size_t var_count[1] ;	// variable count
+    size_t var_start[1];	// variable start
+    size_t var_count[1];	// variable count
 
-    var_count[0] = _data->size() + 1 ;
-    var_start[0] = 0 ;
-    int stax = nc_put_vara_text( ncid, _varid, var_start, var_count, 
-				 _data->c_str() ) ;
-    if( stax != NC_NOERR )
-    {
-	string err = (string)"fileout.netcdf - "
-		     + "Failed to write string data " + *_data + " for "
-		     + _varname ;
-	delete _data ;
-	_data = 0 ;
-	FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
+    var_count[0] = _data->size() + 1;
+    var_start[0] = 0;
+    int stax = nc_put_vara_text(ncid, _varid, var_start, var_count, _data->c_str());
+    if (stax != NC_NOERR) {
+        string err = (string) "fileout.netcdf - " + "Failed to write string data " + *_data + " for " + _varname;
+        delete _data;
+        _data = 0;
+        FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
     }
-    delete _data ;
-    _data = 0 ;
-    BESDEBUG( "fonc", "FONcStr::done write for var " << _varname << endl ) ;
+    delete _data;
+    _data = 0;
+
+    BESDEBUG("fonc", "FONcStr::done write for var " << _varname << endl);
 }
 
 /** @brief returns the name of the DAP Str
  *
  * @returns The name of the DAP Str
  */
-string
-FONcStr::name()
+string FONcStr::name()
 {
-    return _str->name() ;
+    return _str->name();
 }
 
 /** @brief returns the netcdf type of the DAP Str
  *
  * @returns The nc_type of NC_CHAR
  */
-nc_type
-FONcStr::type()
+nc_type FONcStr::type()
 {
-    return NC_CHAR ;
+    return NC_CHAR;
 }
 
 /** @brief dumps information about this object for debugging purposes
@@ -185,13 +165,11 @@ FONcStr::type()
  *
  * @param strm C++ i/o stream to dump the information to
  */
-void
-FONcStr::dump( ostream &strm ) const
+void FONcStr::dump(ostream &strm) const
 {
-    strm << BESIndent::LMarg << "FONcStr::dump - ("
-			     << (void *)this << ")" << endl ;
-    BESIndent::Indent() ;
-    strm << BESIndent::LMarg << "name = " << _str->name()  << endl ;
-    BESIndent::UnIndent() ;
+    strm << BESIndent::LMarg << "FONcStr::dump - (" << (void *) this << ")" << endl;
+    BESIndent::Indent();
+    strm << BESIndent::LMarg << "name = " << _str->name() << endl;
+    BESIndent::UnIndent();
 }
 

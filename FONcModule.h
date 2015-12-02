@@ -49,16 +49,19 @@
  *
  * @see FONcTransmitter
  */
-class FONcModule : public BESAbstractModule
-{
+class FONcModule: public BESAbstractModule {
 public:
-    				FONcModule() {}
-    virtual		    	~FONcModule() {}
-    virtual void		initialize( const string &modname ) ;
-    virtual void		terminate( const string &modname ) ;
+    FONcModule()
+    {
+    }
+    virtual ~FONcModule()
+    {
+    }
+    virtual void initialize(const string &modname);
+    virtual void terminate(const string &modname);
 
-    virtual void		dump( ostream &strm ) const ;
-} ;
+    virtual void dump(ostream &strm) const;
+};
 
 #endif // A_FONcModule_H
 

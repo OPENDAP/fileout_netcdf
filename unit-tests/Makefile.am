@@ -1,8 +1,10 @@
 # Tests
 
 if DAP_MODULES
-AM_CPPFLAGS = -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap -I$(top_srcdir)/modules/fileout_netcdf $(NC_CPPFLAGS) $(DAP_CFLAGS)
-LIBADD = $(NC_LDFLAGS) $(NC_LIBS) $(BES_DISPATCH_LIB) $(BES_EXTRA_LIBS) $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS)
+AM_CPPFLAGS = -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap -I$(top_srcdir)/modules/fileout_netcdf \
+$(NC_CPPFLAGS) $(DAP_CFLAGS)
+LIBADD = $(NC_LDFLAGS) $(NC_LIBS) $(BES_DISPATCH_LIB) -L$(top_builddir)/dap -ldap_module \
+$(BES_EXTRA_LIBS) $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS)
 else
 AM_CPPFLAGS = -I$(top_srcdir) $(BES_CPPFLAGS) # or wahtever was set here or in ..._CPPFLAGS
 LIBADD = $(BES_DAP_LIBS)      # and ..._LIBADD
@@ -48,7 +50,7 @@ OBJS = ../FONcTransform.o ../FONcUtils.o ../FONcByte.o ../FONcStr.o	\
 	../FONcShort.o ../FONcInt.o ../FONcFloat.o ../FONcDouble.o	\
 	../FONcStructure.o ../FONcGrid.o ../FONcArray.o			\
 	../FONcSequence.o ../FONcBaseType.o ../FONcDim.o ../FONcMap.o	\
-	../FONcAttributes.o
+	../FONcAttributes.o ../FONcRequestHandler.o
 
 simpleT00_SOURCES = simpleT00.cc $(SRCS)
 simpleT00_LDADD = $(OBJS) $(AM_LDADD)

@@ -65,3 +65,13 @@ unit-tests/structT00
 unit-tests/structT01
 unit-tests/structT02
 unit-tests/test_config.h
+
+tests/bes.conf
+tests/fonc_handler_test
+tests/fonc_handler_test.dir/
+tests/package.m4
+
+data/build_test_data/*T
+data/build_test_data/*T??
+data/build_test_data/*.dods
+data/build_test_data/*.das

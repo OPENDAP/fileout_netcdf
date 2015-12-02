@@ -33,8 +33,9 @@
 
 #include <iostream>
 
-using std::endl ;
+using std::endl;
 
+#include "FONcBaseType.h"
 #include "FONcModule.h"
 #include "FONcTransmitter.h"
 #include "FONcRequestHandler.h"
@@ -48,9 +49,6 @@ using std::endl ;
 #include <TheBESKeys.h>
 #include <BESDebug.h>
 
-#define RETURNAS_NETCDF "netcdf"
-#define RETURNAS_NETCDF4 "netcdf-4"
-
 /** @brief initialize the module by adding callbacks and registering
  * objects with the framework
  *
@@ -61,40 +59,24 @@ using std::endl ;
  *
  * @param modname The name of the module being loaded
  */
-void
-FONcModule::initialize( const string &modname )
+void FONcModule::initialize(const string &modname)
 {
-    BESDEBUG( "fonc", "Initializing module " << modname << endl ) ;
+    BESDEBUG("fonc", "Initializing module " << modname << endl);
 
-    BESDEBUG( "fonc", "    adding " << modname << " request handler" << endl ) ;
-    BESRequestHandler *handler = new FONcRequestHandler( modname ) ;
-    BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
+    BESRequestHandler *handler = new FONcRequestHandler(modname);
+    BESRequestHandlerList::TheList()->add_handler(modname, handler);
 
-    BESDEBUG( "fonc", "    adding " << RETURNAS_NETCDF << " transmitter"
-		     << endl ) ;
-    BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF,
-						     new FONcTransmitter( ) ) ;
+    BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF, new FONcTransmitter());
 
-    BESDEBUG( "fonc", "    adding fonc netcdf service to dap" << endl ) ;
-    BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE,
-						   DATA_SERVICE,
-						   RETURNAS_NETCDF ) ;
+    BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE, DATA_SERVICE, RETURNAS_NETCDF);
 
-    BESDEBUG( "fonc", "    adding " << RETURNAS_NETCDF4 << " transmitter"
-    		<< endl ) ;
-    BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF4,
-							new FONcTransmitter( ) ) ;
+    BESReturnManager::TheManager()->add_transmitter( RETURNAS_NETCDF4, new FONcTransmitter());
 
-    BESDEBUG( "fonc", "    adding fonc netcdf4 service to dap" << endl ) ;
-    BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE,
-							DATA_SERVICE,
-							RETURNAS_NETCDF4 ) ;
+    BESServiceRegistry::TheRegistry()->add_format( OPENDAP_SERVICE, DATA_SERVICE, RETURNAS_NETCDF4);
 
+    BESDebug::Register("fonc");
 
-    BESDEBUG( "fonc", "    adding fonc debug context" << endl ) ;
-    BESDebug::Register( "fonc" ) ;
-
-    BESDEBUG( "fonc", "Done Initializing module " << modname << endl ) ;
+    BESDEBUG("fonc", "Done Initializing module " << modname << endl);
 }
 
 /** @brief removes any registered callbacks or objects from the
@@ -105,27 +87,18 @@ FONcModule::initialize( const string &modname )
  *
  * @param modname The name of the module being removed
  */
-void
-FONcModule::terminate( const string &modname )
+void FONcModule::terminate(const string &modname)
 {
-    BESDEBUG( "fonc", "Cleaning module " << modname << endl ) ;
+    BESDEBUG("fonc", "Cleaning module " << modname << endl);
 
-    BESDEBUG( "fonc", "    removing " << RETURNAS_NETCDF << " transmitter"
-		     << endl ) ;
-    BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF ) ;
+    BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF);
 
-    BESDEBUG( "fonc", "    removing " << RETURNAS_NETCDF4 << " transmitter "
-    		      << endl ) ;
+    BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF4);
 
-	BESReturnManager::TheManager()->del_transmitter( RETURNAS_NETCDF4 ) ;
+    BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler(modname);
+    delete rh;
 
-    BESDEBUG( "fonc", "    removing " << modname << " request handler "
-    		<< endl ) ;
-    BESRequestHandler *rh =
-	BESRequestHandlerList::TheList()->remove_handler( modname ) ;
-    if( rh ) delete rh ;
-
-    BESDEBUG( "fonc", "Done Cleaning module " << modname << endl ) ;
+    BESDEBUG("fonc", "Done Cleaning module " << modname << endl);
 }
 
 /** @brief dumps information about this object for debugging purposes
@@ -134,21 +107,17 @@ FONcModule::terminate( const string &modname )
  *
  * @param strm C++ i/o stream to dump the information to
  */
-void
-FONcModule::dump( ostream &strm ) const
+void FONcModule::dump(ostream &strm) const
 {
-    strm << BESIndent::LMarg << "FONcModule::dump - ("
-        << (void *) this << ")" << endl;
+    strm << BESIndent::LMarg << "FONcModule::dump - (" << (void *) this << ")" << endl;
 }
 
 /** @brief A c function that adds this module to the list of modules to
  * be dynamically loaded.
  */
 extern "C"
+BESAbstractModule *maker()
 {
-    BESAbstractModule *maker()
-    {
-	return new FONcModule ;
-    }
+    return new FONcModule;
 }
 

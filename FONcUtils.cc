@@ -34,6 +34,7 @@
 #include <cassert>
 
 #include "FONcUtils.h"
+#include "FONcDim.h"
 #include "FONcByte.h"
 #include "FONcStr.h"
 #include "FONcShort.h"
@@ -122,7 +123,8 @@ nc_type FONcUtils::get_nc_type(BaseType *element)
         x_type = NC_INT;
     else if (var_type == "Float32")
         x_type = NC_FLOAT;
-    else if (var_type == "Float64") x_type = NC_DOUBLE;
+    else if (var_type == "Float64")
+        x_type = NC_DOUBLE;
 
     return x_type;
 }

@@ -33,11 +33,21 @@
 #define FONcBaseType_h_ 1
 
 #include <netcdf.h>
+#include <vector>
+#include <string>
+
 
 #include <BESObj.h>
-#include <BaseType.h>
+//#include <BaseType.h>
 
-using namespace libdap ;
+#define RETURNAS_NETCDF "netcdf"
+#define RETURNAS_NETCDF4 "netcdf-4"
+
+namespace libdap {
+class BaseType;
+}
+
+//using namespace libdap;
 
 /** @brief A DAP BaseType with file out netcdf information included
  *
@@ -45,36 +55,35 @@ using namespace libdap ;
  * needed to write it out to a netcdf file. Includes a reference to the
  * actual DAP BaseType being converted
  */
-class FONcBaseType : public BESObj
-{
+class FONcBaseType: public BESObj {
 protected:
-    int				_varid ;
-    string			_varname ;
-    string			_orig_varname ;
-    vector<string>		_embed ;
-    bool			_defined ;
-    string			_ncVersion ;
+    int _varid;
+    std::string _varname;
+    std::string _orig_varname;
+    std::vector<std::string> _embed;
+    bool _defined;
+    std::string _ncVersion;
 
-    				FONcBaseType()
-				    : _varid( 0 ), _defined( false ) {}
+    FONcBaseType() : _varid(0), _defined(false) { }
+
 public:
-    virtual			~FONcBaseType() {}
+    virtual ~FONcBaseType() { }
 
-    virtual void		convert( vector<string> embed ) ;
-    virtual void		define( int ncid ) ;
-    virtual void		write( int /*ncid*/ ) {}
+    virtual void convert(std::vector<std::string> embed);
+    virtual void define(int ncid);
+    virtual void write(int /*ncid*/) {  }
 
-    virtual string 		name() = 0 ;
-    virtual nc_type		type() ;
-    virtual void		clear_embedded() ;
-    virtual int			varid() { return _varid ; }
+    virtual std::string name() = 0;
+    virtual nc_type type();
+    virtual void clear_embedded();
+    virtual int varid() const { return _varid; }
 
-    virtual void		dump( ostream &strm ) const = 0 ;
+    virtual void dump(std::ostream &strm) const = 0;
 
-    virtual void		setVersion( string version ) ;
-    virtual bool		isNetCDF4() ;
+    virtual void setVersion(std::string version);
+    virtual bool isNetCDF4();
 
-} ;
+};
 
 #endif // FONcBaseType_h_
 

@@ -61,7 +61,6 @@ public:
     static string gen_name(const vector<string> &embed, const string &name, string &original);
     static FONcBaseType * convert(BaseType *v);
     static void handle_error(int stax, const string &err, const string &file, int line);
-
 };
 
 #endif // FONcUtils
