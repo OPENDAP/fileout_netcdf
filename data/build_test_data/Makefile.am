@@ -26,7 +26,7 @@ CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align -Werror
 
 DISTCLEANFILES = 
 
-CLEANFILES = 
+CLEANFILES = *.dods *.das
 
 EXTRA_DIST = 
 

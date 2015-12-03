@@ -22,7 +22,7 @@ using namespace libdap;
 void build_das_response(DataDDS* dds, const string &file_name)
 {
     BESDapResponseBuilder rb;
-    ofstream dods_strm(file_name, ios::out | ios::trunc);
+    ofstream dods_strm(file_name.c_str(), ios::out | ios::trunc);
     ConstraintEvaluator eval_dods;
     rb.send_das(dods_strm, *dds, eval_dods, false);
 }
@@ -39,7 +39,7 @@ void build_dods_response(DataDDS* dds, const string &file_name)
         (*i)->set_send_p(false);
     }
     BESDapResponseBuilder rb;
-    ofstream dods_strm(file_name, ios::out | ios::trunc);
+    ofstream dods_strm(file_name.c_str(), ios::out | ios::trunc);
     ConstraintEvaluator eval_dods;
     rb.send_dap2_data(dods_strm, *dds, eval_dods, false);
 }
