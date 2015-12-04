@@ -1,12 +1,3 @@
-HTTP/1.0 200 OK
-XDODS-Server: libdap/3.16.0
-XOPeNDAP-Server: libdap/3.16.0
-XDAP: 2.0
-Date: Mon, 30 Nov 2015 22:45:36 GMT
-Last-Modified: Mon, 30 Nov 2015 22:45:36 GMT
-Content-Type: text/plain
-Content-Description: dods_das
-
 Attributes {
     String title "Attribute Test DDS";
     String contact "Patrick West";
