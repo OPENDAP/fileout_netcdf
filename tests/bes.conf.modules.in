@@ -63,8 +63,8 @@ BES.DefaultResponseMethod=POST
 FONc.Tempdir=@abs_top_builddir@/modules/fileout_netcdf/tests/
 
 # The default values for these keys
-FONc.UseCompression=false
-FONc.ChunkSize=0
+FONc.UseCompression=true
+FONc.ChunkSize=4096
 FONc.ClassicModel=true
 
 # For HDF4
