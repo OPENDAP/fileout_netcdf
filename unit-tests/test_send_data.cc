@@ -147,9 +147,7 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
         eval.parse_constraint(ce, *dds);
     }
     catch (Error &e) {
-        string em = e.get_error_message();
-        string err = "Failed to parse the constraint expression: " + em;
-        throw BESInternalError(err, __FILE__, __LINE__);
+        throw BESDapError("Failed to parse the constraint expression: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
     }
     catch (...) {
         string err = (string) "Failed to parse the constraint expression: " + "Unknown exception caught";
@@ -195,9 +193,10 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
         }
     }
     catch (Error &e) {
-        string em = e.get_error_message();
-        string err = "Failed to read data: " + em;
-        throw BESInternalError(err, __FILE__, __LINE__);
+        throw BESDapError("Failed to read data: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
+    }
+    catch (BESErrr &e){
+        throw;
     }
     catch (...) {
         string err = "Failed to read data: Unknown exception caught";
@@ -229,6 +228,12 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
 
         BESDEBUG("fonc", "FONcTransmitter::send_data - transmitting temp file " << temp_full << endl);
         return_temp_stream(temp_full, strm);
+    }
+    catch (Error &e) {
+        close(fd);
+        (void) unlink(temp_full);
+        delete[] temp_full;
+        throw BESDapError("Failed to transform data to NetCDF: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
     }
     catch (BESError &e) {
         close(fd);

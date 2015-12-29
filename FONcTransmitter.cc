@@ -51,6 +51,7 @@
 #include <ConstraintEvaluator.h>
 
 #include <BESInternalError.h>
+#include <BESDapError.h>
 #include <TheBESKeys.h>
 #include <BESContextManager.h>
 #include <BESDataDDSResponse.h>
@@ -136,8 +137,7 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         eval.parse_constraint(ce, *dds);
     }
     catch (Error &e) {
-        throw BESInternalError("Failed to parse the constraint expression: " + e.get_error_message(), __FILE__,
-            __LINE__);
+        throw BESDapError("Failed to parse the constraint expression: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
     }
     catch (...) {
         throw BESInternalError("Failed to parse the constraint expression: Unknown exception caught", __FILE__,
@@ -184,8 +184,17 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
             }
         }
     }
+    catch (Error &e) {
+        throw BESDapError("Failed to read data: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
+    }
+    catch (BESError &e) {
+        throw;
+    }
     catch (std::exception &e) {
         throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
+    }
+    catch (...) {
+        throw BESInternalError("Failed to read data. Unknown Error", __FILE__, __LINE__);
     }
 
     //string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
@@ -209,19 +218,34 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     if (fd == -1) throw BESInternalError("Failed to open the temporary file: " + temp_file_name, __FILE__, __LINE__);
 
     // transform the OPeNDAP DataDDS to the netcdf file
-    BESDEBUG("fonc", "FONcTransmitter::send_data - transforming into temporary file " << &temp_full[0] << endl);
+    BESDEBUG("fonc", "FONcTransmitter::send_data - Transforming into temporary file: " << &temp_full[0] << endl);
 
     try {
         FONcTransform ft(dds, dhi, &temp_full[0], ncVersion);
         ft.transform();
 
-        BESDEBUG("fonc", "FONcTransmitter::send_data - transmitting temp file " << &temp_full[0] << endl);
+        BESDEBUG("fonc", "FONcTransmitter::send_data - Transmitting temp file " << &temp_full[0] << endl);
         FONcTransmitter::return_temp_stream(&temp_full[0], strm, ncVersion);
+    }
+    catch (Error &e) {
+        (void) unlink(&temp_full[0]);
+        close(fd);
+        throw BESDapError("Failed to Transform data to NetCDF: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
+    }
+    catch (BESError &e) {
+        (void) unlink(&temp_full[0]);
+        close(fd);
+        throw;
     }
     catch (std::exception &e) {
         (void) unlink(&temp_full[0]);
         close(fd);
-        throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
+        throw BESInternalError("Failed to Transform data to NetCDF: STL Error: " + string(e.what()), __FILE__, __LINE__);
+    }
+    catch (...) {
+        (void) unlink(&temp_full[0]);
+        close(fd);
+        throw BESInternalError("Failed to Transform data to NetCDF. Unknown Error", __FILE__, __LINE__);
     }
 
     (void) unlink(&temp_full[0]);
