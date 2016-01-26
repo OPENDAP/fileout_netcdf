@@ -15,8 +15,8 @@ noinst_DATA = bes.conf
 
 CLEANFILES = bes.conf
 
-EXTRA_DIST = $(TESTSUITE).at $(TESTSUITE) atlocal.in \
-bes.conf.in bes.conf.modules.in $(srcdir)/package.m4
+EXTRA_DIST = bescmd $(TESTSUITE).at $(TESTSUITE) atlocal.in \
+bes.conf.in bes.conf.modules.in package.m4 handler_tests_macros.m4
 
 DISTCLEANFILES = atconfig
 
@@ -44,10 +44,10 @@ AUTOM4TE = autom4te
 # in the tar.gz distribution.
 TESTSUITE = $(srcdir)/fonc_handler_test
 
-check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
+check-local: $(TESTSUITE) atconfig atlocal 
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
-installcheck-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
+installcheck-local: $(TESTSUITE) atconfig atlocal 
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 clean-local:
@@ -55,9 +55,9 @@ clean-local:
 	-rm -f $(TESTSUITE) $(srcdir)/package.m4 
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/$(TESTSUITE).at handler_tests_macros.m4 $(srcdir)/package.m4
-	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
-	mv $@.tmp $@
+
+$(TESTSUITE): $(TESTSUITE).at $(srcdir)/package.m4 $(srcdir)/handler_tests_macros.m4
+	$(AUTOTEST) -I '$(srcdir)' -o $@ $@.at
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac

@@ -25,7 +25,7 @@ AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER)\"
 
 # I'm switching from the older tests in 'unit-tests' to the newer ones in 'tests'
 SUBDIRS = . data/build_test_data tests 
-DIST_SUBDIRS = unit-tests data/build_test_data tests 
+DIST_SUBDIRS = data/build_test_data tests unit-tests 
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libfonc_module.la
@@ -47,7 +47,7 @@ FONC_HDR = FONcTransform.h FONcTransmitter.h FONcRequestHandler.h	\
 	FONcGrid.h FONcSequence.h FONcByte.h FONcBaseType.h		\
 	FONcDim.h FONcMap.h FONcAttributes.h
 
-EXTRA_DIST = COPYRIGHT COPYING fonc.conf.in doxy.conf
+EXTRA_DIST = data COPYRIGHT COPYING fonc.conf.in doxy.conf
 
 if !DAP_MODULES
 EXTRA_DIST += fileout_netcdf.spec
