@@ -5,6 +5,10 @@ The handler now supports several new configuration parameters:
 # FONc.ChunkSize: The default chunk size when making netCDF4 files, in KBytes
 # FONc.ClassicModel: When making a netCDF4 file, use only the 'classic' netCDF 
 
+A bug with string data has been fixed:
+Now the handler returns a valid netCDF3 or 4 classic model file where
+an array of strings is a two-dimensional array of NC_CHAR (or a rank M
+array of strings is a rank M+1 array of NC_CHAR.
 
 Updated for version 1.2.4
 

@@ -1,10 +1,12 @@
 News for version 1.4.0
 
 New configuration parameters added to control compression and chunking.
-See README for more information
+See README for more information.
 
-
-A bug where 
+A bug where HDF5 files with string data triggered a bug in the handler.
+Now the handler returns a valid netCDF3 or 4 classic model file where
+an array of strings is a two-dimensional array of NC_CHAR (or a rank M
+array of strings is a rank M+1 array of NC_CHAR.
 
 Minor updates, see the ChangeLog
 
