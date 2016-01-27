@@ -1,3 +1,10 @@
+Updated for version 1.4.0
+
+The handler now supports several new configuration parameters:
+# FONc.UseCompression: Use compression when making netCDF4 files
+# FONc.ChunkSize: The default chunk size when making netCDF4 files, in KBytes
+# FONc.ClassicModel: When making a netCDF4 file, use only the 'classic' netCDF 
+
 
 Updated for version 1.2.4
 

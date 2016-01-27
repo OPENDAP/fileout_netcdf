@@ -1,3 +1,13 @@
+News for version 1.4.0
+
+New configuration parameters added to control compression and chunking.
+See README for more information
+
+
+A bug where 
+
+Minor updates, see the ChangeLog
+
 News for version 1.3.2
 
 Added a fix for the _FillValue attribute from Abdul @ NASA
@@ -43,7 +53,7 @@ Version 1.1.1
 
 Build fixes.
 
-Version 1.1.0 (14 Spet 2010)
+Version 1.1.0 (14 Sept 2010)
 
 Added support for Sequences.
 

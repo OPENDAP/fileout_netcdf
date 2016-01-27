@@ -1,3 +1,96 @@
+2016-01-26  James Gallagher  <jgallagher@opendap.org>
+
+	Updated autotest tests, macros and Makefile.am files
+
+2016-01-20  James Gallagher  <jgallagher@opendap.org>
+
+	Removed 'fonc' from tests/Makefile.am
+
+2015-12-28  Nathan Potter  <ndp@opendap.org>
+
+	Patched error handling problems in Transmitter implmentations. In particular: 1) Ensured that libdap::Error objects are converted to BESDapError objects when caught. and 2) Catch and rethrow BESError objects whenever they could be thrown so they don't get swept up as unidentified errors in a catch(...) clause.
+
+2015-12-08  James Gallagher  <jgallagher@opendap.org>
+
+	Added new switches to the fonc.conf file.
+	The default values are supplied, but the presence of the keys
+	will clue people in. Docs also updated.
+
+2015-12-04  James Gallagher  <jgallagher@opendap.org>
+
+	Added a note about building data files
+
+	Fixed the das file for the t_string.h5.dods/das test
+
+2015-12-02  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed include order for data/build_test_data/Makefile.am
+
+	fixed (?) call to fstream() with string and not c-string
+
+	Merge pull request #2 from OPENDAP/string_bug
+	String bug - Write DAP String variables correctly in both NetCDF3 and 4 classic model files
+
+2015-11-30  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed the static link for the build_test_data bins
+
+	t_string.h5 now uses dapreader and not the hdf5 handler
+	...dropping one more dependency. The remaining dependency on HDF4
+	is needed to test a Sequence.
+
+	Tweaked the compression flag; ByteToShort is not used
+	The ByteToShort key might not be very useful. I don't see it being
+	used at all with DAP2 - the byte type in netcdf is signed and in
+	DAP2 is unsigned. The code added by Abdul actually transforms the
+	type of an associated attribute so that netCDF client software won't
+	fail when it detects a type mismatch between the variable and its
+	_FillValue attribute. For DAP4 this key might be used, so I left it
+	in the code.
+
+	New tests using in place of the older ones.
+	The new tests in fileout_netcdf use the handler while the older
+	tests used code that that simulated the handler's operations. It
+	was OK before the handler was modified several times... The new
+	tests use the dapreader handler except for two tests that use
+	hdf4 and hdf5 - the latter can be factored out with a bit more work.
+
+2015-11-29  James Gallagher  <jgallagher@opendap.org>
+
+	More testing changes...
+
+	Added new keys for ByteToShort and BlockSize
+	...And some more changes for the new tests (which are still
+	not done) in the tests and data/build_test_data dirs.
+
+	Checkpoint: More work on tests
+	Copied the simpleT00, ..., programs to data/build_test_data
+	so that they could be used to build .dods files that can be
+	used to test the handler w/o needing netcdf, hdf4, ...
+
+2015-11-25  James Gallagher  <jgallagher@opendap.org>
+
+	added package.m4
+
+	Added UseCompression key
+
+	Removed commented-out code
+	Cleaned up some of the headers, removed some of the calls to 'new.'
+
+	Fix for the 'string bug'
+	Also included are some tweaks for the code that make it a tiny bit
+	'better.' I started looking at how the headers might be streamlined,
+	but I don't really have time to do that - bugs, features and tests
+	should come first.
+
+	Added tests to the handler
+	These tests use the handler in a fashion more like the other handler
+	tests. They should replace the 'unit-tests' once I get the dapreader
+	handler working better.
+
+2015-10-27  James Gallagher  <jgallagher@opendap.org>
+
+	Update for bes 3.16.0 release
 2015-10-26  James Gallagher  <jgallagher@opendap.org>
 
 	Added *.Tpo
