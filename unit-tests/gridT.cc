@@ -106,7 +106,7 @@ int main(int argc, char **argv)
             btv.push_back(10);
             btv.push_back(15);
             a.set_value(btv, 6);
-            order.add_var(&a, array);
+            order.add_var(&a, libdap::array);
         }
         {
             Int32 bt("shot");
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
             btv.push_back(14);
             btv.push_back(21);
             a.set_value(btv, 6);
-            shot.add_var(&a, array);
+            shot.add_var(&a, libdap::array);
         }
         {
             Int32 bt("bears");
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
             btv.push_back(27);
             btv.push_back(36);
             a.set_value(btv, 8);
-            bears.add_var(&a, array);
+            bears.add_var(&a, libdap::array);
         }
         order.set_read_p(true);
         dds->add_var(&order);
