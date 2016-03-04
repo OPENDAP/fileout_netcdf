@@ -361,7 +361,7 @@ void FONcArray::define(int ncid)
  */
 void FONcArray::write(int ncid)
 {
-    BESDEBUG("fonc", "FONcArray::write for var " << _varname << endl);
+    BESDEBUG("fonc", "FONcArray::write for var " << _varname <<  "[" << d_nelements << "]" << endl);
 
     if (d_dont_use_it) {
         BESDEBUG("fonc", "FONcTransform::write not using variable " << _varname << endl);
@@ -522,7 +522,7 @@ void FONcArray::write(int ncid)
         }
     }
 
-    BESDEBUG("fonc", "FONcTransform::write done for " << _varname << endl);
+    BESDEBUG("fonc", "FONcTransform::write done for " << _varname <<  "[" << d_nelements << "]"<< endl);
 }
 
 /** @brief returns the name of the DAP Array
