@@ -147,12 +147,17 @@ void FONcTransform::transform()
     // Open the file for writing
     int stax;
     if ( FONcTransform::_returnAs == RETURNAS_NETCDF4 ) {
-        if (FONcRequestHandler::classic_model)
+        if (FONcRequestHandler::classic_model){
+            BESDEBUG("fonc", "FONcTransform::transform() Opening NetCDF-4 cache file in classic mode. fileName:  " << _localfile << endl);
             stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &_ncid);
-        else
+        }
+        else {
+            BESDEBUG("fonc", "FONcTransform::transform() Opening NetCDF-4 cache file. fileName:  " << _localfile << endl);
             stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4, &_ncid);
+        }
     }
     else {
+        BESDEBUG("fonc", "FONcTransform::transform() Opening NetCDF-3 cache file. fileName:  " << _localfile << endl);
     	stax = nc_create(_localfile.c_str(), NC_CLOBBER, &_ncid);
     }
 
@@ -172,6 +177,7 @@ void FONcTransform::transform()
         vector<FONcBaseType *>::iterator e = _fonc_vars.end();
         for (; i != e; i++) {
             FONcBaseType *fbt = *i;
+            BESDEBUG("fonc", "FONcTransform::transform() Defining variable:  " << fbt->name() << endl);
             fbt->define(_ncid);
         }
 
