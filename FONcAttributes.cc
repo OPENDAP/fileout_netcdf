@@ -188,7 +188,7 @@ void FONcAttributes::addattrs(int ncid, int varid, const string &var_name,
         // If we're doing global attributes AND it's an attr table, and its name is "special"
         // (ends with "_GLOBAL"), then we suppress the use of the attrTable name in
         // the NetCDF Attributes name.
-        if (NC_GLOBAL == varid && attrType== Attr_container && endsWith(attr_name, "_GLOBAL")) {
+        if (varid == NC_GLOBAL  && attrType==Attr_container && endsWith(attr_name, "_GLOBAL")) {
             BESDEBUG("fonc",
                     "Suppressing global AttributeTable name '" << attr_name << "' from inclusion in NetCDF attributes namespace chain." << endl);
             new_attr_name = "";
