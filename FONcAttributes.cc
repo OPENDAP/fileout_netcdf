@@ -31,7 +31,7 @@
 
 #include <sstream>
 
-using std::istringstream ;
+using std::istringstream;
 
 #include <netcdf.h>
 
@@ -71,16 +71,13 @@ using std::istringstream ;
  * @throws BESInternalError if there is a problem writing the attributes for
  * the variable.
  */
-void
-FONcAttributes::add_attributes( int ncid, int varid, BaseType *b )
-{
-    string emb_name ;
-    BaseType *parent = b->get_parent() ;
-    if( parent )
-    {
-	FONcAttributes::add_attributes( ncid, varid, parent, emb_name ) ;
+void FONcAttributes::add_attributes(int ncid, int varid, BaseType *b) {
+    string emb_name;
+    BaseType *parent = b->get_parent();
+    if (parent) {
+        FONcAttributes::add_attributes(ncid, varid, parent, emb_name);
     }
-    addattrs( ncid, varid, b, "" ) ;
+    addattrs(ncid, varid, b, "");
 }
 
 /** @brief writes any parent BaseType attributes out for a BaseType
@@ -96,21 +93,17 @@ FONcAttributes::add_attributes( int ncid, int varid, BaseType *b )
  * @throws BESInternalError if there is a problem writing the attributes for
  * the variable.
  */
-void
-FONcAttributes::add_attributes( int ncid, int varid, BaseType *b,
-				string &emb_name )
-{
-    BaseType *parent = b->get_parent() ;
-    if( parent )
-    {
-	FONcAttributes::add_attributes( ncid, varid, parent, emb_name ) ;
+void FONcAttributes::add_attributes(int ncid, int varid, BaseType *b,
+        string &emb_name) {
+    BaseType *parent = b->get_parent();
+    if (parent) {
+        FONcAttributes::add_attributes(ncid, varid, parent, emb_name);
     }
-    if( !emb_name.empty() )
-    {
-	emb_name += FONC_EMBEDDED_SEPARATOR ;
+    if (!emb_name.empty()) {
+        emb_name += FONC_EMBEDDED_SEPARATOR;
     }
-    emb_name += b->name() ;
-    addattrs( ncid, varid, b, emb_name ) ;
+    emb_name += b->name();
+    addattrs(ncid, varid, b, emb_name);
 }
 
 /** @brief helper function for add_attributes
@@ -122,12 +115,10 @@ FONcAttributes::add_attributes( int ncid, int varid, BaseType *b,
  * @throws BESInternalError if there are any problems writing out the
  * attributes for the data object.
  */
-void
-FONcAttributes::addattrs( int ncid, int varid, BaseType *b,
-			  const string &var_name )
-{
-    AttrTable &attrs = b->get_attr_table() ;
-    addattrs( ncid, varid, attrs, var_name, "" ) ;
+void FONcAttributes::addattrs(int ncid, int varid, BaseType *b,
+        const string &var_name) {
+    AttrTable &attrs = b->get_attr_table();
+    addattrs(ncid, varid, attrs, var_name, "");
 }
 
 /** @brief helper function for add_attributes
@@ -143,23 +134,29 @@ FONcAttributes::addattrs( int ncid, int varid, BaseType *b,
  * @throws BESInternalError if there are any problems writing out the
  * attributes for the data object.
  */
-void
-FONcAttributes::addattrs( int ncid, int varid, AttrTable &attrs,
-			  const string &var_name, const string &prepend_attr )
-{
-    unsigned int num_attrs = attrs.get_size() ;
-    if( num_attrs )
-    {
-	AttrTable::Attr_iter i = attrs.attr_begin() ;
-	AttrTable::Attr_iter e = attrs.attr_end() ;
-	for( ; i != e; i++ )
-	{
-	    unsigned int num_vals = attrs.get_attr_num( i ) ;
-	    if( num_vals )
-	    {
-		addattrs( ncid, varid, var_name, attrs, i, prepend_attr ) ;
-	    }
-	}
+void FONcAttributes::addattrs(int ncid, int varid, AttrTable &attrs,
+        const string &var_name, const string &prepend_attr) {
+    unsigned int num_attrs = attrs.get_size();
+    if (num_attrs) {
+        AttrTable::Attr_iter i = attrs.attr_begin();
+        AttrTable::Attr_iter e = attrs.attr_end();
+        for (; i != e; i++) {
+            unsigned int num_vals = attrs.get_attr_num(i);
+            if (num_vals) {
+                addattrs(ncid, varid, var_name, attrs, i, prepend_attr);
+            }
+        }
+    }
+}
+
+bool endsWith(std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0
+                == fullString.compare(fullString.length() - ending.length(),
+                        ending.length(), ending));
+    }
+    else {
+        return false;
     }
 }
 
@@ -175,248 +172,222 @@ FONcAttributes::addattrs( int ncid, int varid, AttrTable &attrs,
  * attribute. Use of this parameter is deprecated.
  * @throws BESInternalError if there is a problem writing this attribute
  */
-void
-FONcAttributes::addattrs( int ncid, int varid, const string &var_name,
-			  AttrTable &attrs,
-			  AttrTable::Attr_iter &attr,
-			  const string &prepend_attr )
-{
-    string attr_name = attrs.get_name( attr ) ;
-    string new_attr_name ;
-    if( !prepend_attr.empty() )
-    {
-	new_attr_name = prepend_attr + FONC_EMBEDDED_SEPARATOR + attr_name ;
+void FONcAttributes::addattrs(int ncid, int varid, const string &var_name,
+        AttrTable &attrs, AttrTable::Attr_iter &attr,
+        const string &prepend_attr) {
+
+    AttrType attrType = attrs.get_attr_type(attr);
+
+    string attr_name = attrs.get_name(attr);
+    string new_attr_name("");
+    if (!prepend_attr.empty()) {
+        new_attr_name = prepend_attr + FONC_EMBEDDED_SEPARATOR + attr_name;
     }
-    else
-    {
-	new_attr_name = attr_name ;
+    else {
+
+        // If we're doing global attributes AND it's an attr table, and its name is "special"
+        // (ends with "_GLOBAL"), then we suppress the use of the attrTable name in
+        // the NetCDF Attributes name.
+        if (NC_GLOBAL == varid && attrType== Attr_container && endsWith(attr_name, "_GLOBAL")) {
+            BESDEBUG("fonc",
+                    "Suppressing global AttributeTable name '" << attr_name << "' from inclusion in NetCDF attributes namespace chain." << endl);
+            new_attr_name = "";
+        }
+        else {
+            new_attr_name = attr_name;
+        }
     }
 
-    string new_name ;
-    if( !var_name.empty() )
-    {
-	new_name = var_name + FONC_ATTRIBUTE_SEPARATOR + new_attr_name ;
+    string new_name;
+    if (!var_name.empty()) {
+        new_name = var_name + FONC_ATTRIBUTE_SEPARATOR + new_attr_name;
     }
-    else
-    {
-	new_name = new_attr_name ;
+    else {
+        new_name = new_attr_name;
     }
-    new_name = FONcUtils::id2netcdf( new_name ) ;
-    if( varid == NC_GLOBAL )
-	BESDEBUG( "fonc", "Adding global attributes " << new_name << endl ) ;
-    else
-	BESDEBUG( "fonc", "Adding attributes " << new_name << endl ) ;
 
-    int stax = NC_NOERR ;
-    unsigned int attri = 0 ;
-    AttrType type = attrs.get_attr_type( attr ) ;
-    unsigned int num_vals = attrs.get_attr_num( attr ) ;
-    switch( type )
+    // BESDEBUG("fonc","new_name: " << new_name << " new_attr_name: " << new_attr_name << " var_name: " << var_name << endl);
+
+    new_name = FONcUtils::id2netcdf(new_name);
+    if (varid == NC_GLOBAL) {
+        BESDEBUG("fonc", "Adding global attributes " << attr_name << endl);
+    }
+    else {
+        BESDEBUG("fonc", "Adding attributes " << new_name << endl);
+    }
+
+    int stax = NC_NOERR;
+    unsigned int attri = 0;
+    unsigned int num_vals = attrs.get_attr_num(attr);
+    switch (attrType) {
+    case Attr_container: {
+        // flatten
+        BESDEBUG("fonc", "Attribute " << attr_name << " is an attribute container. new_attr_name: \"" << new_attr_name << "\"" << endl);
+        AttrTable *container = attrs.get_attr_table(attr);
+        if (container) {
+            addattrs(ncid, varid, *container, var_name, new_attr_name);
+        }
+    }
+        break;
+    case Attr_byte: {
+        // unsigned char
+        unsigned char vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            unsigned int uival = 0;
+            is >> uival;
+            vals[attri] = (unsigned char) uival;
+        }
+        stax = nc_put_att_uchar(ncid, varid, new_name.c_str(), NC_BYTE,
+                num_vals, vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write byte attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_int16: {
+        // short
+        short vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            short sval = 0;
+            is >> sval;
+            vals[attri] = sval;
+        }
+        stax = nc_put_att_short(ncid, varid, new_name.c_str(), NC_SHORT,
+                num_vals, vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write short attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_uint16: {
+        // unsigned short
+        // (needs to be big enough to store an unsigned short
+        int vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            int ival = 0;
+            is >> ival;
+            vals[attri] = ival;
+        }
+        stax = nc_put_att_int(ncid, varid, new_name.c_str(), NC_INT, num_vals,
+                vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write unsinged short attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_int32: {
+        // int
+        int vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            int ival = 0;
+            is >> ival;
+            vals[attri] = ival;
+        }
+        stax = nc_put_att_int(ncid, varid, new_name.c_str(), NC_INT, num_vals,
+                vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write int attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_uint32: {
+        // uint
+        // needs to be big enough to store an unsigned int
+        int vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            int lval = 0;
+            is >> lval;
+            vals[attri] = lval;
+        }
+        stax = nc_put_att_int(ncid, varid, new_name.c_str(), NC_INT, num_vals,
+                vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write byte attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_float32: {
+        // float
+        float vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            float fval = 0;
+            is >> fval;
+            vals[attri] = fval;
+        }
+        stax = nc_put_att_float(ncid, varid, new_name.c_str(), NC_FLOAT,
+                num_vals, vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write float attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_float64: {
+        // double
+        double vals[num_vals];
+        for (attri = 0; attri < num_vals; attri++) {
+            string val = attrs.get_attr(attr, attri);
+            istringstream is(val);
+            double dval = 0;
+            is >> dval;
+            vals[attri] = dval;
+        }
+        stax = nc_put_att_double(ncid, varid, new_name.c_str(), NC_DOUBLE,
+                num_vals, vals);
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write double attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_string:
+    case Attr_url:
+    case Attr_other_xml:    // Added. jhrg 12.27.2011
     {
-	case Attr_container:
-	    {
-		// flatten
-		BESDEBUG( "fonc", "Attribute " << new_name
-				  << " is an attribute container" << endl ) ;
-		AttrTable *container = attrs.get_attr_table( attr ) ;
-		if( container )
-		{
-		    addattrs( ncid, varid, *container, var_name, new_attr_name ) ;
-		}
-	    }
-	    break ;
-	case Attr_byte:
-	    {
-		// unsigned char
-		unsigned char vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    unsigned int uival = 0 ;
-		    is >> uival ;
-		    vals[attri] = (unsigned char)uival ;
-		}
-		stax = nc_put_att_uchar( ncid, varid, new_name.c_str(),
-					 NC_BYTE, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write byte attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_int16:
-	    {
-		// short
-		short vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    short sval = 0 ;
-		    is >> sval ;
-		    vals[attri] = sval ;
-		}
-		stax = nc_put_att_short( ncid, varid, new_name.c_str(),
-					 NC_SHORT, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write short attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_uint16:
-	    {
-		// unsigned short
-		// (needs to be big enough to store an unsigned short
-		int vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    int ival = 0 ;
-		    is >> ival ;
-		    vals[attri] = ival ;
-		}
-		stax = nc_put_att_int( ncid, varid, new_name.c_str(),
-				       NC_INT, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write unsinged short attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_int32:
-	    {
-		// int
-		int vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    int ival = 0 ;
-		    is >> ival ;
-		    vals[attri] = ival ;
-		}
-		stax = nc_put_att_int( ncid, varid, new_name.c_str(),
-				       NC_INT, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write int attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_uint32:
-	    {
-		// uint
-		// needs to be big enough to store an unsigned int
-		int vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    int lval = 0 ;
-		    is >> lval ;
-		    vals[attri] = lval ;
-		}
-		stax = nc_put_att_int( ncid, varid, new_name.c_str(),
-					NC_INT, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write byte attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_float32:
-	    {
-		// float
-		float vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    float fval = 0 ;
-		    is >> fval ;
-		    vals[attri] = fval ;
-		}
-		stax = nc_put_att_float( ncid, varid, new_name.c_str(),
-					 NC_FLOAT, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write float attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_float64:
-	    {
-		// double
-		double vals[num_vals] ;
-		for( attri = 0; attri < num_vals; attri++ )
-		{
-		    string val = attrs.get_attr( attr, attri ) ;
-		    istringstream is( val ) ;
-		    double dval = 0 ;
-		    is >> dval ;
-		    vals[attri] = dval ;
-		}
-		stax = nc_put_att_double( ncid, varid, new_name.c_str(),
-					  NC_DOUBLE, num_vals, vals ) ;
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write double attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_string:
-	case Attr_url:
-	case Attr_other_xml:    // Added. jhrg 12.27.2011
-	    {
-		// string
-		string val = attrs.get_attr( attr, 0 ) ;
-		for( attri = 1; attri < num_vals; attri++ )
-		{
-		    val += "\n" + attrs.get_attr( attr, attri ) ;
-		}
-		stax = nc_put_att_text( ncid, varid, new_name.c_str(),
-					val.length(), val.c_str());
-		if( stax != NC_NOERR )
-		{
-		    string err = (string)"File out netcdf, "
-				 + "failed to write string attribute "
-				 + new_name ;
-		    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-		}
-	    }
-	    break ;
-	case Attr_unknown:
-	    {
-		string err = (string)"File out netcdf, "
-			     + "failed to write unknown type of attribute "
-			     + new_name ;
-		FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	    }
-	    break ;
+        // string
+        string val = attrs.get_attr(attr, 0);
+        for (attri = 1; attri < num_vals; attri++) {
+            val += "\n" + attrs.get_attr(attr, attri);
+        }
+        stax = nc_put_att_text(ncid, varid, new_name.c_str(), val.length(),
+                val.c_str());
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write string attribute " + new_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
+    }
+        break;
+    case Attr_unknown: {
+        string err = (string) "File out netcdf, "
+                + "failed to write unknown type of attribute " + new_name;
+        FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+    }
+        break;
     }
 }
 
@@ -433,23 +404,18 @@ FONcAttributes::addattrs( int ncid, int varid, const string &var_name,
  * @param var_name The name of the variable as it appears in the new * file
  * @param orig The name of the variable before it was modified
  */
-void
-FONcAttributes::add_original_name( int ncid, int varid,
-				   const string &var_name,
-				   const string &orig )
-{
-    if( var_name != orig )
-    {
-	string attr_name = FONC_ORIGINAL_NAME ;
-	int stax = nc_put_att_text( ncid, varid, attr_name.c_str(),
-				orig.length(), orig.c_str());
-	if( stax != NC_NOERR )
-	{
-	    string err = (string)"File out netcdf, "
-			 + "failed to write change of name attribute for "
-			 + var_name ;
-	    FONcUtils::handle_error( stax, err, __FILE__, __LINE__ ) ;
-	}
+void FONcAttributes::add_original_name(int ncid, int varid,
+        const string &var_name, const string &orig) {
+    if (var_name != orig) {
+        string attr_name = FONC_ORIGINAL_NAME;
+        int stax = nc_put_att_text(ncid, varid, attr_name.c_str(),
+                orig.length(), orig.c_str());
+        if (stax != NC_NOERR) {
+            string err = (string) "File out netcdf, "
+                    + "failed to write change of name attribute for "
+                    + var_name;
+            FONcUtils::handle_error(stax, err, __FILE__, __LINE__);
+        }
     }
 }
 
