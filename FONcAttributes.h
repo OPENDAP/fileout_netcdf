@@ -54,25 +54,12 @@ class FONcBaseType ;
 class FONcAttributes
 {
 private:
-    static void			add_attributes( int ncid, int varid,
-						BaseType *b,
-						string &emb_name ) ;
-    static void			addattrs( int ncid, int varid, BaseType *b,
-					  const string &var_name ) ;
-    static void			addattrs( int ncid, int varid,
-					  const string &var_name,
-					  AttrTable &attrs,
-					  AttrTable::Attr_iter &attr,
-					  const string &prepend_attr ) ;
+    static void	add_variable_attributes_worker( int ncid, int varid, BaseType *b, string &emb_name ) ;
+    static void	add_attributes_worker( int ncid, int varid, const string &var_name, AttrTable &attrs, AttrTable::Attr_iter &attr, const string &prepend_attr ) ;
 public:
-    static void			add_attributes( int ncid, int varid,
-						BaseType *b ) ;
-    static void			addattrs( int ncid, int varid, AttrTable &attrs,
-					  const string &var_name,
-					  const string &prepend_attr ) ;
-    static void			add_original_name( int ncid, int varid,
-						   const string &var_name,
-						   const string &orig ) ;
+    static void add_attributes( int ncid, int varid, AttrTable &attrs, const string &var_name, const string &prepend_attr ) ;
+    static void add_variable_attributes( int ncid, int varid, BaseType *b ) ;
+    static void add_original_name( int ncid, int varid, const string &var_name, const string &orig ) ;
 } ;
 
 #endif // FONcAttributes

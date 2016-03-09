@@ -82,7 +82,7 @@ FONcDouble::define( int ncid )
 
     if( !_defined )
     {
-	FONcAttributes::add_attributes( ncid, _varid, _f ) ;
+	FONcAttributes::add_variable_attributes( ncid, _varid, _f ) ;
 	FONcAttributes::add_original_name( ncid, _varid,
 					   _varname, _orig_varname ) ;
 

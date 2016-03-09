@@ -109,7 +109,7 @@ void FONcArray::convert(vector<string> embed)
     FONcBaseType::convert(embed);
     _varname = FONcUtils::gen_name(embed, _varname, _orig_varname);
 
-    BESDEBUG("fonc", "FONcArray::convert - converting array " << _varname << endl);
+    BESDEBUG("fonc", "FONcArray::convert() - converting array " << _varname << endl);
 
     d_array_type = FONcUtils::get_nc_type(d_a->var());
     d_ndims = d_a->dimensions();
@@ -134,7 +134,7 @@ void FONcArray::convert(vector<string> embed)
         // Set COMPRESSION CHUNK SIZE for each dimension.
         d_chunksizes.push_back(size <= MAX_CHUNK_SIZE ? size: MAX_CHUNK_SIZE);
 
-        BESDEBUG("fonc", "FONcArray::convert - dim num: " << dimnum << ", dim size: " << size << ", chunk size: " << d_chunksizes[dimnum] << endl);
+        BESDEBUG("fonc", "FONcArray::convert() - dim num: " << dimnum << ", dim size: " << size << ", chunk size: " << d_chunksizes[dimnum] << endl);
         BESDEBUG("fonc2", *this << endl);
 
         // See if this dimension has already been defined. If it has the
@@ -201,7 +201,7 @@ void FONcArray::convert(vector<string> embed)
         }
     }
 
-    BESDEBUG("fonc", "FONcArray::convert - done converting array " << _varname << endl);
+    BESDEBUG("fonc", "FONcArray::convert() - done converting array " << _varname << endl);
     BESDEBUG("fonc2", *this << endl);
 
 }
@@ -271,7 +271,7 @@ FONcArray::find_dim(vector<string> &embed, const string &name, int size, bool ig
  */
 void FONcArray::define(int ncid)
 {
-    BESDEBUG("fonc", "FONcArray::define - defining array " << _varname << endl);
+    BESDEBUG("fonc", "FONcArray::define() - defining array '" << _varname << "'" << endl);
 
     if (!_defined && !d_dont_use_it) {
         vector<FONcDim *>::iterator i = d_dims.begin();
@@ -282,7 +282,7 @@ void FONcArray::define(int ncid)
             fd->define(ncid);
             //d_dim_ids.at(dimnum) = fd->dimid();
             d_dim_ids[dimnum] = fd->dimid();
-            BESDEBUG("fonc", "FONcArray::dim_id " << fd->dimid() << " size:" << fd->size() << endl);
+            BESDEBUG("fonc", "FONcArray::define() - dim_id: " << fd->dimid() << " size:" << fd->size() << endl);
             dimnum++;
         }
 
@@ -293,7 +293,8 @@ void FONcArray::define(int ncid)
         }
 
         if (isNetCDF4()) {
-            if (FONcRequestHandler::chunk_size == 0)
+            BESDEBUG("fonc", "FONcArray::define() Working netcdf-4 branch " << endl);
+           if (FONcRequestHandler::chunk_size == 0)
                 // I have no idea if chunksizes is needed in this case.
                 stax = nc_def_var_chunking(ncid, _varid, NC_CONTIGUOUS, &d_chunksizes[0]);
             else
@@ -333,21 +334,22 @@ void FONcArray::define(int ncid)
                     (*iter)->type = Attr_int16;
         }
 
-        FONcAttributes::add_attributes(ncid, _varid, d_a);
+        BESDEBUG("fonc", "FONcArray::define() - Adding attributes " << endl);
+        FONcAttributes::add_variable_attributes(ncid, _varid, d_a);
         FONcAttributes::add_original_name(ncid, _varid, _varname, _orig_varname);
 
         _defined = true;
     }
     else {
         if (_defined) {
-            BESDEBUG("fonc", "    variable " << _varname << " is already defined" << endl);
+            BESDEBUG("fonc", "FONcArray::define() - variable " << _varname << " is already defined" << endl);
         }
         if (d_dont_use_it) {
-            BESDEBUG("fonc", "    variable " << _varname << " is not being used" << endl);
+            BESDEBUG("fonc", "FONcArray::define() - variable " << _varname << " is not being used" << endl);
         }
     }
 
-    BESDEBUG("fonc", "FONcArray::define - done defining array " << _varname << endl);
+    BESDEBUG("fonc", "FONcArray::define() - done defining array '" << _varname << "'" << endl);
 }
 
 /** @brief Write the array out to the netcdf file

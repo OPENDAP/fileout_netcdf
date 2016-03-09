@@ -51,6 +51,10 @@ using std::istringstream;
 #include <BESDebug.h>
 #include <BESInternalError.h>
 
+#include "DapFunctionResultPromoter.h"
+
+
+
 /** @brief Constructor that creates transformation object from the specified
  * DataDDS object to the specified file
  *
@@ -114,6 +118,8 @@ FONcTransform::~FONcTransform()
     }
 }
 
+
+
 /** @brief Transforms each of the variables of the DataDDS to the NetCDF
  * file
  *
@@ -124,6 +130,11 @@ FONcTransform::~FONcTransform()
  */
 void FONcTransform::transform()
 {
+
+
+    _dds = DapFunctionResultPromoter::promote_function_output_structures(_dds);
+
+
     FONcUtils::reset();
 
     // Convert the DDS into an internal format to keep track of
@@ -135,7 +146,7 @@ void FONcTransform::transform()
     for (; vi != ve; vi++) {
         if ((*vi)->send_p()) {
             BaseType *v = *vi;
-            BESDEBUG("fonc", "converting " << v->name() << endl);
+            BESDEBUG("fonc", "FONcTransform::transform() - Converting variable '" << v->name() << "'" << endl);
             FONcBaseType *fb = FONcUtils::convert(v);
             fb->setVersion( FONcTransform::_returnAs );
             _fonc_vars.push_back(fb);
@@ -148,16 +159,16 @@ void FONcTransform::transform()
     int stax;
     if ( FONcTransform::_returnAs == RETURNAS_NETCDF4 ) {
         if (FONcRequestHandler::classic_model){
-            BESDEBUG("fonc", "FONcTransform::transform() Opening NetCDF-4 cache file in classic mode. fileName:  " << _localfile << endl);
+            BESDEBUG("fonc", "FONcTransform::transform() - Opening NetCDF-4 cache file in classic mode. fileName:  " << _localfile << endl);
             stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL, &_ncid);
         }
         else {
-            BESDEBUG("fonc", "FONcTransform::transform() Opening NetCDF-4 cache file. fileName:  " << _localfile << endl);
+            BESDEBUG("fonc", "FONcTransform::transform() - Opening NetCDF-4 cache file. fileName:  " << _localfile << endl);
             stax = nc_create(_localfile.c_str(), NC_CLOBBER|NC_NETCDF4, &_ncid);
         }
     }
     else {
-        BESDEBUG("fonc", "FONcTransform::transform() Opening NetCDF-3 cache file. fileName:  " << _localfile << endl);
+        BESDEBUG("fonc", "FONcTransform::transform() - Opening NetCDF-3 cache file. fileName:  " << _localfile << endl);
     	stax = nc_create(_localfile.c_str(), NC_CLOBBER, &_ncid);
     }
 
@@ -177,14 +188,14 @@ void FONcTransform::transform()
         vector<FONcBaseType *>::iterator e = _fonc_vars.end();
         for (; i != e; i++) {
             FONcBaseType *fbt = *i;
-            BESDEBUG("fonc", "FONcTransform::transform() Defining variable:  " << fbt->name() << endl);
+            BESDEBUG("fonc", "FONcTransform::transform() - Defining variable:  " << fbt->name() << endl);
             fbt->define(_ncid);
         }
 
         // Add any global attributes to the netcdf file
         AttrTable &globals = _dds->get_attr_table();
-        BESDEBUG("fonc", "Adding Global Attributes" << endl << globals << endl);
-        FONcAttributes::addattrs(_ncid, NC_GLOBAL, globals, "", "");
+        BESDEBUG("fonc", "FONcTransform::transform() - Adding Global Attributes" << endl << globals << endl);
+        FONcAttributes::add_attributes(_ncid, NC_GLOBAL, globals, "", "");
 
         // We are done defining the variables, dimensions, and
         // attributes of the netcdf file. End the define mode.
@@ -201,6 +212,7 @@ void FONcTransform::transform()
         e = _fonc_vars.end();
         for (; i != e; i++) {
             FONcBaseType *fbt = *i;
+            BESDEBUG("fonc", "FONcTransform::transform() - Writing data for variable:  " << fbt->name() << endl);
             fbt->write(_ncid);
         }
 
@@ -239,4 +251,5 @@ void FONcTransform::dump(ostream &strm) const
     BESIndent::UnIndent();
     BESIndent::UnIndent();
 }
+
 

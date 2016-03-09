@@ -54,7 +54,7 @@ void FONcBaseType::define(int ncid)
 {
     if (!_defined) {
         _varname = FONcUtils::gen_name(_embed, _varname, _orig_varname);
-        BESDEBUG("fonc", "FONcBaseType::define - defining " << _varname << endl);
+        BESDEBUG("fonc", "FONcBaseType::define - defining '" << _varname << "'" << endl);
         int stax = nc_def_var(ncid, _varname.c_str(), type(), 0, NULL, &_varid);
         if (stax != NC_NOERR) {
             string err = (string) "fileout.netcdf - " + "Failed to define variable " + _varname;
@@ -89,7 +89,7 @@ void FONcBaseType::setVersion(string version)
 {
     _ncVersion = version;
 
-    BESDEBUG("fonc", "FONcBaseType::setVersion: " << _ncVersion << endl);
+    BESDEBUG("fonc", "FONcBaseType::setVersion() - version: '" << _ncVersion << "'" << endl);
 }
 
 /** @brief Returns true if NetCDF4 features will be required

@@ -37,6 +37,9 @@ using std::istringstream;
 
 #include <BESDebug.h>
 #include <BESInternalError.h>
+#include <BESUtil.h>
+
+#include "DapFunctionResultPromoter.h"
 
 #include "FONcAttributes.h"
 #include "FONcUtils.h"
@@ -71,13 +74,15 @@ using std::istringstream;
  * @throws BESInternalError if there is a problem writing the attributes for
  * the variable.
  */
-void FONcAttributes::add_attributes(int ncid, int varid, BaseType *b) {
+void FONcAttributes::add_variable_attributes(int ncid, int varid, BaseType *b) {
     string emb_name;
     BaseType *parent = b->get_parent();
     if (parent) {
-        FONcAttributes::add_attributes(ncid, varid, parent, emb_name);
+        FONcAttributes::add_variable_attributes_worker(ncid, varid, parent, emb_name);
     }
-    addattrs(ncid, varid, b, "");
+    // addattrs_workerA(ncid, varid, b, "");
+    add_attributes(ncid, varid,  b->get_attr_table(), b->name(), "");
+
 }
 
 /** @brief writes any parent BaseType attributes out for a BaseType
@@ -93,33 +98,20 @@ void FONcAttributes::add_attributes(int ncid, int varid, BaseType *b) {
  * @throws BESInternalError if there is a problem writing the attributes for
  * the variable.
  */
-void FONcAttributes::add_attributes(int ncid, int varid, BaseType *b,
-        string &emb_name) {
+void FONcAttributes::add_variable_attributes_worker(int ncid, int varid, BaseType *b, string &emb_name) {
+
     BaseType *parent = b->get_parent();
     if (parent) {
-        FONcAttributes::add_attributes(ncid, varid, parent, emb_name);
+        FONcAttributes::add_variable_attributes_worker(ncid, varid, parent, emb_name);
     }
     if (!emb_name.empty()) {
         emb_name += FONC_EMBEDDED_SEPARATOR;
     }
     emb_name += b->name();
-    addattrs(ncid, varid, b, emb_name);
+    // addattrs_workerA(ncid, varid, b, emb_name);
+    add_attributes(ncid, varid,  b->get_attr_table(), b->name(), emb_name);
 }
 
-/** @brief helper function for add_attributes
- *
- * @param ncid The id of the netcdf file being written to
- * @param varid The netcdf variable id
- * @param b The OPenDAP data object that contains the attributes
- * @param var_name any variable name to prepend to the attribute name
- * @throws BESInternalError if there are any problems writing out the
- * attributes for the data object.
- */
-void FONcAttributes::addattrs(int ncid, int varid, BaseType *b,
-        const string &var_name) {
-    AttrTable &attrs = b->get_attr_table();
-    addattrs(ncid, varid, attrs, var_name, "");
-}
 
 /** @brief helper function for add_attributes
  *
@@ -134,8 +126,8 @@ void FONcAttributes::addattrs(int ncid, int varid, BaseType *b,
  * @throws BESInternalError if there are any problems writing out the
  * attributes for the data object.
  */
-void FONcAttributes::addattrs(int ncid, int varid, AttrTable &attrs,
-        const string &var_name, const string &prepend_attr) {
+void FONcAttributes::add_attributes(int ncid, int varid, AttrTable &attrs, const string &var_name, const string &prepend_attr) {
+
     unsigned int num_attrs = attrs.get_size();
     if (num_attrs) {
         AttrTable::Attr_iter i = attrs.attr_begin();
@@ -143,22 +135,13 @@ void FONcAttributes::addattrs(int ncid, int varid, AttrTable &attrs,
         for (; i != e; i++) {
             unsigned int num_vals = attrs.get_attr_num(i);
             if (num_vals) {
-                addattrs(ncid, varid, var_name, attrs, i, prepend_attr);
+                add_attributes_worker(ncid, varid, var_name, attrs, i, prepend_attr);
             }
         }
     }
 }
 
-bool endsWith(std::string const &fullString, std::string const &ending) {
-    if (fullString.length() >= ending.length()) {
-        return (0
-                == fullString.compare(fullString.length() - ending.length(),
-                        ending.length(), ending));
-    }
-    else {
-        return false;
-    }
-}
+
 
 /** @brief helper function for add_attributes that writes out a single
  * attribute
@@ -172,7 +155,7 @@ bool endsWith(std::string const &fullString, std::string const &ending) {
  * attribute. Use of this parameter is deprecated.
  * @throws BESInternalError if there is a problem writing this attribute
  */
-void FONcAttributes::addattrs(int ncid, int varid, const string &var_name,
+void FONcAttributes::add_attributes_worker(int ncid, int varid, const string &var_name,
         AttrTable &attrs, AttrTable::Attr_iter &attr,
         const string &prepend_attr) {
 
@@ -188,7 +171,7 @@ void FONcAttributes::addattrs(int ncid, int varid, const string &var_name,
         // If we're doing global attributes AND it's an attr table, and its name is "special"
         // (ends with "_GLOBAL"), then we suppress the use of the attrTable name in
         // the NetCDF Attributes name.
-        if (varid == NC_GLOBAL  && attrType==Attr_container && endsWith(attr_name, "_GLOBAL")) {
+        if (varid == NC_GLOBAL  && attrType==Attr_container && BESUtil::endsWith(attr_name, "_GLOBAL")) {
             BESDEBUG("fonc",
                     "Suppressing global AttributeTable name '" << attr_name << "' from inclusion in NetCDF attributes namespace chain." << endl);
             new_attr_name = "";
@@ -210,10 +193,10 @@ void FONcAttributes::addattrs(int ncid, int varid, const string &var_name,
 
     new_name = FONcUtils::id2netcdf(new_name);
     if (varid == NC_GLOBAL) {
-        BESDEBUG("fonc", "Adding global attributes " << attr_name << endl);
+        BESDEBUG("fonc", "FONcAttributes::addattrs() - Adding global attributes " << attr_name << endl);
     }
     else {
-        BESDEBUG("fonc", "Adding attributes " << new_name << endl);
+        BESDEBUG("fonc", "FONcAttributes::addattrs() - Adding attribute " << new_name << endl);
     }
 
     int stax = NC_NOERR;
@@ -225,7 +208,7 @@ void FONcAttributes::addattrs(int ncid, int varid, const string &var_name,
         BESDEBUG("fonc", "Attribute " << attr_name << " is an attribute container. new_attr_name: \"" << new_attr_name << "\"" << endl);
         AttrTable *container = attrs.get_attr_table(attr);
         if (container) {
-            addattrs(ncid, varid, *container, var_name, new_attr_name);
+            add_attributes(ncid, varid, *container, var_name, new_attr_name);
         }
     }
         break;
