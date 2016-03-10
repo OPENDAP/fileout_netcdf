@@ -132,6 +132,16 @@ void FONcTransform::transform()
 {
 
 
+    // This next step utilizes a well known static method (so really it's a function;),
+    // DapFunctionResultPromoter::promote_function_output_structures() to look for
+    // one or more top level Structures whose name indicates (by way of ending with
+    // "_uwrap") that their contents should be promoted (aka moved) to the top level.
+    // This is in support of a hack around the current API where functions may only
+    // return a single object and not a collection of objects. The name suffix
+    // "_unwrap" is used as a signal from the function to the the various response
+    // builders and transmitters that the representation needs to be altered before
+    // transmission, and that in fact is what happens in our friend
+    // DapFunctionResultPromoter::promote_function_output_structures()
     _dds = DapFunctionResultPromoter::promote_function_output_structures(_dds);
 
 
