@@ -39,7 +39,7 @@ using std::istringstream;
 #include <BESInternalError.h>
 #include <BESUtil.h>
 
-#include "DapFunctionResultPromoter.h"
+#include "DapFunctionUtils.h"
 
 #include "FONcAttributes.h"
 #include "FONcUtils.h"
