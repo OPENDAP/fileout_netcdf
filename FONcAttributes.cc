@@ -182,7 +182,8 @@ void FONcAttributes::add_attributes_worker(int ncid, int varid, const string &va
     }
 
 #if 0
-    // This was the old way of doing it and it polluted the attribute names.
+    // This was the old way of doing it and it polluted the attribute names
+    // by prepending full qualified variable names to the attribute name..
     string new_name = new_attr_name;
     if (!var_name.empty()) {
         new_name = var_name + FONC_ATTRIBUTE_SEPARATOR + new_attr_name;
