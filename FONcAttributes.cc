@@ -181,17 +181,21 @@ void FONcAttributes::add_attributes_worker(int ncid, int varid, const string &va
         }
     }
 
-    string new_name;
+#if 0
+    // This was the old way of doing it and it polluted the attribute names.
+    string new_name = new_attr_name;
     if (!var_name.empty()) {
         new_name = var_name + FONC_ATTRIBUTE_SEPARATOR + new_attr_name;
-    }
-    else {
-        new_name = new_attr_name;
     }
 
     // BESDEBUG("fonc","new_name: " << new_name << " new_attr_name: " << new_attr_name << " var_name: " << var_name << endl);
 
     new_name = FONcUtils::id2netcdf(new_name);
+#endif
+
+    string new_name = FONcUtils::id2netcdf(new_attr_name);;
+
+
     if (varid == NC_GLOBAL) {
         BESDEBUG("fonc", "FONcAttributes::addattrs() - Adding global attributes " << attr_name << endl);
     }
