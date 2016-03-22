@@ -58,6 +58,7 @@
 #include <BESDapNames.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
+#include <DapFunctionUtils.h>
 
 #include "FONcBaseType.h"
 #include "FONcRequestHandler.h"
@@ -119,7 +120,7 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj);
     if (!bdds) throw BESInternalError("cast error", __FILE__, __LINE__);
 
-    DataDDS *dds = bdds->get_dds();
+    libdap::DataDDS *dds = bdds->get_dds();
     if (!dds) throw BESInternalError("No DataDDS has been created for transmit", __FILE__, __LINE__);
 
     BESDEBUG("fonc", "FONcTransmitter::send_data() - Parsing the constraint" << endl);
@@ -161,17 +162,21 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         if (eval.function_clauses()) {
             BESDEBUG("fonc", "FONcTransmitter::send_data() - Processing functional constraint clause(s)." << endl);
             DataDDS *tmp_dds = eval.eval_function_clauses(*dds);
-            // This fixes the issue Aron (ADB) reported. jhrg 8/8/14
-            bdds->set_dds(tmp_dds);
             delete dds;
             dds = tmp_dds;
-            // ADB: don't delete DDS here because it will already be
-            // deleted by ~BESDataDDSResponse().
-            // delete dds;
+            bdds->set_dds(dds);
 
-            // ADB: instead, remember that you're using a temp and
-            // delete it later
-            //using_temp_dds = true;
+            // This next step utilizes a well known function, promote_function_output_structures()
+            // to look for one or more top level Structures whose name indicates (by way of ending
+            // with "_uwrap") that their contents should be promoted (aka moved) to the top level.
+            // This is in support of a hack around the current API where server side functions
+            // may only return a single DAP object and not a collection of objects. The name suffix
+            // "_unwrap" is used as a signal from the function to the the various response
+            // builders and transmitters that the representation needs to be altered before
+            // transmission, and that in fact is what happens in our friend
+            // promote_function_output_structures()
+            promote_function_output_structures(dds);
+
         }
         else {
             // Iterate through the variables in the DataDDS and read
