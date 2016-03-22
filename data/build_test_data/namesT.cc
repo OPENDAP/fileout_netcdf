@@ -85,7 +85,7 @@ int main(int argc, char **argv)
             btv.push_back(10);
             btv.push_back(15);
             a.set_value(btv, 6);
-            order.add_var(&a, array);
+            order.add_var(&a, libdap::array);
         }
         order.set_read_p(true);
         dds->add_var(&order);
