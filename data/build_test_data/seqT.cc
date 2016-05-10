@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
        // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
         MySequence s("people", "");
         Str name("name");
         s.add_var(&name);
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         sp->set_value(values);
         sp->set_read_p(true);
 
-        build_dods_response(dds, "./seqT.dods");
+        build_dods_response(&dds, "./seqT.dods");
 
         delete dds;
     }

@@ -29,15 +29,15 @@ string temp_dir = "/tmp";
 
 using namespace libdap;
 
-void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
+void send_data(DDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi);
 
 /**
  * Given a DataDDS and a file name, write the DAP2 Data (aka .dods)
  * response to that file. Do not write the MIME headers.
  */
-void build_dods_response(DataDDS* dds, const string &file_name)
+void build_dods_response(DDS **dds, const string &file_name)
 {
-    for (DDS::Vars_citer i = dds->var_begin(), e = dds->var_end(); i != e; ++i) {
+    for (DDS::Vars_citer i = (*dds)->var_begin(), e = (*dds)->var_end(); i != e; ++i) {
         cerr << (*i)->name() << " read_p: " << (*i)->read_p() << endl;
         // already done in set_value(). jhrg 11/27/15 (*i)->set_read_p(true);
         (*i)->set_send_p(false);
@@ -45,14 +45,14 @@ void build_dods_response(DataDDS* dds, const string &file_name)
     BESDapResponseBuilder rb;
     ofstream dods_strm(file_name, ios::out | ios::trunc);
     ConstraintEvaluator eval_dods;
-    rb.send_dap2_data(dods_strm, *dds, eval_dods, false);
+    rb.send_dap2_data(dods_strm, dds, eval_dods, false);
 }
 
 /**
  * Given a DataDDS and a file name, build a NetCDF file for those
  * variables and write it to that file.
  */
-void build_netcdf_file(DataDDS* dds, const string &file_name)
+void build_netcdf_file(DDS **dds, const string &file_name)
 {
     // transform the DataDDS into a netcdf file. The dhi only needs the
     // output stream and the post constraint. Test no constraints and
@@ -132,7 +132,7 @@ static void return_temp_stream(const string &filename, ostream &strm)
  * This version of send_data() does not use the DAP code that's now a BES
  * module (and not a library, which is what this code used to link with).
  */
-void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi)
+void send_data(DDS **dds, ConstraintEvaluator &eval, BESDataHandlerInterface &dhi)
 {
     ostream &strm = dhi.get_output_stream();
     if (!strm) {
@@ -144,7 +144,7 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
     // ticket 1248 jhrg 2/23/09
     string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
     try {
-        eval.parse_constraint(ce, *dds);
+        eval.parse_constraint(ce, **dds);
     }
     catch (Error &e) {
         throw BESDapError("Failed to parse the constraint expression: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
@@ -171,7 +171,9 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
         // Handle *functional* constraint expressions specially
         if (eval.function_clauses()) {
             BESDEBUG("fonc", "processing a functional constraint clause(s)." << endl);
-            dds = eval.eval_function_clauses(*dds);
+            DDS *tmp_dds = eval.eval_function_clauses(**dds);
+            delete *dds;
+            *dds = tmp_dds;
         }
         else
         {
@@ -183,11 +185,11 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
             // serialize() to read values but transfers them to the
             // d_values field instead of writing them to a XDR sink
             // pointer. jhrg 9/13/06
-            for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
+            for (DDS::Vars_iter i = (*dds)->var_begin(); i != (*dds)->var_end(); i++) {
                 if ((*i)->send_p()) {
                     // FIXME: we don't have sequences in netcdf so let's not
                     // worry about that right now.
-                    (*i)->intern_data(eval, *dds);
+                    (*i)->intern_data(eval, **dds);
                 }
             }
         }
@@ -195,7 +197,7 @@ void send_data(DataDDS *dds, ConstraintEvaluator &eval, BESDataHandlerInterface 
     catch (Error &e) {
         throw BESDapError("Failed to read data: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
     }
-    catch (BESErrr &e){
+    catch (BESError &e){
         throw;
     }
     catch (...) {

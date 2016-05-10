@@ -52,39 +52,41 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS **dds, *pdds;
+        pdds = new DataDDS(NULL, "virtual");
+        *dds = pdds;
 
         Byte b("byte");
         b.set_value(28);
-        dds->add_var(&b);
+        pdds->add_var(&b);
 
         Int16 i16("i16");
         i16.set_value(-2048);
-        dds->add_var(&i16);
+        pdds->add_var(&i16);
 
         Int32 i32("i32");
         i32.set_value(-105467);
-        dds->add_var(&i32);
+        pdds->add_var(&i32);
 
         UInt16 ui16("ui16");
         ui16.set_value(2048);
-        dds->add_var(&ui16);
+        pdds->add_var(&ui16);
 
         UInt32 ui32("ui32");
         ui32.set_value(105467);
-        dds->add_var(&ui32);
+        pdds->add_var(&ui32);
 
         Float32 f32("f32");
         f32.set_value(5.7866);
-        dds->add_var(&f32);
+        pdds->add_var(&f32);
 
         Float64 f64("f64");
         f64.set_value(10245.1234);
-        dds->add_var(&f64);
+        pdds->add_var(&f64);
 
         Str s("str");
         s.set_value("This is a String Value");
-        dds->add_var(&s);
+        pdds->add_var(&s);
 
         // Hack this to write out a .dods file as well. The code can ol=nly produce one
         // of the two responses since calling serialize() now erases the 'local data.'

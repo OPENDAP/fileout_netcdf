@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
 
         Structure s("mystruct");
 
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
         dds->add_var(&s);
 
-        build_dods_response(dds, "./structT00.dods");
+        build_dods_response(&dds, "./structT00.dods");
 
         delete dds;
     }

@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
         {
             Byte *b = new Byte("byte_array");
             Array *a = new Array("array", b);
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
             a->set_value(stra, stra.size());
         }
 
-        build_dods_response(dds, "./arrayT.dods");
+        build_dods_response(&dds, "./arrayT.dods");
 
         delete dds;
     }

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
             BESDebug::SetUp("cerr,fonc");
 
         // nested with constraint
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
 
         Structure s1("s1");
         Structure s2("s2");
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 
         dds->add_var(&s1);
 
-        build_dods_response(dds, "./structT02.dods");
+        build_dods_response(&dds, "./structT02.dods");
         // apply CE "s1.ui16,s1.s2.str,s1.s2.s3.i32"
 
         delete dds;

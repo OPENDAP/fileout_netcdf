@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
 
         Byte b("byte");
         b.set_value(28);
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
         s.set_value("This is a String Value");
         dds->add_var(&s);
 
-        build_dods_response(dds, "./simpleT00.dods");
+        build_dods_response(&dds, "./simpleT00.dods");
 
         delete dds;
     }
