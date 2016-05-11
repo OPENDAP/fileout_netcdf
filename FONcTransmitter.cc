@@ -120,7 +120,7 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj);
     if (!bdds) throw BESInternalError("cast error", __FILE__, __LINE__);
 
-    libdap::DataDDS *dds = bdds->get_dds();
+    libdap::DDS *dds = bdds->get_dds();
     if (!dds) throw BESInternalError("No DataDDS has been created for transmit", __FILE__, __LINE__);
 
     BESDEBUG("fonc", "FONcTransmitter::send_data() - Parsing the constraint" << endl);
@@ -161,7 +161,7 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         // Handle *functional* constraint expressions specially
         if (eval.function_clauses()) {
             BESDEBUG("fonc", "FONcTransmitter::send_data() - Processing functional constraint clause(s)." << endl);
-            DataDDS *tmp_dds = eval.eval_function_clauses(*dds);
+            DDS *tmp_dds = eval.eval_function_clauses(*dds);
             delete dds;
             dds = tmp_dds;
             bdds->set_dds(dds);
