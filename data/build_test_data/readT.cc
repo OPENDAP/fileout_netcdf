@@ -159,9 +159,7 @@ int main(int argc, char **argv)
     Connect *url = 0;
     Response *r = 0;
     ReadTypeFactory factory;
-    DDS **dds;
-    *dds = new DataDDS(&factory);
-
+    DDS *dds = new DDS(&factory);
     try {
         if (debug) BESDebug::SetUp("cerr,fonc");
 
@@ -173,9 +171,9 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        url->read_data_no_mime(**dds, r);
+        url->read_data_no_mime(*dds, r);
 
-        if (debug) print_data(*dds, false);
+        if (debug) print_data(dds, false);
     }
     catch (Error & e) {
         cout << e.get_error_message() << endl;
@@ -194,12 +192,12 @@ int main(int argc, char **argv)
     url = 0;
 
     try {
-        (*dds)->tag_nested_sequences();
-        if (debug) (*dds)->print(cerr);
-        set_read(*dds);
+        dds->tag_nested_sequences();
+        if (debug) dds->print(cerr);
+        set_read(dds);
         if (debug) cerr << *dds << endl;
 
-        build_dods_response(dds, "./namesT.dods");
+        build_dods_response(&dds, "./namesT.dods");
 
         // transform the DataDDS into a netcdf file. The dhi only needs the
         // output stream and the post constraint. Test no constraints and
