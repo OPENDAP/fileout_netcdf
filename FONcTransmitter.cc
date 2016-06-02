@@ -109,13 +109,12 @@ struct wrap_file_descriptor {
  *  - SSFunction invocations
  *  - ResourceID? URL?
  */
-void updateHistoryAttribute(DDS *dds){
+void updateHistoryAttribute(DDS *dds, const string ce){
 
 
 
 
 #if 0
-
     string hyrax_version =  "Hyrax-1.13.1";
     string request_url   =  "http://gosuckanegg.com";
 
@@ -138,54 +137,73 @@ void updateHistoryAttribute(DDS *dds){
     bool foundIt =  false;
     string cf_history_entry = BESContextManager::TheManager()->get_context("cf_history_entry", foundIt);
     if(foundIt){
-        BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Adding cf_history_entry: '" << cf_history_entry << "'" );
+        BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Located cf_history_entry context." << endl );
 
-        vector<string> hist_entry_vec;
-        hist_entry_vec.push_back(cf_history_entry);
+    }
+    else {
+        BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Unable to locate cf_history_entry context. Making a less happy version." << endl);
+        string hyrax_version =  "Hyrax";
+        string request_url   =  dds->filename() + "?"+ ce;
 
-        // Add the new entry to the "history" attribute
-        // Get the top level Attribute table.
-        AttrTable &globals = dds->get_attr_table();
+        std::stringstream ss;
+
+        time_t raw_now;
+        struct tm * timeinfo;
+        time(&raw_now);  /* get current time; same as: timer = time(NULL)  */
+        timeinfo = localtime (&raw_now);
+
+        char time_str[100];
+        // 2000-6-1 6:00:00
+        strftime(time_str,100,"%Y-%m-%d %H:%M:%S",timeinfo);
+
+        ss << time_str << " "<< hyrax_version << " " << request_url << endl;
+        cf_history_entry = ss.str();
+    }
 
 
-        // Since many files support "CF" conventions the history tag may already exist in the source data
-        // and we should add an entry to it if possible.
-        bool done = false; // Used to indicate that we located a toplevel ATtrTable whose name ends in "_GLOBAL" and that has an existing "history" attribute.
-        unsigned int num_attrs = globals.get_size();
-        if (num_attrs) {
-            // Here we look for a top level AttrTable whose name ends with "_GLOBAL" which is where, by convention,
-            // data ingest handlers place global level attributes found in the source dataset.
-            AttrTable::Attr_iter i = globals.attr_begin();
-            AttrTable::Attr_iter e = globals.attr_end();
-            for (; i != e && !done; i++) {
-                AttrType attrType = globals.get_attr_type(i);
-                string attr_name = globals.get_name(i);
-                // Test the entry...
-                if (attrType==Attr_container && BESUtil::endsWith(attr_name, "_GLOBAL")) {
-                    // Look promising, but does it have an existing "history" Attribute?
-                    AttrTable *source_file_globals = globals.get_attr_table(i);
-                    AttrTable::Attr_iter history_attrItr = source_file_globals->simple_find("history");
-                    if(history_attrItr != source_file_globals->attr_end()){
-                        // Yup! Add our entry...
-                        BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Adding history entry to " << attr_name << endl);
-                        source_file_globals->append_attr("history", "string", &hist_entry_vec);
-                        done = true;
-                    }
+    BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Adding cf_history_entry context. '" << cf_history_entry << "'" << endl );
+
+    vector<string> hist_entry_vec;
+    hist_entry_vec.push_back(cf_history_entry);
+
+    // Add the new entry to the "history" attribute
+    // Get the top level Attribute table.
+    AttrTable &globals = dds->get_attr_table();
+
+
+    // Since many files support "CF" conventions the history tag may already exist in the source data
+    // and we should add an entry to it if possible.
+    bool done = false; // Used to indicate that we located a toplevel ATtrTable whose name ends in "_GLOBAL" and that has an existing "history" attribute.
+    unsigned int num_attrs = globals.get_size();
+    if (num_attrs) {
+        // Here we look for a top level AttrTable whose name ends with "_GLOBAL" which is where, by convention,
+        // data ingest handlers place global level attributes found in the source dataset.
+        AttrTable::Attr_iter i = globals.attr_begin();
+        AttrTable::Attr_iter e = globals.attr_end();
+        for (; i != e && !done; i++) {
+            AttrType attrType = globals.get_attr_type(i);
+            string attr_name = globals.get_name(i);
+            // Test the entry...
+            if (attrType==Attr_container && BESUtil::endsWith(attr_name, "_GLOBAL")) {
+                // Look promising, but does it have an existing "history" Attribute?
+                AttrTable *source_file_globals = globals.get_attr_table(i);
+                AttrTable::Attr_iter history_attrItr = source_file_globals->simple_find("history");
+                if(history_attrItr != source_file_globals->attr_end()){
+                    // Yup! Add our entry...
+                    BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Adding history entry to " << attr_name << endl);
+                    source_file_globals->append_attr("history", "string", &hist_entry_vec);
+                    done = true;
                 }
             }
         }
-
-        if(!done){
-            // We never found an existing location to place the "history" entry, so we'll just stuff it into the top level AttrTable.
-            BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Adding history entry to top level AttrTable" << endl);
-            globals.append_attr("history", "string", &hist_entry_vec);
-
-        }
-    }
-    else {
-        BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Unable to locate cf_history_entry context. No history entry will be added to NetCDF response");
     }
 
+    if(!done){
+        // We never found an existing location to place the "history" entry, so we'll just stuff it into the top level AttrTable.
+        BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Adding history entry to top level AttrTable" << endl);
+        globals.append_attr("history", "string", &hist_entry_vec);
+
+    }
 
 
 }
@@ -297,7 +315,7 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
     }
 
 
-    updateHistoryAttribute(dds);
+    updateHistoryAttribute(dds,ce);
 
 
 
