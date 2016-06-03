@@ -167,6 +167,7 @@ void updateHistoryAttribute(DDS *dds, const string ce){
 
     vector<string> hist_entry_vec;
     hist_entry_vec.push_back(cf_history_entry);
+    BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - hist_entry_vec.size(): " << hist_entry_vec.size() << endl );
 
     // Add the new entry to the "history" attribute
     // Get the top level Attribute table.
