@@ -10,6 +10,9 @@ variables:
 	float f32 ;
 	double f64 ;
 	char str(str_len) ;
+
+// global attributes:
+		:history = "removed date-time Hyrax simpleT00.dods?" ;
 data:
 
  byte = 28 ;

@@ -11,6 +11,9 @@ variables:
 	int gstruct.shot(i, j) ;
 	char k(k, k_len) ;
 	int bstruct.bears(i, k) ;
+
+// global attributes:
+		:history = "removed date-time Hyrax gridT.dods?" ;
 data:
 
  i = 2, 4 ;
