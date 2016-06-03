@@ -45,6 +45,7 @@
 #include <fstream>
 #include <exception>
 #include <sstream>      // std::stringstream
+#include <libgen.h>
 
 #include <DataDDS.h>
 #include <BaseType.h>
@@ -143,7 +144,8 @@ void updateHistoryAttribute(DDS *dds, const string ce){
     else {
         BESDEBUG("fonc", "FONcTransmitter::updateHistoryAttribute() - Unable to locate cf_history_entry context. Making a less happy version." << endl);
         string hyrax_version =  "Hyrax";
-        string request_url   =  dds->filename() + "?"+ ce;
+        string request_url   = basename(strdup(dds->filename().c_str()));
+        request_url += "?"+ ce;
 
         std::stringstream ss;
 
@@ -156,7 +158,7 @@ void updateHistoryAttribute(DDS *dds, const string ce){
         // 2000-6-1 6:00:00
         strftime(time_str,100,"%Y-%m-%d %H:%M:%S",timeinfo);
 
-        ss << time_str << " "<< hyrax_version << " " << request_url << endl;
+        ss << time_str << " " << hyrax_version << " " << request_url;
         cf_history_entry = ss.str();
     }
 
