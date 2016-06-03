@@ -53,8 +53,6 @@ using std::istringstream;
 
 #include "DapFunctionUtils.h"
 
-
-
 /** @brief Constructor that creates transformation object from the specified
  * DataDDS object to the specified file
  *
@@ -117,8 +115,6 @@ FONcTransform::~FONcTransform()
         }
     }
 }
-
-
 
 /** @brief Transforms each of the variables of the DataDDS to the NetCDF
  * file
