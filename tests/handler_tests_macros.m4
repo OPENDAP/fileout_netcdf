@@ -57,6 +57,20 @@ m4_define([_AT_BESCMD_BINARYDATA_TEST],  [dnl
     AT_CLEANUP
 ])
 
+dnl Given a filename, remove any date-time string of the form "yyyy-mm-dd hh:mm:ss" 
+dnl in that file and put "removed date-time" in its place. This hack keeps the baselines
+dnl more or less true to form without the obvious issue of baselines being broken 
+dnl one second after they are written.
+dnl  
+dnl Note that the macro depends on the baseline being a file.
+dnl
+dnl jhrg 6/3/16
+ 
+m4_define([REMOVE_DATE_TIME], [dnl
+    sed 's@[[0-9]]\{4\}-[[0-9]]\{2\}-[[0-9]]\{2\} [[0-9]]\{2\}:[[0-9]]\{2\}:[[0-9]]\{2\}@removed date-time@g' < $1 > $1.sed
+    mv $1.sed $1
+])
+
 dnl AT_CHECK (commands, [status = `0'], [stdout = `'], [stderr = `'], [run-if-fail], [run-if-pass])
 
 dnl This is similar to the "binary data" macro above, but instead assumes the
@@ -79,7 +93,9 @@ m4_define([_AT_BESCMD_NETCDF_TEST],  [dnl
         dnl first get the version number, then the header, then the data
         AT_CHECK([ncdump -k test.nc > $baseline.ver.tmp])
         AT_CHECK([ncdump -h test.nc > $baseline.header.tmp])
+        REMOVE_DATE_TIME([$baseline.header.tmp])
         AT_CHECK([ncdump test.nc > $baseline.data.tmp])
+        REMOVE_DATE_TIME([$baseline.data.tmp])
         ],
         [
         AT_CHECK([besstandalone -c $abs_builddir/bes.conf -i $input > test.nc])
@@ -88,9 +104,11 @@ m4_define([_AT_BESCMD_NETCDF_TEST],  [dnl
         AT_CHECK([diff -b -B $baseline.ver tmp])
         
         AT_CHECK([ncdump -h test.nc > tmp])
+        REMOVE_DATE_TIME([tmp])
         AT_CHECK([diff -b -B $baseline.header tmp])
         
         AT_CHECK([ncdump test.nc > tmp])
+        REMOVE_DATE_TIME([tmp])
         AT_CHECK([diff -b -B $baseline.data tmp])
         
         AT_XFAIL_IF([test "$3" = "xfail"])

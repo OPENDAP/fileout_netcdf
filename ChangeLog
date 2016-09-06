@@ -1,3 +1,97 @@
+2016-06-03  James Gallagher  <jgallagher@opendap.org>
+
+	Edits for the new history feature colliding with the 'uncompress' cache
+	This is really an edge case where our tests break because of
+	different hosts mangling names differently.
+
+	Updated the baselines so that they filter out date-time information
+	Nathan added support for the CF history attribute (!) but that
+	includes a date-time string (according to the spec) and that breaks
+	tests (since time is passing...). We now filter out that date-time
+	string from the baselines and replace it with the phrase
+	'removed date-time'. This updates the test code and the baselies.
+
+	Added #include <string.h>
+
+2016-06-03  Nathan Potter  <ndp@opendap.org>
+
+	Merge pull request #3 from OPENDAP/history_attribute
+	History attribute
+
+	Finalized.
+
+	Updated fallback history entry to eliminate the fully qualified path.
+
+2016-06-02  Nathan Potter  <ndp@opendap.org>
+
+	The CF history attribute is updated when NETCDF3 and NetCDF4 output is created.
+
+	Another draft of the history attribute in which the OLFS sends the value of the entry
+
+2016-06-01  James Gallagher  <jgallagher@opendap.org>
+
+	Hyrax 1.13.1
+
+2016-06-01  Nathan Potter  <ndp@opendap.org>
+
+	Added first draft of history attribute machinery.
+2016-03-22  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' into function_result_unwrapper
+
+	Added namespaces names to a libdap enum type to quell compiler complaints.
+
+2016-03-21  Nathan Potter  <ndp@opendap.org>
+
+	Tests for function result promotion in transmitters. Test function wrapitup() added.
+
+2016-03-11  Nathan Potter  <ndp@opendap.org>
+
+	Refactored function result promoter code to be a function and not a method.
+
+	New baselines for fonc to correct for change in output resulting from the new 
+	code that unpacks _GLOBAL attributes to the top level of the nectdf output. 
+	This is an expected result.
+
+	Documentation update
+
+2016-03-10  Nathan Potter  <ndp@opendap.org>
+
+	Fixed attribute naming in fonc - it was breaking things by adding paths to attribute names
+
+	Documentation
+
+2016-03-09  Nathan Potter  <ndp@opendap.org>
+
+	Updated function result promoter, instrumentation, etc.
+
+2016-03-08  Nathan Potter  <ndp@opendap.org>
+
+	ibid.
+
+	Repaired fileout_netcdf so that when it encounters top level attribute tables 
+	whose names end in "_GLOBAL" it will not add the name of the global container 
+	to the name of the NetCDF attribute (like add in a namespace prefix manner)
+
+2016-03-04  Nathan Potter  <ndp@opendap.org>
+
+	More debugging work in fileout_nectdf
+
+	Improved debug output for FONCArray:write()
+
+2016-02-12  James Gallagher  <jgallagher@opendap.org>
+
+	Patch for gcc-6 from Orion Poplawski
+
+2016-01-27  James Gallagher  <jgallagher@opendap.org>
+
+	Updated NEWS and README for Hyrax 1.13
+
+2016-01-26  James Gallagher  <jgallagher@opendap.org>
+
+	Updated ChangeLog, etc., for the bes 3.17 release
+
+	Updated autotest tests, macros and Makefile.am files
 2016-01-26  James Gallagher  <jgallagher@opendap.org>
 
 	Updated autotest tests, macros and Makefile.am files

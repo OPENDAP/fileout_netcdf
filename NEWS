@@ -1,3 +1,10 @@
+News for version 1.4.1
+
+Updates since 2016-01-26, see the ChangeLog
+
+Added support for the CF History attribute so that netCDf files built
+by this code contain information about the source of their data.
+
 News for version 1.4.0
 
 New configuration parameters added to control compression and chunking.
