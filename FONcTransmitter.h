@@ -54,7 +54,7 @@ class FONcTransmitter: public BESBasicTransmitter {
 private:
 	static string temp_dir;
 
-	static void return_temp_stream(const string &filename, ostream &strm, const string &ncVersion);
+	static void write_temp_file_to_stream(int fd, ostream &strm); //, const string &filename, const string &ncVersion);
 
 public:
 	FONcTransmitter();

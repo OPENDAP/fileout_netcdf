@@ -53,14 +53,22 @@
 #include <escaping.h>
 #include <ConstraintEvaluator.h>
 
-#include <BESInternalError.h>
-#include <BESDapError.h>
+//#include <BESInternalError.h>
+//#include <BESDapError.h>
 #include <TheBESKeys.h>
 #include <BESContextManager.h>
 #include <BESDataDDSResponse.h>
 #include <BESDapNames.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
+//#include <DapFunctionUtils.h>
+
+#include <BESDapResponseBuilder.h>
+
+#include <BESError.h>
+#include <BESDapError.h>
+#include <BESForbiddenError.h>
+#include <BESInternalFatalError.h>
 #include <DapFunctionUtils.h>
 
 #include "FONcBaseType.h"
@@ -92,16 +100,24 @@ FONcTransmitter::FONcTransmitter() :
     add_method(DATA_SERVICE, FONcTransmitter::send_data);
 }
 
-#if 0
 /**
  * Hack to ensure the file descriptor for the temporary file is closed.
  */
-struct wrap_file_descriptor {
-    int fd;
-    wrap_file_descriptor(int i) : fd(i) {}
-    ~wrap_file_descriptor() {cerr << "*** Closing fd" << endl; close(fd);}
+struct wrap_temp_descriptor {
+    int d_fd;
+    wrap_temp_descriptor(int fd) : d_fd(fd) {}
+    ~wrap_temp_descriptor() { close(d_fd); }
 };
-#endif
+
+/**
+ * Hack to ensure that the temporary file name used with mkstemp() will
+ * be 'unlinked' no matter how we exit.
+ */
+struct wrap_temp_name {
+    vector<char> d_name;
+    wrap_temp_name(vector<char> &name) : d_name(name) {}
+    ~wrap_temp_name() { unlink(&d_name[0]); }
+};
 
 /**
  * Process the "history" attribute.
@@ -109,6 +125,9 @@ struct wrap_file_descriptor {
  *  - Sub-setting information if any
  *  - SSFunction invocations
  *  - ResourceID? URL?
+ *
+ * @param dds The DDS to modify
+ * @param ce The constraint expression that produced this new netCDF file.
  */
 void updateHistoryAttribute(DDS *dds, const string ce)
 {
@@ -194,7 +213,8 @@ void updateHistoryAttribute(DDS *dds, const string ce)
     }
 }
 
-/** @brief The static method registered to transmit OPeNDAP data objects as
+/**
+ * @brief The static method registered to transmit OPeNDAP data objects as
  * a netcdf file.
  *
  * This function takes the OPeNDAP DataDDS object, reads in the data (can be
@@ -211,84 +231,60 @@ void updateHistoryAttribute(DDS *dds, const string ce)
  */
 void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface &dhi)
 {
-    BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(obj);
-    if (!bdds) throw BESInternalError("cast error", __FILE__, __LINE__);
+    BESDEBUG("fonc", "FONcTransmitter::send_data() - BEGIN" << endl);
 
-    libdap::DDS *dds = bdds->get_dds();
-    if (!dds) throw BESInternalError("No DataDDS has been created for transmit", __FILE__, __LINE__);
+    try { // Expanded try block so all DAP errors are caught. ndp 12/23/2015
+        BESDapResponseBuilder responseBuilder;
+        // Use the DDS from the ResponseObject along with the parameters
+        // from the DataHandlerInterface to load the DDS with values.
+        // Note that the BESResponseObject will manage the loaded_dds object's
+        // memory. Make this a shared_ptr<>. jhrg 9/6/16
 
-    BESDEBUG("fonc", "FONcTransmitter::send_data() - Parsing the constraint" << endl);
+        BESDEBUG("fonc", "FONcTransmitter::send_data() - Reading data into DataDDS" << endl);
 
-    ConstraintEvaluator &eval = bdds->get_ce();
+        DDS *loaded_dds = responseBuilder.intern_dap2_data(obj, dhi);
 
-    string ncVersion = dhi.data[RETURN_CMD];
+        // ResponseBuilder splits the CE, so use the DHI or make two calls and
+        // glue the result together: responseBuilder.get_btp_func_ce() + " " + responseBuilder.get_ce()
+        // jhrg 9/6/16
+        updateHistoryAttribute(loaded_dds, dhi.data[POST_CONSTRAINT]);
 
-    ostream &strm = dhi.get_output_stream();
-    if (!strm) throw BESInternalError("Output stream is not set, can not return as", __FILE__, __LINE__);
+        // TODO Make this code and the two struct classes that wrap the name a fd part of
+        // a utility class or file. jhrg 9/7/16
 
-    // ticket 1248 jhrg 2/23/09
-    string ce = www2id(dhi.data[POST_CONSTRAINT], "%", "%20%26");
-    try {
-        eval.parse_constraint(ce, *dds);
+        string temp_file_name = FONcRequestHandler::temp_dir + "/ncXXXXXX";
+        vector<char> temp_file(temp_file_name.length() + 1);
+        string::size_type len = temp_file_name.copy(&temp_file[0], temp_file_name.length());
+        temp_file[len] = '\0';
+        // cover the case where older versions of mkstemp() create the file using
+        // a mode of 666.
+        mode_t original_mode = umask(077);
+        int fd = mkstemp(&temp_file[0]);
+        umask(original_mode);
+
+        // Hack: Wrap the name and file descriptors so that the descriptor is closed
+        // and temp file in unlinked no matter hoe we exit. jhrg 9/7/16
+        wrap_temp_name w_temp_file(temp_file);
+        wrap_temp_descriptor w_fd(fd);
+
+        if (fd == -1) throw BESInternalError("Failed to open the temporary file.", __FILE__, __LINE__);
+
+        BESDEBUG("fonc", "FONcTransmitter::send_data - Building response file " << &temp_file[0] << endl);
+
+        // Note that 'RETURN_CMD' is the same as the string that determines the file type:
+        // netcdf 3 or netcdf 4. Hack. jhrg 9/7/16
+        FONcTransform ft(loaded_dds, dhi, &temp_file[0], dhi.data[RETURN_CMD]);
+        ft.transform();
+
+        ostream &strm = dhi.get_output_stream();
+        if (!strm) throw BESInternalError("Output stream is not set, can not return as", __FILE__, __LINE__);
+
+        BESDEBUG("fonc", "FONcTransmitter::send_data - Transmitting temp file " << &temp_file[0] << endl);
+
+        FONcTransmitter::write_temp_file_to_stream(fd, strm); //, loaded_dds->filename(), ncVersion);
     }
     catch (Error &e) {
-        throw BESDapError("Failed to parse the constraint expression: " + e.get_error_message(), false,
-            e.get_error_code(), __FILE__, __LINE__);
-    }
-    catch (...) {
-        throw BESInternalError("Failed to parse the constraint expression: Unknown exception caught", __FILE__,
-        __LINE__);
-    }
-
-    // The dataset_name is no longer used in the constraint evaluator, so no
-    // need to get here. Plus, just getting the first container's dataset
-    // name would not have worked with multiple containers.
-    // pwest Jan 4, 2009
-    // string dataset_name = "";
-
-    // now we need to read the data
-    BESDEBUG("fonc", "FONcTransmitter::send_data() - Reading data into DataDDS" << endl);
-
-    // ADB: remember when we're using a temp DDS
-    // bool using_temp_dds = false; See comment below about set_dds(). jhrg 8/8/14
-
-    try {
-        // Handle *functional* constraint expressions specially
-        if (eval.function_clauses()) {
-            BESDEBUG("fonc", "FONcTransmitter::send_data() - Processing functional constraint clause(s)." << endl);
-            DDS *tmp_dds = eval.eval_function_clauses(*dds);
-            delete dds;
-            dds = tmp_dds;
-            bdds->set_dds(dds);
-
-            // This next step utilizes a well known function, promote_function_output_structures()
-            // to look for one or more top level Structures whose name indicates (by way of ending
-            // with "_uwrap") that their contents should be promoted (aka moved) to the top level.
-            // This is in support of a hack around the current API where server side functions
-            // may only return a single DAP object and not a collection of objects. The name suffix
-            // "_unwrap" is used as a signal from the function to the the various response
-            // builders and transmitters that the representation needs to be altered before
-            // transmission, and that in fact is what happens in our friend
-            // promote_function_output_structures()
-            promote_function_output_structures(dds);
-
-        }
-        else {
-            // Iterate through the variables in the DataDDS and read
-            // in the data if the variable has the send flag set.
-
-            for (DDS::Vars_iter i = dds->var_begin(); i != dds->var_end(); i++) {
-                if ((*i)->send_p()) {
-                    BESDEBUG("fonc",
-                        "FONcTransmitter::send_data() - Interning data for variable: '" << (*i)->name() << "'" << endl);
-                    (*i)->intern_data(eval, *dds);
-                }
-            }
-        }
-    }
-    catch (Error &e) {
-        throw BESDapError("Failed to read data: " + e.get_error_message(), false, e.get_error_code(), __FILE__,
-            __LINE__);
+        throw BESDapError("Failed to read data: " + e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
     }
     catch (BESError &e) {
         throw;
@@ -297,66 +293,8 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
         throw BESInternalError("Failed to read data: STL Error: " + string(e.what()), __FILE__, __LINE__);
     }
     catch (...) {
-        throw BESInternalError("Failed to read data. Unknown Error", __FILE__, __LINE__);
+        throw BESInternalError("Failed to get read data: Unknown exception caught", __FILE__, __LINE__);
     }
-
-    updateHistoryAttribute(dds, ce);
-
-    //string temp_file_name = FONcTransmitter::temp_dir + '/' + "ncXXXXXX";
-    string temp_file_name = FONcRequestHandler::temp_dir + '/' + "ncXXXXXX";
-    vector<char> temp_full(temp_file_name.length() + 1);
-    string::size_type len = temp_file_name.copy(&temp_full[0], temp_file_name.length());
-    temp_full[len] = '\0';
-    // cover the case where older versions of mkstemp() create the file using
-    // a mode of 666.
-    mode_t original_mode = umask(077);
-    int fd = mkstemp(&temp_full[0]);
-    umask(original_mode);
-#if 0
-    // Trick: We can unlink the file right here - it will persist until the file descriptor
-    // is closed. This means we don't have to litter the code with call to unlink(). jhrg 11/25/15
-    (void) unlink(&temp_full[0]);
-    // Hack: Use this simple class to 'wrap' the file descriptor so that we can be sure it
-    // is closed no matter how this code is exited. jhrg 11/25/15
-    wrap_file_descriptor wrapped_fd(fd);
-#endif
-    if (fd == -1) throw BESInternalError("Failed to open the temporary file: " + temp_file_name, __FILE__, __LINE__);
-
-    // transform the OPeNDAP DataDDS to the netcdf file
-    BESDEBUG("fonc", "FONcTransmitter::send_data - Transforming into temporary file: " << &temp_full[0] << endl);
-
-    try {
-        FONcTransform ft(dds, dhi, &temp_full[0], ncVersion);
-        ft.transform();
-
-        BESDEBUG("fonc", "FONcTransmitter::send_data - Transmitting temp file " << &temp_full[0] << endl);
-        FONcTransmitter::return_temp_stream(&temp_full[0], strm, ncVersion);
-    }
-    catch (Error &e) {
-        (void) unlink(&temp_full[0]);
-        close(fd);
-        throw BESDapError("Failed to Transform data to NetCDF: " + e.get_error_message(), false, e.get_error_code(),
-            __FILE__, __LINE__);
-    }
-    catch (BESError &e) {
-        (void) unlink(&temp_full[0]);
-        close(fd);
-        throw;
-    }
-    catch (std::exception &e) {
-        (void) unlink(&temp_full[0]);
-        close(fd);
-        throw BESInternalError("Failed to Transform data to NetCDF: STL Error: " + string(e.what()), __FILE__,
-            __LINE__);
-    }
-    catch (...) {
-        (void) unlink(&temp_full[0]);
-        close(fd);
-        throw BESInternalError("Failed to Transform data to NetCDF. Unknown Error", __FILE__, __LINE__);
-    }
-
-    (void) unlink(&temp_full[0]);
-    close(fd);
 
     BESDEBUG("fonc", "FONcTransmitter::send_data - done transmitting to netcdf" << endl);
 }
@@ -370,48 +308,14 @@ void FONcTransmitter::send_data(BESResponseObject *obj, BESDataHandlerInterface 
  * @param strm C++ ostream to write the contents of the file to
  * @throws BESInternalError if problem opening the file
  */
-void FONcTransmitter::return_temp_stream(const string &filename, ostream &strm, const string &ncVersion)
+void FONcTransmitter::write_temp_file_to_stream(int fd, ostream &strm) //, const string &filename, const string &ncVersion)
 {
-    ifstream os;
-    os.open(filename.c_str(), ios::binary | ios::in);
-    if (!os) throw BESInternalError("Fileout netcdf: Cannot connect to netcdf file.", __FILE__, __LINE__);
-    ;
-
     char block[OUTPUT_FILE_BLOCK_SIZE];
 
-    os.read(block, sizeof block);
-    int nbytes = os.gcount();
-    if (nbytes > 0) {
-        bool found = false;
-        string context = "transmit_protocol";
-        string protocol = BESContextManager::TheManager()->get_context(context, found);
-        if (protocol == "HTTP") {
-            strm << "HTTP/1.0 200 OK\n";
-            strm << "Content-type: application/octet-stream\n";
-            strm << "Content-Description: " << "BES dataset" << "\n";
-            if (ncVersion == RETURNAS_NETCDF4) {
-                strm << "Content-Disposition: filename=" << filename << ".nc4;\n\n";
-            }
-            else {
-                strm << "Content-Disposition: filename=" << filename << ".nc;\n\n";
-            }
-            strm << flush;
-        }
-        strm.write(block, nbytes);
+    int nbytes = read(fd, block, sizeof block);
+    while (nbytes > 0) {
+        strm.write(block, nbytes /*os.gcount()*/);
+        nbytes = read(fd, block, sizeof block);
     }
-    else {
-        // close the stream before we leave.
-        os.close();
-        throw BESInternalError(
-            "Fileout netcdf: Failed to stream the response back to the client, got zero count on stream buffer.",
-            __FILE__, __LINE__);
-    }
-
-    while (os) {
-        os.read(block, sizeof block);
-        strm.write(block, os.gcount());
-    }
-
-    os.close();
 }
 
