@@ -53,15 +53,12 @@
 #include <escaping.h>
 #include <ConstraintEvaluator.h>
 
-//#include <BESInternalError.h>
-//#include <BESDapError.h>
 #include <TheBESKeys.h>
 #include <BESContextManager.h>
 #include <BESDataDDSResponse.h>
 #include <BESDapNames.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
-//#include <DapFunctionUtils.h>
 
 #include <BESDapResponseBuilder.h>
 
