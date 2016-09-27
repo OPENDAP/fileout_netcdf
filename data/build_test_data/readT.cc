@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     Connect *url = 0;
     Response *r = 0;
     ReadTypeFactory factory;
-    DataDDS *dds = new DataDDS(&factory);
+    DDS *dds = new DDS(&factory);
     try {
         if (debug) BESDebug::SetUp("cerr,fonc");
 
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
         set_read(dds);
         if (debug) cerr << *dds << endl;
 
-        build_dods_response(dds, "./namesT.dods");
+        build_dods_response(&dds, "./namesT.dods");
 
         // transform the DataDDS into a netcdf file. The dhi only needs the
         // output stream and the post constraint. Test no constraints and

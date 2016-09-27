@@ -47,7 +47,7 @@ int main(int argc, char **argv)
             BESDebug::SetUp("cerr,fonc");
 
         // build a DataDDS of simple type arrays with shared dimensions
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
         {
             Byte *b = new Byte("byte_array");
             Array *a = new Array("array", b);
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
             a->set_value(i32a, i32a.size());
         }
 
-        build_dods_response(dds, "./arrayT01.dods");
+        build_dods_response(&dds, "./arrayT01.dods");
 
         delete dds;
     }

@@ -52,7 +52,7 @@ installcheck-local: $(TESTSUITE) atconfig atlocal
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
-	-rm -f $(TESTSUITE) $(srcdir)/package.m4 
+	-rm -f $(TESTSUITE)
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
 

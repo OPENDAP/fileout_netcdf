@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
         Grid order("/order name/#with^chars&");
 
         {
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
         dds->add_var(&s);
 
-        build_dods_response(dds, "./namesT.dods");
+        build_dods_response(&dds, "./namesT.dods");
 
         delete dds;
     }

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
         Grid order("order");
         Grid shot("shot");
         Grid bears("bears");
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
         ss.add_var(&bears);
         dds->add_var(&ss);
 
-        build_dods_response(dds, "./gridT.dods");
+        build_dods_response(&dds, "./gridT.dods");
 
         delete dds;
     }

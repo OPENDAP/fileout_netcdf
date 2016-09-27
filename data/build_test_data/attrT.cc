@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
         // build a DataDDS of simple types and set values for each of the
         // simple types.
-        DataDDS *dds = new DataDDS(NULL, "virtual");
+        DDS *dds = new DDS(NULL, "virtual");
 
         Byte b("byte");
         b.set_value(28);
@@ -159,8 +159,8 @@ int main(int argc, char **argv)
         gattrs.append_attr("contact", "String", "Patrick West");
         gattrs.append_attr("contact_email", "String", "opendap-tech@opendap.org");
 
-        build_das_response(dds, "./attrT.das");
-        build_dods_response(dds, "./attrT.dods");
+        build_das_response(&dds, "./attrT.das");
+        build_dods_response(&dds, "./attrT.dods");
 
         delete dds;
     }
