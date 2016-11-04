@@ -168,7 +168,11 @@ string FONcUtils::gen_name(const vector<string> &embed, const string &name, stri
     return FONcUtils::id2netcdf(new_name);
 }
 
-/** @brief creates a FONc object for the given DAP object
+/** @brief Creates a FONc object for the given DAP object
+ *
+ * This is a simple factory for FONcBaseType objects that maps the
+ * DAP2 data types into netCDF3 and netCDF4 types (actually instances of
+ * FONcBaseType's specializations).
  *
  * @param v The DAP object to convert
  * @returns The FONc object created via the DAP object
