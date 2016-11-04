@@ -137,10 +137,14 @@ void FONcTransform::transform()
     for (; vi != ve; vi++) {
         if ((*vi)->send_p()) {
             BaseType *v = *vi;
+
             BESDEBUG("fonc", "FONcTransform::transform() - Converting variable '" << v->name() << "'" << endl);
+
+            // This is a factory class call, and 'fg' is specialized for 'v'
             FONcBaseType *fb = FONcUtils::convert(v);
             fb->setVersion( FONcTransform::_returnAs );
             _fonc_vars.push_back(fb);
+
             vector<string> embed;
             fb->convert(embed);
         }
