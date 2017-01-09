@@ -1,3 +1,25 @@
+2016-11-04  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #4 from OPENDAP/hyrax-282
+	Hyrax 282
+
+2016-11-03  James Gallagher  <jgallagher@opendap.org>
+
+	Added tests for the fix for Hyrax-282
+
+	Fix for Hyrax-282
+	This fix handles the case where a Grid has been projected so that
+	only some of its Maps or its Array is projected. Then entire Grid
+	was being sent, including the variables that were not projected,
+	and thus not read. Boom.
+
+2016-11-02  James Gallagher  <jgallagher@opendap.org>
+
+	Hyrax 1.13.2
+
+2016-09-27  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'response_cache'
 2016-09-27  James Gallagher  <jgallagher@opendap.org>
 
 	Merge branch 'response_cache'
