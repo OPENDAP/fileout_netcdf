@@ -59,6 +59,7 @@
 #include <BESDapNames.h>
 #include <BESDataNames.h>
 #include <BESDebug.h>
+#include <BESUtil.h>
 
 #include <BESDapResponseBuilder.h>
 
